@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "esnext",
+    "outDir": "main/dist",
+    "baseUrl": "./main/src",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "sourceMap": true
+  },
+  "include": [
+    "main/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "main/dist"
+  ]
+}
