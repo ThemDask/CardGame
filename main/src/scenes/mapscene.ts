@@ -5,7 +5,7 @@ export class Mapscene extends Phaser.Scene {
     // constructor    
     constructor() {
         super({
-            key : 'PreloadAssets'
+            // key : 'PreloadAssets'
         });
     }
   

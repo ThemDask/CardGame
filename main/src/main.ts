@@ -1,4 +1,5 @@
-import { Mapscene } from './scenes/MapScene';
+// import { Mapscene } from './scenes/MapScene';
+import { MenuScene } from './scenes/MenuScene';
 
 // Import other scenes...
 import Phaser from 'phaser';
@@ -16,7 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false
         }
     },
-    scene: [Mapscene]
+    scene: [MenuScene]
 };
 
 export default new Phaser.Game(config);
