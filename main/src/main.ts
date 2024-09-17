@@ -1,14 +1,13 @@
-// import Phaser from 'phaser';
-// import MainScene from './scenes/MainScene';
-// import CombatScene from './scenes/CombatScene';
-// import UIScene from './scenes/UIScene';
+import { Mapscene } from './scenes/MapScene';
+
 // Import other scenes...
 import Phaser from 'phaser';
 // Define the game config using TypeScript's types
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 1920,
-    height: 1076,
+    width: 1024,
+    height: 768,
+    parent: 'game-container',
     physics: {
         default: 'arcade',
         arcade: {
@@ -17,9 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false
         }
     },
-    scene: [/*MainScene, CombatScene, UIScene  add other scenes */]
+    scene: [Mapscene]
 };
 
-const game = new Phaser.Game(config);
-
-export default game;
+export default new Phaser.Game(config);

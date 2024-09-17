@@ -4,3 +4,5 @@ notes.md
 dist/
 *.log
 lib/
+bundle.min.js
+log.js
