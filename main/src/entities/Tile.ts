@@ -1,3 +1,5 @@
+import { Card } from "./Card";
+
 class Tile {
     type: string;
     position: { x: number, y: number };
