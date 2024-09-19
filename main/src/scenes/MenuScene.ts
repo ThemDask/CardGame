@@ -4,7 +4,7 @@ export class MenuScene extends Phaser.Scene {
     private playButton!: Phaser.GameObjects.Text;
     private deckBuilderButton!: Phaser.GameObjects.Text;
     private profileButton!: Phaser.GameObjects.Text;
-    private logo!: Phaser.GameObjects.Image;
+    // private logo!: Phaser.GameObjects.Image;
 
     constructor() {
         super({ key: 'MenuScene' });

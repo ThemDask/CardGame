@@ -6,7 +6,7 @@ export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
     private myDeck: Card[];
     private globalPool: Card[];
-    private selectedCard: Card | null = null;
+    // private selectedCard: Card | null = null;
     private cardDetailsPanel: CardDetailsPanel;
 
     constructor() {
@@ -17,12 +17,14 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('card', '/assets/card-image.jpg'); // Sample image for all cards
+        this.load.image('Goblin', '/assets/9.jpg'); 
+        this.load.image('archer', '/assets/archer.png'); 
     }
 
     create() {
-        // Add CardDetailsPanel to the scene (on the left side, occupying 1/4 of the screen)
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); // Adjust size as needed
+
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); 
+         this.cardDetailsPanel.updatePanel(null);
 
         // Create rectangles for my deck and global pool
         this.createRectangles();
@@ -57,7 +59,7 @@ export class DeckBuilderScene extends Phaser.Scene {
 
             // Draw empty slot background (if no card)
             this.add.rectangle(slotX, slotY, 100, 120).setStrokeStyle(2, 0xffffff).setOrigin(0);
-
+            console.log(label)
             if (i < cards.length) {
                 const card = cards[i];
                 const cardImage = this.add.image(slotX + 50, slotY + 60, 'card').setDisplaySize(100, 120);
@@ -73,11 +75,11 @@ export class DeckBuilderScene extends Phaser.Scene {
 
                 // Display card details on hover
                 cardImage.on('pointerover', () => {
-                    this.updateCardDetailsPanel(card);
+                    this.cardDetailsPanel.updatePanel(card);
                 });
 
                 cardImage.on('pointerout', () => {
-                    this.updateCardDetailsPanel(null); // Clear the panel if not hovering
+                    this.cardDetailsPanel.updatePanel(null); // Clear the panel if not hovering
                 });
             }
         }
@@ -108,21 +110,13 @@ export class DeckBuilderScene extends Phaser.Scene {
     createGlobalPool(): Card[] {
         // Updated global pool with the new `description` parameter
         return [
-            new Card('1', 'monster', 'Goblin', 2, 3, 5, 5, { x: 0, y: 0 }, 'A sneaky goblin with average stats.'),
-            new Card('2', 'monster', 'Orc', 3, 6, 8, 7, { x: 0, y: 0 }, 'A brutish orc with high damage.'),
-            new Card('3', 'monster', 'Troll', 1, 7, 12, 9, { x: 0, y: 0 }, 'A slow-moving troll with high health.'),
-            new Card('4', 'monster', 'Dragon', 4, 10, 15, 12, { x: 0, y: 0 }, 'A mighty dragon with devastating power.'),
-            new Card('5', 'monster', 'Elf', 3, 4, 6, 4, { x: 0, y: 0 }, 'A nimble elf with balanced stats.'),
-            new Card('6', 'monster', 'Knight', 2, 5, 9, 6, { x: 0, y: 0 }, 'A well-armored knight.'),
+            new Card('1', 'monster', 'Goblin', 2, 3, 5, 5, { x: 0, y: 0 }, 'A sneaky goblin with average stats.', 'Goblin'),
+            new Card('2', 'monster', 'Orc', 3, 6, 8, 7, { x: 0, y: 0 }, 'A brutish orc with high damage.', 'archer'),
+            new Card('3', 'monster', 'Troll', 1, 7, 12, 9, { x: 0, y: 0 }, 'A slow-moving troll with high health.', 'public/assets/9.png'),
+            new Card('4', 'monster', 'Dragon', 4, 10, 15, 12, { x: 0, y: 0 }, 'A mighty dragon with devastating power.', 'public/assets/9.png'),
+            new Card('5', 'monster', 'Elf', 3, 4, 6, 4, { x: 0, y: 0 }, 'A nimble elf with balanced stats.', 'public/assets/archer.png'),
+            new Card('6', 'monster', 'Knight', 2, 5, 9, 6, { x: 0, y: 0 }, 'A well-armored knight.', 'public/assets/9.png'),
         ];
     }
 
-    // Updates the CardDetailsPanel when hovering over a card
-    updateCardDetailsPanel(card: Card | null) {
-        if (card) {
-            this.cardDetailsPanel.updatePanel(card.name, card.type, card.movement, card.damage, card.hp, card.description, card.cost);
-        } else {
-            this.cardDetailsPanel.updatePanel('', '', 0, 0, 0, '', 0); // Clear the panel when no card is selected
-        }
-    }
 }
