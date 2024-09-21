@@ -18,7 +18,7 @@ export function resizeAndCenterImage(image: Phaser.GameObjects.Image, boundingBo
     // Center the image within the bounding box
     image.setPosition(
         // TODO fix
-        150,
-        200
+        boundingBox.x + boundingBox.width / 2,
+        boundingBox.y + boundingBox.height / 2
     );
 }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { Card } from '../entities/Card'; // Ensure the Card class is correctly exported in Card.ts
-import { CardDetailsPanel } from '../utils/CardDetailsPanel'; // Assuming you have the CardDetailsPanel file ready
+import { Card } from '../entities/Card'; 
+import { CardDetailsPanel } from '../utils/CardDetailsPanel';
+import { resizeAndCenterImage } from '../utils/helpers/resizeAndCenterImage';
 
 export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
@@ -16,8 +17,9 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('Goblin', '/assets/9.jpg'); 
+        this.load.image('Goblin', '/assets/crossbow.png'); 
         this.load.image('archer', '/assets/archer.png'); 
+        this.load.image('banner', '/assets/banner.png'); 
     }
 
     create() {
@@ -39,7 +41,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         // Right side rectangle for global pool
         this.add.rectangle(1220, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
 
-        // Labels for each deck
         this.add.text(320, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
         this.add.text(1220, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
     }
@@ -55,7 +56,11 @@ export class DeckBuilderScene extends Phaser.Scene {
             console.log(label)
             if (i < cards.length) {
                 const card = cards[i];
-                const cardImage = this.add.image(slotX + 50, slotY + 60, 'card').setDisplaySize(100, 120);
+                const cardImage = this.add.image(slotX + 50, slotY + 60, card.imagePath).setDisplaySize(100, 120);
+
+                // Resize and center the card image within the slot
+                const boundingBox = new Phaser.Geom.Rectangle(slotX, slotY, 100, 120);
+                resizeAndCenterImage(cardImage, boundingBox);
 
                 cardImage.setInteractive();
                 cardImage.on('pointerdown', () => {
@@ -103,10 +108,10 @@ export class DeckBuilderScene extends Phaser.Scene {
         return [
             new Card('1', 'monster', 'Goblin', 2, 3, 5, 5, { x: 0, y: 0 }, 'A sneaky goblin with average stats.', 'Goblin'),
             new Card('2', 'monster', 'Orc', 3, 6, 8, 7, { x: 0, y: 0 }, 'A brutish orc with high damage.', 'archer'),
-            new Card('3', 'monster', 'Troll', 1, 7, 12, 9, { x: 0, y: 0 }, 'A slow-moving troll with high health.', 'public/assets/9.png'),
-            new Card('4', 'monster', 'Dragon', 4, 10, 15, 12, { x: 0, y: 0 }, 'A mighty dragon with devastating power.', 'public/assets/9.png'),
-            new Card('5', 'monster', 'Elf', 3, 4, 6, 4, { x: 0, y: 0 }, 'A nimble elf with balanced stats.', 'public/assets/archer.png'),
-            new Card('6', 'monster', 'Knight', 2, 5, 9, 6, { x: 0, y: 0 }, 'A well-armored knight.', 'public/assets/9.png'),
+            new Card('3', 'monster', 'Troll', 1, 7, 12, 9, { x: 0, y: 0 }, 'A slow-moving troll with high health.', 'banner'),
+            new Card('4', 'monster', 'Dragon', 4, 10, 15, 12, { x: 0, y: 0 }, 'A mighty dragon with devastating power.', 'archer'),
+            new Card('5', 'monster', 'Elf', 3, 4, 6, 4, { x: 0, y: 0 }, 'A nimble elf with balanced stats.', 'Goblin'),
+            new Card('6', 'monster', 'Knight', 2, 5, 9, 6, { x: 0, y: 0 }, 'A well-armored knight.', 'banner'),
         ];
     }
 

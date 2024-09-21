@@ -92,7 +92,6 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             this.costText.setText('Cost: 0');
             this.cardImage.setTexture('placeholder'); 
     
-            // Create a bounding box for the placeholder image
             const boundingBox = new Phaser.Geom.Rectangle(
                 this.imageRect.x,
                 this.imageRect.y,
