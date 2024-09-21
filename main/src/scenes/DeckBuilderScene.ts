@@ -6,14 +6,13 @@ export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
     private myDeck: Card[];
     private globalPool: Card[];
-    // private selectedCard: Card | null = null;
     private cardDetailsPanel: CardDetailsPanel;
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
-        this.gold = 100; // Initial gold
-        this.myDeck = []; // Cards in my deck
-        this.globalPool = this.createGlobalPool(); // Available cards
+        this.gold = 100; 
+        this.myDeck = []; 
+        this.globalPool = this.createGlobalPool(); 
     }
 
     preload() {
@@ -26,13 +25,12 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); 
          this.cardDetailsPanel.updatePanel(null);
 
-        // Create rectangles for my deck and global pool
         this.createRectangles();
-        this.createGoldCounter();
 
-        // Display the current decks and card slots
-        this.displayDeck(this.myDeck, 'My Deck', 320, 100); // Left (adjusted for panel)
-        this.displayDeck(this.globalPool, 'Global Pool', 1220, 100); // Right
+        this.add.text(900, 50, `Gold: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
+
+        this.displayDeck(this.myDeck, 'My Deck', 320, 100); 
+        this.displayDeck(this.globalPool, 'Global Pool', 1220, 100); 
     }
 
     createRectangles() {
@@ -44,11 +42,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         // Labels for each deck
         this.add.text(320, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
         this.add.text(1220, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
-    }
-
-    createGoldCounter() {
-        // Display gold count
-        this.add.text(900, 50, `Gold: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
     }
 
     displayDeck(cards: Card[], label: string, x: number, y: number) {
@@ -63,23 +56,22 @@ export class DeckBuilderScene extends Phaser.Scene {
             if (i < cards.length) {
                 const card = cards[i];
                 const cardImage = this.add.image(slotX + 50, slotY + 60, 'card').setDisplaySize(100, 120);
-                
-                // Make card clickable
+
                 cardImage.setInteractive();
                 cardImage.on('pointerdown', () => {
-                    this.handleCardClick(card, x === 320); // True if it's from 'My Deck'
+                    this.handleCardClick(card, x === 320); // True if it's from 'My Deck' TODO fix magic number
                 });
 
                 // Display card gold value
                 this.add.text(slotX + 10, slotY + 10, `${card.cost}`, { font: '18px Arial', color: '#fff' });
 
-                // Display card details on hover
+
                 cardImage.on('pointerover', () => {
                     this.cardDetailsPanel.updatePanel(card);
                 });
 
                 cardImage.on('pointerout', () => {
-                    this.cardDetailsPanel.updatePanel(null); // Clear the panel if not hovering
+                    this.cardDetailsPanel.updatePanel(null); 
                 });
             }
         }
@@ -108,7 +100,6 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createGlobalPool(): Card[] {
-        // Updated global pool with the new `description` parameter
         return [
             new Card('1', 'monster', 'Goblin', 2, 3, 5, 5, { x: 0, y: 0 }, 'A sneaky goblin with average stats.', 'Goblin'),
             new Card('2', 'monster', 'Orc', 3, 6, 8, 7, { x: 0, y: 0 }, 'A brutish orc with high damage.', 'archer'),

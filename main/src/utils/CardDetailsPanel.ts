@@ -14,7 +14,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private hpText: Phaser.GameObjects.Text;
     private descriptionRect: Phaser.GameObjects.Rectangle;
     private descriptionText: Phaser.GameObjects.Text;
-    private imageRect: Phaser.GameObjects.Rectangle; // Add reference to image rectangle
+    private imageRect: Phaser.GameObjects.Rectangle; 
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene, x, y);
@@ -25,7 +25,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
 
         // Rectangle and image for the card image display
         const imageRectWidth = width - 20;
-        const imageRectHeight = imageRectWidth * 1.4; // Adjust to desired aspect ratio
+        const imageRectHeight = imageRectWidth * 1.4; 
 
         this.imageRect = scene.add.rectangle(x + 10, y + 10, imageRectWidth, imageRectHeight).setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.add(this.imageRect);
@@ -33,11 +33,10 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.cardImage = scene.add.image(this.imageRect.getCenter().x, this.imageRect.getCenter().y, '').setDisplaySize(imageRectWidth, imageRectHeight).setOrigin(0.5);
         this.add(this.cardImage);
 
-        // Name and Cost Texts
         this.cardNameText = scene.add.text(x + 15, y + 15, '', { font: '18px Arial', color: '#fff' }).setOrigin(0, 0);
         this.costText = scene.add.text(x + width - 15, y + 15, '', { font: '18px Arial', color: '#fff' }).setOrigin(1, 0);
-
-        // Create rectangles and text for movement, damage, hp
+ 
+        // Create rectangles and text for movement, damage, hp, description
         this.movementRect = scene.add.rectangle(x + 10, y + imageRectHeight + 30, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.movementText = scene.add.text(this.movementRect.getCenter().x, this.movementRect.getCenter().y, '', { font: '16px Arial', color: '#fff' }).setOrigin(0.5);
         this.add(this.movementRect);
@@ -53,27 +52,23 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.add(this.hpRect);
         this.add(this.hpText);
 
-        // Rectangle for description
         this.descriptionRect = scene.add.rectangle(x + 10, y + imageRectHeight + 80, imageRectWidth, 100).setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.add(this.descriptionRect);
 
         this.descriptionText = scene.add.text(x + 15, y + imageRectHeight + 85, '', { font: '16px Arial', color: '#fff', wordWrap: { width: imageRectWidth - 10 } }).setOrigin(0);
         this.add(this.descriptionText);
 
-        // Add all texts to the container
         this.add([this.cardNameText, this.costText]);
 
         // Add the container to the scene
         scene.add.existing(this);
     }
 
-    // Method to update the panel with card details and image
     updatePanel(card: Card | null) {
         if (card) {
             this.cardNameText.setText(`Name: ${card.name}`);
             this.costText.setText(`Cost: ${card.cost}`);
     
-            // Set card image using the imageKey
             this.cardImage.setTexture(card.imagePath);
     
             // Create a bounding box using the imageRect properties
@@ -95,7 +90,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             // Reset all fields to placeholders if card is null
             this.cardNameText.setText('Name: -');
             this.costText.setText('Cost: 0');
-            this.cardImage.setTexture('placeholder'); // Assumes you have a 'placeholder' texture for missing images
+            this.cardImage.setTexture('placeholder'); 
     
             // Create a bounding box for the placeholder image
             const boundingBox = new Phaser.Geom.Rectangle(
