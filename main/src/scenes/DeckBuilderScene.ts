@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { Card } from '../entities/Card'; 
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { resizeAndCenterImage } from '../utils/helpers/resizeAndCenterImage';
+import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 
 export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
@@ -13,7 +14,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         super({ key: 'DeckBuilderScene' });
         this.gold = 100; 
         this.myDeck = []; 
-        this.globalPool = this.createGlobalPool(); 
+        this.globalPool = createGlobalCardPool(true); 
     }
 
     preload() {
@@ -47,7 +48,7 @@ export class DeckBuilderScene extends Phaser.Scene {
 
     displayDeck(cards: Card[], label: string, x: number, y: number) {
         // Loop through 20 slots for the deck
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 25; i++) {
             const slotX = x + (i % 5) * 110;
             const slotY = y + Math.floor(i / 5) * 140;
 
@@ -68,7 +69,7 @@ export class DeckBuilderScene extends Phaser.Scene {
                 });
 
                 // Display card gold value
-                this.add.text(slotX + 10, slotY + 10, `${card.cost}`, { font: '18px Arial', color: '#fff' });
+                this.add.text(slotX + 10, slotY + 10, `${card.cost}`, { font: '18px Arial', color: '#000' });
 
 
                 cardImage.on('pointerover', () => {
@@ -104,15 +105,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.scene.restart();
     }
 
-    createGlobalPool(): Card[] {
-        return [
-            new Card('1', 'monster', 'Goblin', 2, 3, 5, 5, { x: 0, y: 0 }, 'A sneaky goblin with average stats.', 'Goblin'),
-            new Card('2', 'monster', 'Orc', 3, 6, 8, 7, { x: 0, y: 0 }, 'A brutish orc with high damage.', 'archer'),
-            new Card('3', 'monster', 'Troll', 1, 7, 12, 9, { x: 0, y: 0 }, 'A slow-moving troll with high health.', 'banner'),
-            new Card('4', 'monster', 'Dragon', 4, 10, 15, 12, { x: 0, y: 0 }, 'A mighty dragon with devastating power.', 'archer'),
-            new Card('5', 'monster', 'Elf', 3, 4, 6, 4, { x: 0, y: 0 }, 'A nimble elf with balanced stats.', 'Goblin'),
-            new Card('6', 'monster', 'Knight', 2, 5, 9, 6, { x: 0, y: 0 }, 'A well-armored knight.', 'banner'),
-        ];
-    }
+
 
 }

@@ -1,0 +1,863 @@
+[
+    {
+        "id": "1",
+        "type": "creature",
+        "name": "Animated Bodyguard",
+        "cost": 5,
+        "movement": 1,
+        "damage": 4,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 6,
+        "description": "",
+        "keywords": [
+            "Armor 1",
+            "Taunt"
+        ],
+        "imagePath": "public/assets/Animated_Bodyguard.png"
+    },
+    {
+        "id": "2",
+        "type": "creature",
+        "name": "Beast Slayer",
+        "cost": 3,
+        "movement": 3,
+        "damage": 2,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "Destroys any creature with 7 or more gold cost it attacks.",
+        "keywords": [],
+        "imagePath": "public/assets/Beast_Slayer.png"
+    },
+    {
+        "id": "3",
+        "type": "creature",
+        "name": "Halberdier",
+        "cost": 4,
+        "movement": 1,
+        "damage": 4,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "",
+        "keywords": [
+            "Polearm 3"
+        ],
+        "imagePath": "public/assets/Halberdier.png"
+    },
+    {
+        "id": "4",
+        "type": "creature",
+        "name": "Humble Spearman",
+        "cost": 3,
+        "movement": 1,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "",
+        "keywords": [
+            "Polearm 2"
+        ],
+        "imagePath": "public/assets/Humble_Spearman.png"
+    },
+    {
+        "id": "5",
+        "type": "creature",
+        "name": "Witch Doctor",
+        "cost": 4,
+        "movement": 3,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* Heal a creature within*3hexes* for 2 *hp*.",
+        "keywords": [],
+        "imagePath": "public/assets/Witch_Doctor.png"
+    },
+    {
+        "id": "6",
+        "type": "creature",
+        "name": "Blade Juggler",
+        "cost": 5,
+        "movement": 3,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 3,
+        "description": "*tap* Once per game: Transfer an item from a creature to another one of its controllers choosing.",
+        "keywords": [],
+        "imagePath": "public/assets/Blade_Juggler.png"
+    },
+    {
+        "id": "7",
+        "type": "creature",
+        "name": "Stinger",
+        "cost": 2,
+        "movement": 3,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "Taps any creature it attacks.",
+        "keywords": [
+            "Marine"
+        ],
+        "imagePath": "public/assets/Stinger.png"
+    },
+    {
+        "id": "8",
+        "type": "creature",
+        "name": "Roach Zombie",
+        "cost": 1,
+        "movement": 1,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 1,
+        "description": "Once per game: Instead of dying teleports at any hex.",
+        "keywords": [],
+        "imagePath": "public/assets/Roach_Zombie.png"
+    },
+    {
+        "id": "9",
+        "type": "creature",
+        "name": "Knight of the Deep",
+        "cost": 8,
+        "movement": 3,
+        "damage": 6,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "",
+        "keywords": [
+            "Marine",
+            "Armor 4"
+        ],
+        "imagePath": "public/assets/Knight_of_the_Deep.png"
+    },
+    {
+        "id": "10",
+        "type": "creature",
+        "name": "Gremlin",
+        "cost": 4,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 3,
+        "description": "*tap* +2 *movement* for the next round.",
+        "keywords": [
+            "Flying"
+        ],
+        "imagePath": "public/assets/Gremlin.png"
+    },
+    {
+        "id": "11",
+        "type": "creature",
+        "name": "Longbow Surfer",
+        "cost": 6,
+        "movement": 2,
+        "damage": 2,
+        "hp": 3,
+        "description": "Can move and shoot in the same action.",
+        "keywords": [
+            "Marine"
+        ],
+        "imagePath": "public/assets/Longbow_Surfer.png",
+        "ranged_damage": 2,
+        "range": 2
+    },
+    {
+        "id": "12",
+        "type": "creature",
+        "name": "Pixie",
+        "cost": 1,
+        "movement": 3,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 1,
+        "description": "",
+        "keywords": [
+            "Flying"
+        ],
+        "imagePath": "public/assets/Pixie.png"
+    },
+    {
+        "id": "13",
+        "type": "creature",
+        "name": "Ultraviolence Knight",
+        "cost": 7,
+        "movement": 3,
+        "damage": 6,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "",
+        "keywords": [
+            "Shield 3",
+            "Armor 3"
+        ],
+        "imagePath": "public/assets/Ultraviolence_Knight.png"
+    },
+    {
+        "id": "14",
+        "type": "creature",
+        "name": "Rotting Prionce",
+        "cost": 6,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 7,
+        "description": "After it takes damage heal all adjacent allies for the same amount.",
+        "keywords": [
+            "Hybrid"
+        ],
+        "imagePath": "public/assets/Rotting_Prince.png"
+    },
+    {
+        "id": "15",
+        "type": "creature",
+        "name": "Storm Dragon",
+        "cost": 7,
+        "movement": 3,
+        "damage": 5,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 6,
+        "description": "*tap* Deal 2*magic damage* to each creature in conjunction.",
+        "keywords": [
+            "Flying"
+        ],
+        "imagePath": "public/assets/Storm_Dragon.png"
+    },
+    {
+        "id": "16",
+        "type": "creature",
+        "name": "Swift Assasin",
+        "cost": 3,
+        "movement": 3,
+        "damage": 2,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "Destroys any ranged creature it attacks.",
+        "keywords": [],
+        "imagePath": "public/assets/Swift_Assasin.png"
+    },
+    {
+        "id": "17",
+        "type": "creature",
+        "name": "Summoner duo",
+        "cost": 7,
+        "movement": 2,
+        "damage": 2,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "*tap* Once per game: Summon Attack or Tank Golem tapped within *2hexes*.",
+        "keywords": [],
+        "imagePath": "public/assets/Summoner_duo.png"
+    },
+    {
+        "id": "18",
+        "type": "creature",
+        "name": "Sharpshooter",
+        "cost": 4,
+        "movement": 2,
+        "damage": 1,
+        "hp": 4,
+        "description": "",
+        "keywords": [
+            "Line of Sight",
+            "Shield Piercing"
+        ],
+        "imagePath": "public/assets/Sharpshooter.png",
+        "ranged_damage": 4,
+        "range": 3
+    },
+    {
+        "id": "19",
+        "type": "creature",
+        "name": "Monstrous Raider",
+        "cost": 5,
+        "movement": 3,
+        "damage": 6,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "",
+        "keywords": [],
+        "imagePath": "public/assets/Monstrous_Raider.png"
+    },
+    {
+        "id": "20",
+        "type": "creature",
+        "name": "Monarch of the Abyss",
+        "cost": 7,
+        "movement": 2,
+        "damage": 4,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* Once per game: Give a creature any keyword (2)",
+        "keywords": [
+            "Marine"
+        ],
+        "imagePath": "public/assets/Monarch_of_the_Abyss.png"
+    },
+    {
+        "id": "21",
+        "type": "creature",
+        "name": "Crossbowman",
+        "cost": 4,
+        "movement": 2,
+        "damage": 1,
+        "hp": 3,
+        "description": "",
+        "keywords": [],
+        "imagePath": "public/assets/Crossbowman.png",
+        "ranged_damage": 5,
+        "range": 2
+    },
+    {
+        "id": "22",
+        "type": "creature",
+        "name": "The Banisher",
+        "cost": 10,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 3,
+        "description": "*tap* Once per game: Pay 2 gold to destroy a creature.",
+        "keywords": [
+            "Marine"
+        ],
+        "imagePath": "public/assets/The_Banisher.png"
+    },
+    {
+        "id": "23",
+        "type": "creature",
+        "name": "Frost Maiden",
+        "cost": 6,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* Tap a creature within *3hexes*, it cannot take damage until ther end of this turn.",
+        "keywords": [],
+        "imagePath": "public/assets/Frost_Maiden.png"
+    },
+    {
+        "id": "24",
+        "type": "creature",
+        "name": "Witch Hunter",
+        "cost": 4,
+        "movement": 2,
+        "damage": 5,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* +2 *movement* when attacking a creature with *magic damage*.",
+        "keywords": [
+            "Magic Resist 5"
+        ],
+        "imagePath": "public/assets/Witch_Hunter.png"
+    },
+    {
+        "id": "25",
+        "type": "creature",
+        "name": "Abomination",
+        "cost": 4,
+        "movement": 4,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "When it dies, mutate the creature that killed it into a copy of it.",
+        "keywords": [],
+        "imagePath": "public/assets/Abomination.png"
+    },
+    {
+        "id": "26",
+        "type": "creature",
+        "name": "Spectre",
+        "cost": 3,
+        "movement": 2,
+        "damage": 4,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "When this creature takes *magic damage*, deal the same amount of *magic damage* to all adjacent creatures.",
+        "keywords": [
+            "Armor 8"
+        ],
+        "imagePath": "public/assets/Spectre.png"
+    },
+    {
+        "id": "27",
+        "type": "creature",
+        "name": "Debt Collector",
+        "cost": 6,
+        "movement": 2,
+        "damage": 4,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* Once per game: Your opponent gives you 1 gold.",
+        "keywords": [],
+        "imagePath": "public/assets/Debt_Collector.png"
+    },
+    {
+        "id": "28",
+        "type": "creature",
+        "name": "The Grand Collector",
+        "cost": 2,
+        "movement": 2,
+        "damage": 2,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "Has no item limit, equips the items of any creature he kills.",
+        "keywords": [],
+        "imagePath": "public/assets/The_Grand_Collector.png"
+    },
+    {
+        "id": "29",
+        "type": "creature",
+        "name": "Anti-Air Turret",
+        "cost": 3,
+        "movement": 2,
+        "damage": 1,
+        "hp": 3,
+        "description": "Gains 4*ranged_damage*, when shooting a flying creature.",
+        "keywords": [
+            "Hybrid"
+        ],
+        "imagePath": "public/assets/Crossbowman.png",
+        "ranged_damage": 1,
+        "range": 4
+    },
+    {
+        "id": "30",
+        "type": "creature",
+        "name": "Archangel",
+        "cost": 10,
+        "movement": 2,
+        "damage": 5,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "*tap* Once per game: Resurrect a creature that died this game within *2hexes*.",
+        "keywords": [
+            "Flying"
+        ],
+        "imagePath": "public/assets/Archangel.png"
+    },
+    {
+        "id": "31",
+        "type": "creature",
+        "name": "Full Metal Slaughterer",
+        "cost": 7,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "After this creature kills another untap it.",
+        "keywords": [
+            "Hybrid",
+            "Purist"
+        ],
+        "imagePath": "public/assets/Full_Metal_Slaughterer.png"
+    },
+    {
+        "id": "32",
+        "type": "creature",
+        "name": "Exploding Shroomer",
+        "cost": 3,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "When destroyed inflict 3*magic damage* to all adjacent creatures.",
+        "keywords": [],
+        "imagePath": "public/assets/Exploding_Shroomer.png"
+    },
+    {
+        "id": "33",
+        "type": "creature",
+        "name": "Necromancer",
+        "cost": 2,
+        "movement": 3,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 3,
+        "description": "*tap* Swap a creature within *2hexes* with another from its controllers graveyard with the same or less gold cost if its friendly/the same or more if its not.",
+        "keywords": [],
+        "imagePath": "public/assets/Necromancer.png"
+    },
+    {
+        "id": "34",
+        "type": "creature",
+        "name": "Peasant Archer",
+        "cost": 2,
+        "movement": 2,
+        "damage": 1,
+        "hp": 3,
+        "description": "",
+        "keywords": [],
+        "imagePath": "public/assets/Peasant Archer.png",
+        "ranged_damage": 2,
+        "range": 2
+    },
+    {
+        "id": "35",
+        "type": "Trojan Infiltrator",
+        "name": "Corpse Eater",
+        "cost": 3,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "*tap* Give control of this  creature to your opponent, then they give you control of one o their own creatures.",
+        "keywords": [
+            "Marine"
+        ],
+        "imagePath": "public/assets/Trojan_Infiltrator.png"
+    },
+    {
+        "id": "36",
+        "type": "creature",
+        "name": "Pengu",
+        "cost": 2,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "When pengu kills an enemy creature, ascents into its  true form",
+        "keywords": [
+            "Hybrid"
+        ],
+        "imagePath": "public/assets/Pengu.png"
+    },
+    {
+        "id": "37",
+        "type": "creature",
+        "name": "Rogue Wizard",
+        "cost": 2,
+        "movement": 1,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "During their action phase players can pay 1 gold to deal 1*magic damage* to any creature.",
+        "keywords": [],
+        "imagePath": "public/assets/Rogue_Wizard.png"
+    },
+    {
+        "id": "38",
+        "type": "creature",
+        "name": "Bloated Anathema",
+        "cost": 7,
+        "movement": 2,
+        "damage": 5,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "*tap*Pull a creature within *2hexes* to an adjacent hex.",
+        "keywords": [],
+        "imagePath": "public/assets/Bloated_Anathema.png"
+    },
+    {
+        "id": "39",
+        "type": "creature",
+        "name": "Drain Blaster",
+        "cost": 3,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "*tap* Deal *magic damage* equal to the creatures you passed this turn, to  a creature within *3hexes*.",
+        "keywords": [],
+        "imagePath": "public/assets/Master_of_Proxies.png"
+    },
+    {
+        "id": "40",
+        "type": "creature",
+        "name": "Banner of War",
+        "cost": 2,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 2,
+        "description": "*tap*Your creatures can pass throu other creatures until the end of this turn.",
+        "keywords": [],
+        "imagePath": "public/assets/Banner_of_War.png"
+    },
+    {
+        "id": "41",
+        "type": "creature",
+        "name": "Terrormancerr",
+        "cost": 6,
+        "movement": 2,
+        "damage": 8,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "When this creature untapps, tap all adjacent creatures.",
+        "keywords": [
+            "Purist"
+        ],
+        "imagePath": "public/assets/Terrormancer.png"
+    },
+    {
+        "id": "42",
+        "type": "creature",
+        "name": "Rampaging Centaur",
+        "cost": 4,
+        "movement": 1,
+        "damage": 6,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 3,
+        "description": "Gains *movement* equal to the number of creatures you passed during this turn. (Only during the 3rd turn and after.)",
+        "keywords": [],
+        "imagePath": "public/assets/Rampaging_Centaur.png"
+    },
+    {
+        "id": "43",
+        "type": "creature",
+        "name": "Pyromancer",
+        "cost": 3,
+        "movement": 2,
+        "damage": 2,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "*tap* Deal 1*magic damage* across all creatures at a straight line. (Cant be  activated During the 1st turn.)",
+        "keywords": [],
+        "imagePath": "public/assets/Pyromancer.png"
+    },
+    {
+        "id": "44",
+        "type": "creature",
+        "name": "Infested Hound",
+        "cost": 3,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 1,
+        "description": "If this creatures is killed by another creature’s melee attack, take control of it.",
+        "keywords": [],
+        "imagePath": "public/assets/Infested_Hound.png"
+    },
+    {
+        "id": "45",
+        "type": "creature",
+        "name": "Shadowbender",
+        "cost": 5,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "hp": 5,
+        "description": "*tap* Switch place with another friendly creature within *2hexes*.",
+        "keywords": [],
+        "imagePath": "public/assets/Shadowbender.png"
+    },
+    {
+        "id": "46",
+        "type": "creature",
+        "name": "Screaming Cannon",
+        "cost": 9,
+        "movement": 1,
+        "hp": 5,
+        "description": "",
+        "keywords": [
+            "Line of Sight",
+            "Shield Piercing"
+        ],
+        "imagePath": "public/assets/Screaming_Cannon.png",
+        "ranged_damage": 6,
+        "range": 4
+    },
+    {
+        "id": "47",
+        "type": "creature",
+        "name": "Abyss Spawn",
+        "cost": 5,
+        "movement": 3,
+        "damage": 5,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 3,
+        "description": "",
+        "keywords": [
+            "Marine",
+            "Armor Piercing"
+        ],
+        "imagePath": "public/assets/Abyss_Spawn.png"
+    },
+    {
+        "id": "48",
+        "type": "creature",
+        "name": "Arachnalord",
+        "cost": 4,
+        "movement": 2,
+        "damage": 4,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "*tap* Tap a creature within *2hexes*.",
+        "keywords": [],
+        "imagePath": "public/assets/Arachnalord.png"
+    },
+    {
+        "id": "49",
+        "type": "creature",
+        "name": "Trebuchet",
+        "cost": 8,
+        "movement": 1,
+        "damage": 0,
+        "hp": 5,
+        "description": "*ranged_damage* deals aditional 3 damage to creatures in adjacent hexes.",
+        "keywords": [],
+        "imagePath": "public/assets/Screaming_Trebuchet.png",
+        "ranged_damage": 5,
+        "range": 3
+    },
+    {
+        "id": "50",
+        "type": "creature",
+        "name": "Blight Monarch",
+        "cost": 6,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* Transform a enemy creature with 1 *hp* within *3hexes*, into an Abomination under your control.",
+        "keywords": [],
+        "imagePath": "public/assets/Blight_Monarch.png"
+    },
+    {
+        "id": "51",
+        "type": "creature",
+        "name": "Brain Jacker",
+        "cost": 4,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 1,
+        "description": "When destroyed take control of an adjacent creature",
+        "keywords": [
+            "Marine"
+        ],
+        "imagePath": "public/assets/Brain_Jacker.png"
+    },
+    {
+        "id": "52",
+        "type": "creature",
+        "name": "Soul Extractor",
+        "cost": 3,
+        "movement": 2,
+        "damage": 3,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* DEstroy a friendly creature within *2hexes*. to deal *magic damage* equal to its gold cost, to a creature within *4hexes*.",
+        "keywords": [],
+        "imagePath": "public/assets/Soul_Extractor.png"
+    },
+    {
+        "id": "53",
+        "type": "creature",
+        "name": "Skinwalker",
+        "cost": 5,
+        "movement": 0,
+        "damage": 0,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 0,
+        "description": "*Transforms into the last enemy creature that performed an action.",
+        "keywords": [],
+        "imagePath": "public/assets/Skinwalker.png"
+    },
+    {
+        "id": "54",
+        "type": "creature",
+        "name": "Tripod Mercenary",
+        "cost": 1,
+        "movement": 2,
+        "damage": 6,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 7,
+        "description": "The player  with thew most gold gets control of it. (Your choice if tied.)",
+        "keywords": [
+            "Hybrid"
+        ],
+        "imagePath": "public/assets/Tripod_Mercenary.png"
+    },
+    {
+        "id": "55",
+        "type": "creature",
+        "name": "The  Great Pacifist",
+        "cost": 5,
+        "movement": 2,
+        "damage": 1,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 5,
+        "description": "Adjacent creatures cant attack",
+        "keywords": [
+            "Marine",
+            "Purist"
+        ],
+        "imagePath": "public/assets/The Great_Pacifist.png"
+    },
+    {
+        "id": "56",
+        "type": "creature",
+        "name": "Warlock",
+        "cost": 4,
+        "movement": 2,
+        "damage": 2,
+		"ranged_damage": 0,
+        "range": 1,
+        "hp": 4,
+        "description": "*tap* Deal 1*magic damage* to a creature within *4 hexes*, for each creature that died this turn.",
+        "keywords": [],
+        "imagePath": "public/assets/Warlock.png"
+    },
+    {
+        "id": "57",
+        "type": "creature",
+        "name": "Goblino Pistolero",
+        "cost": 4,
+        "movement": 2,
+        "damage": 1,
+        "hp": 3,
+        "description": "Can move and shoot in the same action.",
+        "keywords": [
+            "LIne of Sight",
+            "Shield PIercing"
+        ],
+        "imagePath": "public/assets/Goblino_Pistolero.png",
+        "ranged_damage": 4,
+        "range": 2
+    }
+]

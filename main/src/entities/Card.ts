@@ -4,30 +4,31 @@ export class Card {
     name: string;
     movement: number;
     damage: number;
+    ranged_damage: number;
+    range: number;
     hp: number;
     cost: number;
-    position: { x: number, y: number };
     description: string;
     imagePath: string;
+    keywords: string[]; 
   
-    // TODO remove position from this class
-    // TODO add keywords
-    constructor(id: string, type: string, name: string, movement: number, damage: number, hp: number, cost: number, position: { x: number, y: number }, description: string, imagePath: string) {
+
+    constructor(id: string, type: string, name: string, movement: number, damage: number, ranged_damage: number, range: number, hp: number,
+        cost: number,  description: string, imagePath: string,  keywords: string[]) {
       this.id = id;
       this.type = type;
       this.name = name;
       this.movement = movement;
       this.damage = damage;
+      this.ranged_damage = ranged_damage
+      this.range = range;
       this.hp = hp;
       this.cost = cost;
-      this.position = position;
       this.description = description;
       this.imagePath = imagePath;
+      this.keywords = keywords;
     }
   
-    move(newPosition: { x: number, y: number }) {
-      this.position = newPosition;
-    }
   
   
     untap() {
