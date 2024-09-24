@@ -39,7 +39,6 @@ export function createGlobalCardPool(replaceWithPlaceholder: boolean): Card[] {
     addPlaceholderImage(cards)
   }
 
-  // Return the array of Card instances
   return cards;
 }
 

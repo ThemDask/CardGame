@@ -1,6 +1,7 @@
 import { Card } from "../entities/Card";
 import { resizeAndCenterImage } from "../utils/helpers/resizeAndCenterImage";
 
+//TODO display all Card properties
 export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private background: Phaser.GameObjects.Rectangle;
     private cardImage: Phaser.GameObjects.Image;
@@ -14,6 +15,12 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private hpText: Phaser.GameObjects.Text;
     private descriptionRect: Phaser.GameObjects.Rectangle;
     private descriptionText: Phaser.GameObjects.Text;
+    private keywordsRect: Phaser.GameObjects.Rectangle;
+    private keywordsText: Phaser.GameObjects.Text;
+    private rangedDamageRect: Phaser.GameObjects.Rectangle;
+    private rangedDamageText: Phaser.GameObjects.Text;
+    private rangeRect: Phaser.GameObjects.Rectangle;
+    private rangeText: Phaser.GameObjects.Text;
     private imageRect: Phaser.GameObjects.Rectangle; 
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
@@ -52,11 +59,27 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.add(this.hpRect);
         this.add(this.hpText);
 
-        this.descriptionRect = scene.add.rectangle(x + 10, y + imageRectHeight + 80, imageRectWidth, 100).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        this.rangedDamageRect = scene.add.rectangle(x - 80 +imageRectWidth / 2, y + imageRectHeight + 80, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        this.rangedDamageText = scene.add.text(this.rangedDamageRect.getCenter().x, this.rangedDamageRect.getCenter().y, '', { font: '12px Arial', color: '#fff' }).setOrigin(0.5);
+        this.add(this.rangedDamageRect);
+        this.add(this.rangedDamageText);
+
+        this.rangeRect = scene.add.rectangle(x - 120 + 2 * (imageRectWidth / 2), y + imageRectHeight + 80, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        this.rangeText = scene.add.text(this.rangeRect.getCenter().x, this.rangeRect.getCenter().y, '', { font: '16px Arial', color: '#fff' }).setOrigin(0.5);
+        this.add(this.rangeRect);
+        this.add(this.rangeText);
+
+        this.descriptionRect = scene.add.rectangle(x + 10, y + imageRectHeight + 130, imageRectWidth, 100).setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.add(this.descriptionRect);
 
-        this.descriptionText = scene.add.text(x + 15, y + imageRectHeight + 85, '', { font: '16px Arial', color: '#fff', wordWrap: { width: imageRectWidth - 10 } }).setOrigin(0);
+        this.descriptionText = scene.add.text(x + 15, y + imageRectHeight + 135, '', { font: '16px Arial', color: '#fff', wordWrap: { width: imageRectWidth - 10 } }).setOrigin(0);
         this.add(this.descriptionText);
+
+        this.keywordsRect = scene.add.rectangle(x + 10, y + imageRectHeight + 250, imageRectWidth, 100).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        this.add(this.keywordsRect);
+
+        this.keywordsText = scene.add.text(x + 15, y + imageRectHeight + 255, '', { font: '16px Arial', color: '#fff', wordWrap: { width: imageRectWidth - 10 } }).setOrigin(0);
+        this.add(this.keywordsText);
 
         this.add([this.cardNameText, this.costText]);
 
@@ -66,9 +89,8 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
 
     updatePanel(card: Card | null) {
         if (card) {
-            this.cardNameText.setText(`Name: ${card.name}`);
+            this.cardNameText.setText(`${card.name}`);
             this.costText.setText(`Cost: ${card.cost}`);
-    
             this.cardImage.setTexture(card.imagePath);
     
             // Create a bounding box using the imageRect properties
@@ -79,13 +101,16 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
                 this.imageRect.height
             );
     
-            // Call the new method to resize and center the image within the bounding box
+            // Call helper method to resize and center the image within the bounding box
             resizeAndCenterImage(this.cardImage, boundingBox);
     
             this.movementText.setText(`Move: ${card.movement}`);
             this.damageText.setText(`Damage: ${card.damage}`);
             this.hpText.setText(`HP: ${card.hp}`);
             this.descriptionText.setText(card.description);
+            this.keywordsText.setText(card.keywords);
+            this.rangedDamageText.setText(`Ranged dmg: ${card.ranged_damage}`);
+            this.rangeText.setText(`Range: ${card.range}`);
         } else {
             // Reset all fields to placeholders if card is null
             this.cardNameText.setText('Name: -');
@@ -106,6 +131,15 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             this.damageText.setText('Damage: 0');
             this.hpText.setText('HP: 0');
             this.descriptionText.setText('-');
+            this.keywordsText.setText('-');
+            this.rangedDamageText.setText('-');
+            this.rangeText.setText('-');
         }
     }
+
+    // TODO
+    createRectanglesAndText() {
+
+    }
+
 }
