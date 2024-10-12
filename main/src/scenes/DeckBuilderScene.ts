@@ -63,7 +63,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.add.text(1220, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
     }
 
-    displayDeck(cards: Card[], _label: string, container: Phaser.GameObjects.Container, x: number, y: number) {
+    displayDeck(cards: Card[], _label: string, container: Phaser.GameObjects.Container, _x: number, _y: number) {
         // Loop through all slots for the deck
         for (let i = 0; i < 100; i++) {
             const slotX = (i % 5) * 110; // Adjusted to be relative to the container

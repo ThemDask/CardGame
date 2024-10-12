@@ -1,5 +1,6 @@
 import { DeckBuilderScene } from './scenes/DeckBuilderScene';
 import { MenuScene } from './scenes/MenuScene';
+import { MapScene } from './scenes/MapScene';
 
 import Phaser from 'phaser';
 
@@ -16,7 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false
         }
     },
-    scene: [MenuScene, DeckBuilderScene]
+    scene: [MenuScene, DeckBuilderScene, MapScene]
 };
 
 export default new Phaser.Game(config);

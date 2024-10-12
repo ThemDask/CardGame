@@ -34,6 +34,7 @@ export class MenuScene extends Phaser.Scene {
         menuContainer.add([this.playButton, this.deckBuilderButton, this.profileButton]);
 
         this.deckBuilderButton.on('pointerdown', () => this.scene.start('DeckBuilderScene'));
+        this.playButton.on('pointerdown', () => this.scene.start('MapScene'));
     }
 
     createButton(x: number, y: number, text: string, defaultStyle: Phaser.Types.GameObjects.Text.TextStyle, hoverStyle: Phaser.Types.GameObjects.Text.TextStyle, clickStyle: Phaser.Types.GameObjects.Text.TextStyle) {
