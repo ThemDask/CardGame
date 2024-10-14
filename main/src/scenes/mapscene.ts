@@ -10,7 +10,7 @@ export class MapScene extends Phaser.Scene {
 
     constructor() {
         super({ key: 'MapScene' });
-        this.hexRadius = 80;  // Adjust this for hex size
+        this.hexRadius = 40;  // Adjust this for hex size
         this.tileMap = [];
     }
 
@@ -34,51 +34,64 @@ export class MapScene extends Phaser.Scene {
          this.generateHexMap(containerWidth, containerHeight);
     }
 
-     // Function to generate the hex grid and display the tiles inside the container
      generateHexMap(containerWidth: number, containerHeight: number) {
         const rows = 11;
         const hexMapStructure = [6, 7, 8, 9, 10, 11, 10, 9, 8, 7, 6];
     
         const hexHeight = Math.sqrt(3) * this.hexRadius;
         const hexWidth = 2 * this.hexRadius;
-        const xOffset = hexWidth * 0.75;  // Horizontal distance between hex centers
+        const xOffset = hexWidth * 0.85;  
+        const yOffset = hexHeight * 0.85;  
     
-        // Calculate total map dimensions for centering
-        const totalMapHeight = rows * hexHeight * 0.5;  // Approximate height
-        const centerY = containerHeight / 2 - totalMapHeight / 2;  // Center vertically
+        // Centering the entire map
+        const totalMapHeight = rows * yOffset;
+        const centerY = (containerHeight - totalMapHeight) / 2;
     
         for (let row = 0; row < rows; row++) {
             this.tileMap[row] = [];
     
             const numberOfHexes = hexMapStructure[row];
             const rowWidth = numberOfHexes * xOffset;  // Total width of the current row
-            const centerX = containerWidth / 2 - rowWidth / 2;  // Center horizontally
+            const centerX = (containerWidth - rowWidth) / 2;  // Center horizontally
     
-            const yPos = centerY + row * hexHeight * 0.5;  // Adjust vertical position
+            const yPos = centerY + row * yOffset;  // Adjust vertical position
     
             for (let col = 0; col < numberOfHexes; col++) {
                 const xPos = centerX + col * xOffset;  // Adjust horizontal position for centering
     
-                // Create a new Tile instance with border
                 const tile = new Tile(this, xPos, yPos, this.hexRadius, 'default');
                 this.tileMap[row].push(tile);
-    
-                // Add the tile to the container
+
                 this.mapContainer.add(tile.hex);
-    
-                // Add a border to distinguish hex edges
+
+
                 tile.hex.lineStyle(2, 0xaabbcc);  // White border with 2px thickness
-                tile.hex.strokePath();  // Apply the stroke/border
+                tile.hex.strokePath();  
     
-                // Optional: Add interactivity or additional logic here
+                // TODO
                 tile.hex.on('pointerdown', () => {
                     console.log(`Tile at row ${row}, col ${col} clicked.`);
+                });
+
+                tile.hex.on('pointerover', () => {
+                    // todo
                 });
             }
         }
     }
     
+    
+    
+    
+    
+    
+    
 
     update() {
+    }
+
+
+    updateHexes() {
+        // TODO
     }
 }
