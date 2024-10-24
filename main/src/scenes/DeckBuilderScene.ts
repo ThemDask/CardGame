@@ -3,6 +3,7 @@ import { Card } from '../entities/Card';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { resizeAndCenterImage } from '../utils/helpers/resizeAndCenterImage';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
+import cardData from '../../../public/cardData.json';
 
 export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
@@ -145,10 +146,112 @@ export class DeckBuilderScene extends Phaser.Scene {
 
     saveDeck() {
         console.log("saved");
+        const deckIds = this.myDeck.map(card => card.id); // Get all current card IDs
+        const jsonData = JSON.stringify(deckIds, null, 2); // Convert to JSON
+    
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        // Create a temporary anchor element to trigger the download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'my_deck.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    loadDeck() {
-        console.log("loaded");
+    // TODO add try-catch for wrong input
+    async loadDeck() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+    
+        input.addEventListener('change', async (event) => {
+            const file = (event.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+    
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const contents = e.target?.result as string;
+    
+                // Ensure we have contents to parse
+                if (!contents) {
+                    console.error("Loaded file is empty");
+                    return;
+                }
+    
+                try {
+                    // Parse the loaded IDs (expecting an array of strings)
+                    const loadedIds: string[] = JSON.parse(contents);
+    
+                    // Clear the current deck and reset available gold
+                    this.myDeck = [];
+                    this.gold = 100; // Reset gold to 100
+    
+                    // Map loaded IDs to card details
+                    loadedIds.forEach(id => {
+                        const originalCard = cardData.find((card: any) => card.id === id);
+                        if (originalCard) {
+                            const card = new Card(
+                                originalCard.id,
+                                originalCard.type,
+                                originalCard.name,
+                                originalCard.movement ?? 0,  // Provide a default value if undefined
+                                originalCard.damage ?? 0,     // Provide a default value if undefined
+                                originalCard.ranged_damage ?? 0, // Provide a default value if undefined
+                                originalCard.range ?? 0,       // Provide a default value if undefined
+                                originalCard.hp ?? 0,          // Provide a default value if undefined
+                                originalCard.cost ?? 0,        // Provide a default value if undefined
+                                originalCard.description ?? "", // Provide a default value if undefined
+                                originalCard.imagePath,
+                                originalCard.keywords || []     // Provide a default empty array if undefined
+                            );
+                            this.myDeck.push(card);
+                            this.gold -= card.cost; // Deduct card cost from available gold
+                        } else {
+                            console.warn(`Card with ID ${id} not found in card data.`);
+                        }
+                    });
+
+                    
+                    this.updateDeckDisplay(); // Implement this function to render 'myDeck'
+                    this.updateGoldDisplay();  // Implement this function to update available gold
+    
+                    // Log the loaded deck and remaining gold
+                    console.log("Loaded deck:", this.myDeck);
+                    console.log("Available Gold:", this.gold);
+                } catch (error) {
+                    console.error("Error processing loaded deck:", error);
+                }
+            };
+    
+            reader.readAsText(file); // Read the selected file
+        });
+    
+        input.click(); // Open file dialog
+    }
+    
+    
+    updateDeckDisplay() {
+        const deckContainer = document.getElementById('myDeckContainer'); // Assuming you have a container for displaying your deck
+        if (deckContainer) {
+            deckContainer.innerHTML = ''; // Clear previous content
+            this.myDeck.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card'; // Add appropriate classes/styles
+                cardElement.textContent = `${card.name} (Cost: ${card.cost})`; // Display card name and cost
+                deckContainer.appendChild(cardElement); // Append to the deck container
+            });
+        }
+    }
+
+    updateGoldDisplay() {
+        const goldDisplay = document.getElementById('goldDisplay'); // Assuming you have an element to show available gold
+        if (goldDisplay) {
+            goldDisplay.textContent = `Available Gold: ${this.gold}`; // Update the displayed gold value
+        }
     }
 
     handleCardClick(card: Card, isMyDeck: boolean) {

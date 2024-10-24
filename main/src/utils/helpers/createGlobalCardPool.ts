@@ -1,5 +1,5 @@
 import { Card } from "../../entities/Card";
-import cardData from '../../../../public/cardData.json'; // Make sure this path is correct based on your file structure
+import cardData from '../../../../public/cardData.json'; 
 
 
 interface CardData {
