@@ -13,6 +13,10 @@ export class DeckBuilderScene extends Phaser.Scene {
     private cardDetailsPanel: CardDetailsPanel;
     private myDeckMask: Phaser.GameObjects.Graphics;
     private globalPoolMask: Phaser.GameObjects.Graphics;
+    private loadDeckButtonRect: Phaser.GameObjects.Rectangle;
+    private loadDeckButtonText: Phaser.GameObjects.Text;
+    private saveDeckButtonRect: Phaser.GameObjects.Rectangle;
+    private saveDeckButtonText: Phaser.GameObjects.Text;
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
@@ -32,7 +36,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); 
         this.cardDetailsPanel.updatePanel(null);
 
-        this.createRectangles();
+        this.createDeckRectangles();
 
         this.add.text(900, 50, `Gold: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
@@ -40,20 +44,23 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.myDeckContainer = this.add.container(320, 100);
         this.globalPoolContainer = this.add.container(1220, 100);
 
+        this.displayDeck(this.myDeck, 'My Deck', this.myDeckContainer, 320, 100); 
+        this.displayDeck(this.globalPool, 'Global Pool', this.globalPoolContainer, 1220, 100);
+
         // Add mask for scrolling areas
         this.createMasks();
 
-        this.displayDeck(this.myDeck, 'My Deck', this.myDeckContainer, 320, 100); 
-        this.displayDeck(this.globalPool, 'Global Pool', this.globalPoolContainer, 1220, 100);
-        
-
-        // Input for scrolling
+        // Input for deck scrolling
         this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
             this.handleScroll(dy);
         });
+
+        // add save/load deck buttons
+        this.createButtons()
+
     }
 
-    createRectangles() {
+    createDeckRectangles() {
         // Left side rectangle for my deck
         this.add.rectangle(320, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
         // Right side rectangle for global pool
@@ -104,6 +111,45 @@ export class DeckBuilderScene extends Phaser.Scene {
         }
     }
     
+    createButtons() {
+        this.loadDeckButtonRect = this.add.rectangle(550,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+        this.saveDeckButtonRect = this.add.rectangle(690,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+
+        this.loadDeckButtonText = this.add.text(this.loadDeckButtonRect.getCenter().x, this.loadDeckButtonRect.getCenter().y, 'Load Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
+        this.saveDeckButtonText = this.add.text(this.saveDeckButtonRect.getCenter().x, this.saveDeckButtonRect.getCenter().y, 'Save Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
+
+        this.loadDeckButtonRect.setInteractive();
+        this.saveDeckButtonRect.setInteractive();
+
+        this.saveDeckButtonRect.on('pointerdown', () => {
+            this.saveDeckButtonRect.setFillStyle(0x7fffb2)
+            this.saveDeck()
+        });
+
+        this.loadDeckButtonRect.on('pointerdown', () => {
+            this.loadDeckButtonRect.setFillStyle(0x7fffb2);
+            this.loadDeck()
+        });
+
+        this.saveDeckButtonRect.on('pointerup', () => {
+            this.saveDeckButtonRect.setFillStyle(0x000000)
+
+        });
+
+        this.loadDeckButtonRect.on('pointerup', () => {
+            this.loadDeckButtonRect.setFillStyle(0x000000);
+
+        });
+
+    }
+
+    saveDeck() {
+        console.log("saved");
+    }
+
+    loadDeck() {
+        console.log("loaded");
+    }
 
     handleCardClick(card: Card, isMyDeck: boolean) {
         if (isMyDeck) {

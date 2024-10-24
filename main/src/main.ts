@@ -1,6 +1,6 @@
 import { DeckBuilderScene } from './scenes/DeckBuilderScene';
 import { MenuScene } from './scenes/MenuScene';
-import { MapScene } from './scenes/Mapscene';
+import { MapScene } from './scenes/MapScene';
 
 import Phaser from 'phaser';
 

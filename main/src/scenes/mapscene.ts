@@ -14,7 +14,7 @@ export class MapScene extends Phaser.Scene {
 
     constructor() {
         super({ key: 'MapScene' });
-        this.hexRadius = 40;  // Adjust this for hex size
+        this.hexRadius = 55;  // Adjust this for hex size
         this.hexMap = [];
         
     }
@@ -45,27 +45,7 @@ export class MapScene extends Phaser.Scene {
     
 
     update() {
-        // // Loop over each hex and add listeners for hover and click interactions
-        // for (let row = 0; row < this.hexMap.length; row++) {
-        //     for (let col = 0; col < this.hexMap[row].length; col++) {
-        //         const hex = this.hexMap[row][col];
-
-        //         // Hover effect
-        //         hex.hex.on('pointerover', () => {
-        //             hex.redraw('hover');  // Change the hex's line color to red
-        //         });
-
-        //         // Click effect
-        //         hex.hex.on('pointerdown', () => {
-        //             hex.redraw('click');  // Change the hex's line color to yellow
-        //         });
-
-        //         // Reset line color when pointer leaves the hex
-        //         hex.hex.on('pointerout', () => {
-        //             hex.redraw('default');  // Reset the hex's line color
-        //         });
-        //     }
-        // }
+        this.cardDetailsPanel.updatePanel(null)
     }
 
 
