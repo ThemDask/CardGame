@@ -3,95 +3,98 @@ import { resizeAndCenterImage } from "../utils/helpers/resizeAndCenterImage";
 
 export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private background: Phaser.GameObjects.Rectangle;
+    private imageRect: Phaser.GameObjects.Rectangle;
     private cardImage: Phaser.GameObjects.Image;
     private cardNameText: Phaser.GameObjects.Text;
     private costText: Phaser.GameObjects.Text;
-    private movementRect: Phaser.GameObjects.Rectangle;
-    private damageRect: Phaser.GameObjects.Rectangle;
-    private hpRect: Phaser.GameObjects.Rectangle;
     private movementText: Phaser.GameObjects.Text;
     private damageText: Phaser.GameObjects.Text;
     private hpText: Phaser.GameObjects.Text;
-    private descriptionRect: Phaser.GameObjects.Rectangle;
-    private descriptionText: Phaser.GameObjects.Text;
-    private keywordsRect: Phaser.GameObjects.Rectangle;
-    private keywordsText: Phaser.GameObjects.Text;
-    private rangedDamageRect: Phaser.GameObjects.Rectangle;
     private rangedDamageText: Phaser.GameObjects.Text;
-    private rangeRect: Phaser.GameObjects.Rectangle;
     private rangeText: Phaser.GameObjects.Text;
-    private imageRect: Phaser.GameObjects.Rectangle; 
+    private descriptionText: Phaser.GameObjects.Text;
+    private descriptionRect: Phaser.GameObjects.Rectangle;
+    private keywordsText: Phaser.GameObjects.Text;
+    private keywordsRect: Phaser.GameObjects.Rectangle;
+    
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene, x, y);
+        const TEXT_SPACING = 15; // Space between each row of text
+        const TEXT_X_OFFSET = 15; // X offset for text
 
-        // Create the background rectangle for the panel
+        // Background rectangle for the panel
         this.background = scene.add.rectangle(x, y, width, height, 0x000000).setOrigin(0);
-        this.add(this.background); // Add to the container
+        this.add(this.background);
 
-        // Rectangle and image for the card image display
-        const imageRectWidth = width - 20;
-        const imageRectHeight = imageRectWidth * 1.4; 
-
-        this.imageRect = scene.add.rectangle(x + 10, y + 10, imageRectWidth, imageRectHeight).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        // Card image display area
+        const imageRectWidth = width; // Set width to full width
+        const imageRectHeight = height * 0.4; // Adjust height based on desired proportion (60% for example)
+        this.imageRect = scene.add.rectangle(x + 0, y + 0, imageRectWidth, imageRectHeight)
+            .setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.add(this.imageRect);
 
-        this.cardImage = scene.add.image(this.imageRect.getCenter().x, this.imageRect.getCenter().y, '').setDisplaySize(imageRectWidth, imageRectHeight).setOrigin(0.5);
+        // Card image
+        this.cardImage = scene.add.image(this.imageRect.getCenter().x, this.imageRect.getCenter().y, '')
+            .setDisplaySize(imageRectWidth, imageRectHeight) // Fill the rectangle completely
+            .setOrigin(0.5, 0.5); // Center the image within the rectangle
         this.add(this.cardImage);
 
-        this.cardNameText = scene.add.text(x + 15, y + 15, '', { font: '18px Arial', color: '#fff' }).setOrigin(0, 0);
-        this.costText = scene.add.text(x + width - 15, y + 15, '', { font: '18px Arial', color: '#fff' }).setOrigin(1, 0);
- 
-        // Create rectangles and text for movement, damage, hp, description
-        this.movementRect = scene.add.rectangle(x + 10, y + imageRectHeight + 30, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
-        this.movementText = scene.add.text(this.movementRect.getCenter().x, this.movementRect.getCenter().y, '', { font: '16px Arial', color: '#fff' }).setOrigin(0.5);
-        this.add(this.movementRect);
-        this.add(this.movementText);
+        // Card name and cost positioned on top of the image
+        this.cardNameText = scene.add.text(x + 10, y + 10, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 0);
+        this.costText = scene.add.text(x + width - 10, y + 10, '', { font: '18px Arial', color: '#000' }).setOrigin(1, 0);
 
-        this.damageRect = scene.add.rectangle(x + 15 + imageRectWidth / 3, y + imageRectHeight + 30, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
-        this.damageText = scene.add.text(this.damageRect.getCenter().x, this.damageRect.getCenter().y, '', { font: '16px Arial', color: '#fff' }).setOrigin(0.5);
-        this.add(this.damageRect);
-        this.add(this.damageText);
 
-        this.hpRect = scene.add.rectangle(x + 20 + 2 * (imageRectWidth / 3), y + imageRectHeight + 30, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
-        this.hpText = scene.add.text(this.hpRect.getCenter().x, this.hpRect.getCenter().y, '', { font: '16px Arial', color: '#fff' }).setOrigin(0.5);
-        this.add(this.hpRect);
-        this.add(this.hpText);
+        // Attribute texts at the bottom of the card image
+        const attrY = y + imageRectHeight - TEXT_SPACING;
 
-        this.rangedDamageRect = scene.add.rectangle(x - 80 +imageRectWidth / 2, y + imageRectHeight + 80, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
-        this.rangedDamageText = scene.add.text(this.rangedDamageRect.getCenter().x, this.rangedDamageRect.getCenter().y, '', { font: '12px Arial', color: '#fff' }).setOrigin(0.5);
-        this.add(this.rangedDamageRect);
-        this.add(this.rangedDamageText);
+        // Attribute texts at the bottom of the card image
+        this.movementText = scene.add.text(TEXT_X_OFFSET, attrY, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
+        this.damageText = scene.add.text(TEXT_X_OFFSET + imageRectWidth / 3, attrY, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
+        this.hpText = scene.add.text(TEXT_X_OFFSET + (2 * imageRectWidth) / 3, attrY, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
 
-        this.rangeRect = scene.add.rectangle(x - 120 + 2 * (imageRectWidth / 2), y + imageRectHeight + 80, imageRectWidth / 3 - 5, 40).setStrokeStyle(2, 0xffffff).setOrigin(0);
-        this.rangeText = scene.add.text(this.rangeRect.getCenter().x, this.rangeRect.getCenter().y, '', { font: '16px Arial', color: '#fff' }).setOrigin(0.5);
-        this.add(this.rangeRect);
-        this.add(this.rangeText);
+        // Next row of texts
+        this.rangedDamageText = scene.add.text(TEXT_X_OFFSET, attrY + TEXT_SPACING, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
+        this.rangeText = scene.add.text(TEXT_X_OFFSET + (2 * imageRectWidth) / 3, attrY + TEXT_SPACING, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
 
-        this.descriptionRect = scene.add.rectangle(x + 10, y + imageRectHeight + 130, imageRectWidth, 100).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        // Description and keywords rectangles positioned below the image area
+        this.descriptionRect = scene.add.rectangle(x , y + imageRectHeight + 20, imageRectWidth, 100)
+            .setStrokeStyle(2, 0xffffff)
+            .setOrigin(0);
         this.add(this.descriptionRect);
 
-        this.descriptionText = scene.add.text(x + 15, y + imageRectHeight + 135, '', { font: '16px Arial', color: '#fff', wordWrap: { width: imageRectWidth - 10 } }).setOrigin(0);
+        this.descriptionText = scene.add.text(x + 15, y + imageRectHeight + 30, '', {
+            font: '16px Arial',
+            color: '#fff',
+            wordWrap: { width: imageRectWidth - 10 }
+        }).setOrigin(0);
         this.add(this.descriptionText);
 
-        this.keywordsRect = scene.add.rectangle(x + 10, y + imageRectHeight + 250, imageRectWidth, 100).setStrokeStyle(2, 0xffffff).setOrigin(0);
+        this.keywordsRect = scene.add.rectangle(x , y + imageRectHeight + 130, imageRectWidth, 100)
+            .setStrokeStyle(2, 0xffffff)
+            .setOrigin(0);
         this.add(this.keywordsRect);
 
-        this.keywordsText = scene.add.text(x + 15, y + imageRectHeight + 255, '', { font: '16px Arial', color: '#fff', wordWrap: { width: imageRectWidth - 10 } }).setOrigin(0);
+        this.keywordsText = scene.add.text(x + 15, y + imageRectHeight + 140, '', {
+            font: '16px Arial',
+            color: '#fff',
+            wordWrap: { width: imageRectWidth - 10 }
+        }).setOrigin(0);
         this.add(this.keywordsText);
 
-        this.add([this.cardNameText, this.costText]);
-
-        // Add the container to the scene
+        // Add elements to the container
+        this.add([this.cardNameText, this.costText, this.movementText, this.damageText, this.hpText, this.rangedDamageText, this.rangeText, this.descriptionText, this.keywordsText]);
+        
         scene.add.existing(this);
     }
 
+    // Method to update panel details based on the selected card
     updatePanel(card: Card | null) {
         if (card) {
             this.cardNameText.setText(`${card.name}`);
             this.costText.setText(`Cost: ${card.cost}`);
             this.cardImage.setTexture(card.imagePath);
-    
+
             // Create a bounding box using the imageRect properties
             const boundingBox = new Phaser.Geom.Rectangle(
                 this.imageRect.x,
@@ -99,41 +102,41 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
                 this.imageRect.width,
                 this.imageRect.height
             );
-    
-            // Call helper method to resize and center the image within the bounding box
+
+            // Helper method to resize and center the image
             resizeAndCenterImage(this.cardImage, boundingBox);
-    
+
             this.movementText.setText(`Move: ${card.movement}`);
             this.damageText.setText(`Damage: ${card.damage}`);
             this.hpText.setText(`HP: ${card.hp}`);
-            this.descriptionText.setText(card.description);
-            this.keywordsText.setText(card.keywords);
             this.rangedDamageText.setText(`Ranged dmg: ${card.ranged_damage}`);
             this.rangeText.setText(`Range: ${card.range}`);
+            this.descriptionText.setText(card.description);
+            this.keywordsText.setText(card.keywords);
         } else {
             // Reset all fields to placeholders if card is null
             this.cardNameText.setText('Name: -');
             this.costText.setText('Cost: 0');
-            this.cardImage.setTexture('placeholder'); 
-    
+            this.cardImage.setTexture('placeholder');
+
             const boundingBox = new Phaser.Geom.Rectangle(
                 this.imageRect.x,
                 this.imageRect.y,
                 this.imageRect.width,
                 this.imageRect.height
             );
-    
-            // Call the new method for the placeholder image
+
+            // Resize and center placeholder image
             resizeAndCenterImage(this.cardImage, boundingBox);
-    
+
             this.movementText.setText('Move: 0');
             this.damageText.setText('Damage: 0');
             this.hpText.setText('HP: 0');
-            this.descriptionText.setText('-');
-            this.keywordsText.setText('-');
             this.rangedDamageText.setText('-');
             this.rangeText.setText('-');
+            this.descriptionText.setText('-');
+            this.keywordsText.setText('-');
         }
     }
-
 }
+    

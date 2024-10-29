@@ -4,16 +4,8 @@ export function resizeAndCenterImage(image: Phaser.GameObjects.Image, boundingBo
     const boxWidth = boundingBox.width;
     const boxHeight = boundingBox.height;
 
-    const imageAspectRatio = image.width / image.height;
-    const boxAspectRatio = boxWidth / boxHeight;
-
-    if (imageAspectRatio > boxAspectRatio) {
-        image.displayWidth = boxWidth;
-        image.displayHeight = boxWidth / imageAspectRatio;
-    } else {
-        image.displayHeight = boxHeight;
-        image.displayWidth = boxHeight * imageAspectRatio;
-    }
+    // Resize the image to fit the bounding box completely
+    image.setDisplaySize(boxWidth, boxHeight);
 
     // Center the image within the bounding box
     image.setPosition(
