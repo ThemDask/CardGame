@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
+         buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
 
 export class MenuScene extends Phaser.Scene {
     private playButton!: Phaser.GameObjects.Text;
@@ -19,15 +21,15 @@ export class MenuScene extends Phaser.Scene {
         const { width, height } = this.scale;
 
         // Define button styles
-        const defaultStyle = { fontSize: '32px', color: '#ffffff' };
-        const hoverStyle = { fontSize: '32px', color: '#0000ff' };
-        const clickStyle = { fontSize: '32px', color: '#ffffff' };
+        // const defaultStyle = { fontSize: '32px', color: '#ffffff' };
+        // const hoverStyle = { fontSize: '32px', color: '#0000ff' };
+        // const clickStyle = { fontSize: '32px', color: '#ffffff' };
 
         const menuContainer = this.add.container(width / 2, height / 2);
 
-        this.playButton = this.createButton(0, -100, 'Play', defaultStyle, hoverStyle, clickStyle);
-        this.deckBuilderButton = this.createButton(0, 0, 'Deck Builder', defaultStyle, hoverStyle, clickStyle);
-        this.profileButton = this.createButton(0, 100, 'Profile', defaultStyle, hoverStyle, clickStyle);
+        this.playButton = this.createButton(0, -100, 'Play');
+        this.deckBuilderButton = this.createButton(0, 0, 'Deck Builder');
+        this.profileButton = this.createButton(0, 100, 'Profile');
 
         
         // Add all buttons to the container
@@ -37,30 +39,30 @@ export class MenuScene extends Phaser.Scene {
         this.playButton.on('pointerdown', () => this.scene.start('MapScene'));
     }
 
-    createButton(x: number, y: number, text: string, defaultStyle: Phaser.Types.GameObjects.Text.TextStyle, hoverStyle: Phaser.Types.GameObjects.Text.TextStyle, clickStyle: Phaser.Types.GameObjects.Text.TextStyle) {
+    createButton(x: number, y: number, text: string) {
 
-        const button = this.add.text(x, y, text, defaultStyle)
+        const button = this.add.text(x, y, text, buttonOutStyle)
             .setOrigin(0.5)
             .setInteractive()
             .on('pointerover', () => {
-                button.setStroke('#0000ff', 2); // Blue border on hover
-                button.setStyle(hoverStyle); // Change text color on hover
+                button.setStroke(buttonOverStroke.colour, buttonOverStroke.thickness); // Blue border on hover
+                button.setStyle(buttonOverStyle); // Change text color on hover
             })
             .on('pointerout', () => {
-                button.setStroke('#ffffff', 2); // White border when not hovering
-                button.setStyle(defaultStyle); // Revert text color
+                button.setStroke(buttonOutStroke.colour, buttonOutStroke.thickness); // White border when not hovering
+                button.setStyle(buttonOutStyle); // Revert text color
             })
             .on('pointerdown', () => {
-                button.setStroke('#ffffff', 2); // White border on click
-                button.setStyle(clickStyle); // Change text color on click
+                button.setStroke(buttonDownStroke.colour, buttonDownStroke.thickness); // White border on click
+                button.setStyle(buttonDownStyle); // Change text color on click
             })
             .on('pointerup', () => {
-                button.setStroke('#0000ff', 2); // Blue border on release
-                button.setStyle(defaultStyle); // Revert text color
+                button.setStroke(buttonUpStroke.colour, buttonUpStroke.thickness); // Blue border on release
+                button.setStyle(buttonUpStyle); // Revert text color
             });
 
         // Add initial White border
-        button.setStroke('#ffffff', 2); 
+        button.setStroke(buttonOutStroke.colour, buttonOutStroke.thickness); 
         
         return button;
 }}

@@ -1,7 +1,6 @@
 import { Card } from "../entities/Card";
 import { resizeAndCenterImage } from "../utils/helpers/resizeAndCenterImage";
 
-//TODO display all Card properties
 export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private background: Phaser.GameObjects.Rectangle;
     private cardImage: Phaser.GameObjects.Image;

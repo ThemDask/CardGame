@@ -3,17 +3,33 @@
 
 
 //------------------------BOARD HEXES------------------------//
-const hexLand = 0xffffff;
-const hexLandHover = '';
+export const hexLand = 0xffffff;
+export const hexLandHover = '';
 
-const hexSea = '';
-const hexSeaHover = '';
+export const hexSea = '';
+export const hexSeaHover = '';
 
-const hexObjective = '';
-const hexMine = '';
+export const hexObjective = '';
+export const hexMine = '';
 
-const hexHover = '';
-const hexClick = '';
+export const hexHover = '';
+export const hexClick = '';
 
 //--------------------------FONTS----------------------------//
 
+
+//-------------------------BUTTONS---------------------------//
+
+export const buttonOverStroke = {colour: '#0000ff', thickness: 2};
+export const buttonOverStyle = { fontSize: '36px', color: '#0000ff'};
+
+export const buttonOutStroke = {colour: '#ffffff', thickness: 2};
+export const buttonOutStyle = { fontSize: '36px', color: '#ffffff'};
+
+export const buttonDownStroke = {colour: '#ffffff', thickness: 2};
+export const buttonDownStyle = { fontSize: '36px', color: '#ffffff' };
+
+export const buttonUpStroke = {colour: '#0000ff', thickness: 2};
+export const buttonUpStyle = { fontSize: '36px', color: '#0000ff'};
+
+//-------------------------COLOURS---------------------------//

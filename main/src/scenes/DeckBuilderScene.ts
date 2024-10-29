@@ -4,6 +4,9 @@ import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { resizeAndCenterImage } from '../utils/helpers/resizeAndCenterImage';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
+import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
+    buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
+
 
 export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
@@ -33,34 +36,12 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     create() {
-
-        // add Back button
-        // TODO add Global Styles
-        const backButton = this.add.text(1750, 960, 'Back', { font: '32px Arial', color: '#ffffff' })
-            .setInteractive()
-            .on('pointerdown', () => {
-                this.scene.stop('DeckBuilderScene');
-                this.scene.start('MenuScene');
-            })
-            .on('pointerover', () => {
-                backButton.setStroke('#0000ff', 2); // Blue border on hover
-                backButton.setStyle({ fontSize: '32px', color: '#0000ff' }); // Change text color on hover
-            })
-            .on('pointerout', () => {
-                backButton.setStroke('#ffffff', 1); // White border when not hovering
-                backButton.setStyle({ fontSize: '32px', color: '#ffffff' }); // Revert text color
-            })
-            .on('pointerup', () => {
-                backButton.setStroke('#0000ff', 2); // Blue border on release
-                backButton.setStyle({ fontSize: '32px', color: '#0000ff' }); // Revert text color
-            });
-
         this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); 
         this.cardDetailsPanel.updatePanel(null);
 
         this.createDeckRectangles();
 
-        this.add.text(900, 50, `Gold: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
+        this.add.text(1000, 50, `Gold: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
 
         this.myDeckContainer = this.add.container(320, 100);
@@ -70,10 +51,33 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.displayDeck(this.globalPool, 'Global Pool', this.globalPoolContainer, 1220, 100);
 
         // Add mask for scrolling areas
-        this.createMasks();
+        this.createScrollingMasks();
 
         // add save/load deck buttons
-        this.createButtons()
+        this.createDeckButtons()
+
+        this.createBackButton()
+    }
+
+    createBackButton() {
+        const backButton = this.add.text(1730, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.scene.stop('DeckBuilderScene');
+                this.scene.start('MenuScene');
+            })
+            .on('pointerover', () => {
+                backButton.setStroke(buttonOverStroke.colour, buttonOverStroke.thickness);
+                backButton.setStyle(buttonOverStyle);
+            })
+            .on('pointerout', () => {
+                backButton.setStroke(buttonOutStroke.colour, buttonOutStroke.thickness);
+                backButton.setStyle(buttonOutStyle);
+            })
+            .on('pointerup', () => {
+                backButton.setStroke(buttonUpStroke.colour, buttonUpStroke.thickness);
+                backButton.setStyle(buttonUpStyle);
+            });
     }
 
     createDeckRectangles() {
@@ -103,7 +107,6 @@ export class DeckBuilderScene extends Phaser.Scene {
             }
         });
     }
-    
 
     displayDeck(cards: Card[], _label: string, container: Phaser.GameObjects.Container, _x: number, _y: number) {
         // Loop through all slots for the deck
@@ -146,7 +149,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         }
     }
     
-    createButtons() {
+    createDeckButtons() {
         this.loadDeckButtonRect = this.add.rectangle(550,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
         this.saveDeckButtonRect = this.add.rectangle(690,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
 
@@ -168,12 +171,26 @@ export class DeckBuilderScene extends Phaser.Scene {
 
         this.saveDeckButtonRect.on('pointerup', () => {
             this.saveDeckButtonRect.setFillStyle(0x000000)
-
         });
 
         this.loadDeckButtonRect.on('pointerup', () => {
-            this.loadDeckButtonRect.setFillStyle(0x000000);
+            this.loadDeckButtonRect.setFillStyle(0x000000)
+        });
 
+        this.saveDeckButtonRect.on('pointerover', () => {
+            this.saveDeckButtonRect.setFillStyle(0x7fffb2)
+        });
+
+        this.loadDeckButtonRect.on('pointerover', () => {
+            this.loadDeckButtonRect.setFillStyle(0x7fffb2)
+        });
+
+        this.saveDeckButtonRect.on('pointerout', () => {
+            this.saveDeckButtonRect.setFillStyle(0x000000)
+        });
+
+        this.loadDeckButtonRect.on('pointerout', () => {
+            this.loadDeckButtonRect.setFillStyle(0x000000)
         });
 
     }
@@ -259,8 +276,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         input.click(); 
     }
     
-    
-
     handleCardClick(card: Card, isMyDeck: boolean) {
         if (isMyDeck) {
             // Remove card from 'My Deck'
@@ -283,7 +298,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.scene.restart();
     }
 
-    createMasks() {
+    createScrollingMasks() {
         // Create mask for "My Deck"
         this.myDeckMask = this.add.graphics();
         this.myDeckMask.fillRect(320, 100, 600, 800);
