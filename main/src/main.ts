@@ -17,6 +17,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false
         }
     },
+    autoCenter: 1,
     scene: [MenuScene, DeckBuilderScene, MapScene]
 };
 

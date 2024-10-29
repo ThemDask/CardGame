@@ -137,9 +137,4 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         }
     }
 
-    // TODO
-    createRectanglesAndText() {
-
-    }
-
 }

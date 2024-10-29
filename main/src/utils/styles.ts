@@ -3,7 +3,7 @@
 
 
 //------------------------BOARD HEXES------------------------//
-const hexLand = '';
+const hexLand = 0xffffff;
 const hexLandHover = '';
 
 const hexSea = '';

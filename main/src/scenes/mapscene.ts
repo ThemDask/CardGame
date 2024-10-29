@@ -14,7 +14,7 @@ export class MapScene extends Phaser.Scene {
 
     constructor() {
         super({ key: 'MapScene' });
-        this.hexRadius = 55;  // Adjust this for hex size
+        this.hexRadius = 55;  
         this.hexMap = [];
         
     }
@@ -23,29 +23,34 @@ export class MapScene extends Phaser.Scene {
     }
 
     create() {
- 
+
          // Create a container that will take up the space from 300px to the right edge
-         const containerWidth = this.game.config.width as number - 300;  // Exclude 300px for the CardDetailsPanel
+         const containerWidth = this.game.config.width as number - 300;  
          const containerHeight = this.game.config.height as number;
  
-         this.mapContainer = this.add.container(this.containerX, 0);  // Create container at (300, 0)
-         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
-        // Create the CardDetailsPanel (already reserved the left 300px for it)
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, containerHeight); // Adjust height if needed
+        // ??? TODO fix
+        this.mapContainer = this.add.container(300, 0);  
+        this.mapContainer.setSize(this.containerWidth, this.containerHeight);
+
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, containerHeight); 
         this.add.existing(this.cardDetailsPanel);
+        this.cardDetailsPanel.updatePanel(null)
 
-        // Add the map container in the remaining space
-        this.mapContainer = this.add.container(300, 0);  // Positioned after the CardDetailsPanel
 
-        // Generate the hexagonal map within the map container
         this.generateHexMap(containerWidth, containerHeight);
-        console.log('Hex map created and event listeners should be set.');
+
+        // TODO update card details panel
+        // cardImage.on('pointerover', () => {
+        //     this.cardDetailsPanel.updatePanel(card);
+        // });
+
+        // cardImage.on('pointerout', () => {
+        //     this.cardDetailsPanel.updatePanel(null);
+        // });
     }
 
-    
 
     update() {
-        this.cardDetailsPanel.updatePanel(null)
     }
 
 
@@ -103,10 +108,4 @@ export class MapScene extends Phaser.Scene {
         }
     }
     
-    
-    
-
-    updateHexes() {
-        // TODO
-    }
 }

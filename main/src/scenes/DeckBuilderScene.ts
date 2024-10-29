@@ -34,6 +34,27 @@ export class DeckBuilderScene extends Phaser.Scene {
 
     create() {
 
+        // add Back button
+        // TODO add Global Styles
+        const backButton = this.add.text(1750, 960, 'Back', { font: '32px Arial', color: '#ffffff' })
+            .setInteractive()
+            .on('pointerdown', () => {
+                this.scene.stop('DeckBuilderScene');
+                this.scene.start('MenuScene');
+            })
+            .on('pointerover', () => {
+                backButton.setStroke('#0000ff', 2); // Blue border on hover
+                backButton.setStyle({ fontSize: '32px', color: '#0000ff' }); // Change text color on hover
+            })
+            .on('pointerout', () => {
+                backButton.setStroke('#ffffff', 1); // White border when not hovering
+                backButton.setStyle({ fontSize: '32px', color: '#ffffff' }); // Revert text color
+            })
+            .on('pointerup', () => {
+                backButton.setStroke('#0000ff', 2); // Blue border on release
+                backButton.setStyle({ fontSize: '32px', color: '#0000ff' }); // Revert text color
+            });
+
         this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); 
         this.cardDetailsPanel.updatePanel(null);
 
@@ -51,30 +72,44 @@ export class DeckBuilderScene extends Phaser.Scene {
         // Add mask for scrolling areas
         this.createMasks();
 
-        // Input for deck scrolling
-        this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
-            this.handleScroll(dy);
-        });
-
         // add save/load deck buttons
         this.createButtons()
-
     }
 
     createDeckRectangles() {
-        // Left side rectangle for my deck
-        this.add.rectangle(320, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
-        // Right side rectangle for global pool
-        this.add.rectangle(1220, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
-
+        const myDeckRect = this.add.rectangle(320, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
+        myDeckRect.setInteractive();
+        const globalPoolRect = this.add.rectangle(1220, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
+        globalPoolRect.setInteractive();
+    
         this.add.text(320, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
         this.add.text(1220, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
+    
+        // Input for deck scrolling
+        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+            let selectedDeck = null;
+    
+            //check if cursor is within myDeck or globalPool rectangles 
+            if (pointer.x >= myDeckRect.x && pointer.x <= myDeckRect.x + myDeckRect.width &&
+                pointer.y >= myDeckRect.y && pointer.y <= myDeckRect.y + myDeckRect.height) {
+                selectedDeck = 'myDeckContainer';
+            } else if (pointer.x >= globalPoolRect.x && pointer.x <= globalPoolRect.x + globalPoolRect.width &&
+                       pointer.y >= globalPoolRect.y && pointer.y <= globalPoolRect.y + globalPoolRect.height) {
+                selectedDeck = 'globalPoolContainer';
+            }
+    
+            if (selectedDeck) {
+                this.handleScroll(dy, selectedDeck);
+            }
+        });
     }
+    
 
     displayDeck(cards: Card[], _label: string, container: Phaser.GameObjects.Container, _x: number, _y: number) {
         // Loop through all slots for the deck
         for (let i = 0; i < 100; i++) {
-            const slotX = (i % 5) * 110; // Adjusted to be relative to the container
+ 
+            const slotX = (i % 5) * 110; // Adjusted to be relative to the container// ??? Can't this be done better ? TODO Fix
             const slotY = Math.floor(i / 5) * 140;
     
             // Draw empty slot background (if no card)
@@ -89,7 +124,7 @@ export class DeckBuilderScene extends Phaser.Scene {
                 const boundingBox = new Phaser.Geom.Rectangle(slotX, slotY, 100, 120);
                 resizeAndCenterImage(cardImage, boundingBox);
     
-                container.add(cardImage); // Add card image to the container
+                container.add(cardImage); 
     
                 cardImage.setInteractive();
                 cardImage.on('pointerdown', () => {
@@ -98,9 +133,8 @@ export class DeckBuilderScene extends Phaser.Scene {
     
                 // Display card gold value
                 const goldText = this.add.text(slotX + 10, slotY + 10, `${card.cost}`, { font: '18px Arial', color: '#000' });
-                container.add(goldText); // Add gold text to the container
+                container.add(goldText); 
     
-                // Add interactivity for showing card details
                 cardImage.on('pointerover', () => {
                     this.cardDetailsPanel.updatePanel(card);
                 });
@@ -146,8 +180,8 @@ export class DeckBuilderScene extends Phaser.Scene {
 
     saveDeck() {
         console.log("saved");
-        const deckIds = this.myDeck.map(card => card.id); // Get all current card IDs
-        const jsonData = JSON.stringify(deckIds, null, 2); // Convert to JSON
+        const deckIds = this.myDeck.map(card => card.id); 
+        const jsonData = JSON.stringify(deckIds, null, 2); 
     
         const blob = new Blob([jsonData], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -162,7 +196,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         URL.revokeObjectURL(url);
     }
 
-    // TODO add try-catch for wrong input
     async loadDeck() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -183,14 +216,12 @@ export class DeckBuilderScene extends Phaser.Scene {
                 }
     
                 try {
-                    // Parse the loaded IDs (expecting an array of strings)
                     const loadedIds: string[] = JSON.parse(contents);
     
-                    // Clear the current deck and reset available gold
+                    // reset gold and deck
                     this.myDeck = [];
-                    this.gold = 100; // Reset gold to 100
+                    this.gold = 100; 
     
-                    // Map loaded IDs to card details
                     loadedIds.forEach(id => {
                         const originalCard = cardData.find((card: any) => card.id === id);
                         if (originalCard) {
@@ -198,61 +229,37 @@ export class DeckBuilderScene extends Phaser.Scene {
                                 originalCard.id,
                                 originalCard.type,
                                 originalCard.name,
-                                originalCard.movement ?? 0,  // Provide a default value if undefined
-                                originalCard.damage ?? 0,     // Provide a default value if undefined
-                                originalCard.ranged_damage ?? 0, // Provide a default value if undefined
-                                originalCard.range ?? 0,       // Provide a default value if undefined
-                                originalCard.hp ?? 0,          // Provide a default value if undefined
-                                originalCard.cost ?? 0,        // Provide a default value if undefined
-                                originalCard.description ?? "", // Provide a default value if undefined
+                                originalCard.movement ?? 0,  
+                                originalCard.damage ?? 0,     
+                                originalCard.ranged_damage ?? 0, 
+                                originalCard.range ?? 0,       
+                                originalCard.hp ?? 0,          
+                                originalCard.cost ?? 0,        
+                                originalCard.description ?? "",
                                 originalCard.imagePath,
-                                originalCard.keywords || []     // Provide a default empty array if undefined
+                                originalCard.keywords || []
                             );
                             this.myDeck.push(card);
-                            this.gold -= card.cost; // Deduct card cost from available gold
+                            this.gold -= card.cost; 
                         } else {
                             console.warn(`Card with ID ${id} not found in card data.`);
                         }
                     });
 
-                    
-                    this.updateDeckDisplay(); // Implement this function to render 'myDeck'
-                    this.updateGoldDisplay();  // Implement this function to update available gold
-    
-                    // Log the loaded deck and remaining gold
-                    console.log("Loaded deck:", this.myDeck);
-                    console.log("Available Gold:", this.gold);
+                    this.scene.restart();
+
                 } catch (error) {
                     console.error("Error processing loaded deck:", error);
                 }
             };
     
-            reader.readAsText(file); // Read the selected file
+            reader.readAsText(file); 
         });
     
-        input.click(); // Open file dialog
+        input.click(); 
     }
     
     
-    updateDeckDisplay() {
-        const deckContainer = document.getElementById('myDeckContainer'); // Assuming you have a container for displaying your deck
-        if (deckContainer) {
-            deckContainer.innerHTML = ''; // Clear previous content
-            this.myDeck.forEach(card => {
-                const cardElement = document.createElement('div');
-                cardElement.className = 'card'; // Add appropriate classes/styles
-                cardElement.textContent = `${card.name} (Cost: ${card.cost})`; // Display card name and cost
-                deckContainer.appendChild(cardElement); // Append to the deck container
-            });
-        }
-    }
-
-    updateGoldDisplay() {
-        const goldDisplay = document.getElementById('goldDisplay'); // Assuming you have an element to show available gold
-        if (goldDisplay) {
-            goldDisplay.textContent = `Available Gold: ${this.gold}`; // Update the displayed gold value
-        }
-    }
 
     handleCardClick(card: Card, isMyDeck: boolean) {
         if (isMyDeck) {
@@ -260,8 +267,8 @@ export class DeckBuilderScene extends Phaser.Scene {
             const index = this.myDeck.indexOf(card);
             if (index > -1) {
                 this.myDeck.splice(index, 1);
-                this.globalPool.push(card); // Return card to the global pool
-                this.gold += card.cost; // Refund gold
+                this.globalPool.push(card); 
+                this.gold += card.cost; 
             }
         } else { 
             // Add card to 'My Deck' if there's enough gold and space
@@ -288,16 +295,23 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.globalPoolContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.globalPoolMask));
     }
 
-    handleScroll(dy: number) {
+    handleScroll(dy: number, deck: string) {
         const scrollSpeed = 1; 
-        this.myDeckContainer.y -= dy * scrollSpeed;
-        this.globalPoolContainer.y -= dy * scrollSpeed;
-
-        // Optional: Add boundary conditions for scrolling
-        const myDeckMinY = 100;
-        const globalPoolMinY = 100;
-        if (this.myDeckContainer.y > myDeckMinY) this.myDeckContainer.y = myDeckMinY;
-        if (this.globalPoolContainer.y > globalPoolMinY) this.globalPoolContainer.y = globalPoolMinY;
+    
+        if (deck === 'myDeckContainer') {
+            this.myDeckContainer.y -= dy * scrollSpeed;
+            const myDeckMinY = 100;
+            if (this.myDeckContainer.y > myDeckMinY) {
+                this.myDeckContainer.y = myDeckMinY;
+            }
+        } else if (deck === 'globalPoolContainer') {
+            this.globalPoolContainer.y -= dy * scrollSpeed;
+            const globalPoolMinY = 100;
+            if (this.globalPoolContainer.y > globalPoolMinY) {
+                this.globalPoolContainer.y = globalPoolMinY;
+            }
+        }
     }
+    
 
 }
