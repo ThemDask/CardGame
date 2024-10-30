@@ -36,19 +36,19 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     create() {
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, this.cameras.main.height); 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 350, this.cameras.main.height); 
         this.cardDetailsPanel.updatePanel(null);
 
         this.createDeckRectangles();
 
-        this.add.text(1000, 50, `Gold: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
+        this.add.text(1100, 50, `🪙: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
-
-        this.myDeckContainer = this.add.container(320, 100);
-        this.globalPoolContainer = this.add.container(1220, 100);
-
-        this.displayDeck(this.myDeck, 'My Deck', this.myDeckContainer, 320, 100); 
-        this.displayDeck(this.globalPool, 'Global Pool', this.globalPoolContainer, 1220, 100);
+        this.myDeckContainer = this.add.container(510, 105);
+        this.globalPoolContainer = this.add.container(1310, 105);
+        
+        // Display decks within containers
+        this.displayDeck(this.myDeck, this.myDeckContainer); 
+        this.displayDeck(this.globalPool, this.globalPoolContainer);
 
         // Add mask for scrolling areas
         this.createScrollingMasks();
@@ -60,7 +60,7 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createBackButton() {
-        const backButton = this.add.text(1730, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+        const backButton = this.add.text(1800, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
             .setInteractive()
             .on('pointerdown', () => {
                 this.scene.stop('DeckBuilderScene');
@@ -81,19 +81,18 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createDeckRectangles() {
-        const myDeckRect = this.add.rectangle(320, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
-        myDeckRect.setInteractive();
-        const globalPoolRect = this.add.rectangle(1220, 100, 600, 800).setStrokeStyle(5, 0xffffff).setOrigin(0);
-        globalPoolRect.setInteractive();
+        // Draw boundary rectangles for visual feedback
+        const myDeckRect = this.add.rectangle(500, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
+        const globalPoolRect = this.add.rectangle(1300, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
     
-        this.add.text(320, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
-        this.add.text(1220, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
+        // Labels to indicate which container is which
+        this.add.text(500, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
+        this.add.text(1300, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
     
-        // Input for deck scrolling
+        // Input handling for scroll
         this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
             let selectedDeck = null;
     
-            //check if cursor is within myDeck or globalPool rectangles 
             if (pointer.x >= myDeckRect.x && pointer.x <= myDeckRect.x + myDeckRect.width &&
                 pointer.y >= myDeckRect.y && pointer.y <= myDeckRect.y + myDeckRect.height) {
                 selectedDeck = 'myDeckContainer';
@@ -106,32 +105,36 @@ export class DeckBuilderScene extends Phaser.Scene {
                 this.handleScroll(dy, selectedDeck);
             }
         });
-    }
+    }    
 
-    displayDeck(cards: Card[], _label: string, container: Phaser.GameObjects.Container, _x: number, _y: number) {
-        // Loop through all slots for the deck
+    displayDeck(cards: Card[], container: Phaser.GameObjects.Container) {
+        const slotWidth = 100;
+        const slotHeight = 120;
+        const marginX = 10;
+        const marginY = 20;
+        const slotsPerRow = 5;
+    
         for (let i = 0; i < 100; i++) {
- 
-            const slotX = (i % 5) * 110; // Adjusted to be relative to the container// ??? Can't this be done better ? TODO Fix
-            const slotY = Math.floor(i / 5) * 140;
+            const row = Math.floor(i / slotsPerRow);
+            const col = i % slotsPerRow;
     
-            // Draw empty slot background (if no card)
-            const slotBackground = this.add.rectangle(slotX, slotY, 100, 120).setStrokeStyle(2, 0xffffff).setOrigin(0);
-            container.add(slotBackground); // Add slot background to the container
+            const slotX = col * (slotWidth + marginX);
+            const slotY = row * (slotHeight + marginY);
     
+            // Slot background
+            const slotBackground = this.add.rectangle(slotX, slotY, slotWidth, slotHeight).setStrokeStyle(2, 0xffffff).setOrigin(0);
+            container.add(slotBackground);
+    
+            // Add card image if within deck limit
             if (i < cards.length) {
                 const card = cards[i];
-                const cardImage = this.add.image(slotX + 50, slotY + 60, card.imagePath).setDisplaySize(100, 120);
+                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, card.imagePath).setDisplaySize(slotWidth, slotHeight);
+                container.add(cardImage);
     
-                // Resize and center the card image within the slot
-                const boundingBox = new Phaser.Geom.Rectangle(slotX, slotY, 100, 120);
-                resizeAndCenterImage(cardImage, boundingBox);
-    
-                container.add(cardImage); 
-    
+                // Enable card interaction
                 cardImage.setInteractive();
                 cardImage.on('pointerdown', () => {
-                    this.handleCardClick(card, container === this.myDeckContainer); // Detect if it's 'My Deck'
+                    this.handleCardClick(card, container === this.myDeckContainer);
                 });
     
                 // Display card gold value
@@ -301,14 +304,15 @@ export class DeckBuilderScene extends Phaser.Scene {
     createScrollingMasks() {
         // Create mask for "My Deck"
         this.myDeckMask = this.add.graphics();
-        this.myDeckMask.fillRect(320, 100, 600, 800);
+        this.myDeckMask.fillRect(this.myDeckContainer.x, this.myDeckContainer.y, 600, 800);
         this.myDeckContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.myDeckMask));
-
+    
         // Create mask for "Global Pool"
         this.globalPoolMask = this.add.graphics();
-        this.globalPoolMask.fillRect(1220, 100, 600, 800);
+        this.globalPoolMask.fillRect(this.globalPoolContainer.x, this.globalPoolContainer.y, 600, 800);
         this.globalPoolContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.globalPoolMask));
     }
+    
 
     handleScroll(dy: number, deck: string) {
         const scrollSpeed = 1; 

@@ -17,7 +17,10 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false
         }
     },
-    autoCenter: 1,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        // autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     scene: [MenuScene, DeckBuilderScene, MapScene]
 };
 

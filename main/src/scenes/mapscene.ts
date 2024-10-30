@@ -23,16 +23,14 @@ export class MapScene extends Phaser.Scene {
     }
 
     create() {
-
-         // Create a container that will take up the space from 300px to the right edge
-         const containerWidth = this.game.config.width as number - 300;  
+         const containerWidth = this.game.config.width as number;  
          const containerHeight = this.game.config.height as number;
  
         // ??? TODO fix
-        this.mapContainer = this.add.container(300, 0);  
+        this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
 
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 300, containerHeight); 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 350, containerHeight); 
         this.add.existing(this.cardDetailsPanel);
         this.cardDetailsPanel.updatePanel(null)
 

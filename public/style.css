@@ -13,3 +13,9 @@ body {
     justify-content: center;
     align-items: center;
 }
+
+#game-container {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+}

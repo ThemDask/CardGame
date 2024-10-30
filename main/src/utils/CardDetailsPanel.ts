@@ -20,42 +20,39 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene, x, y);
-        const TEXT_SPACING = 15; // Space between each row of text
-        const TEXT_X_OFFSET = 15; // X offset for text
+        const TEXT_SPACING = 20;
+        const TEXT_X_OFFSET = 15; 
 
         // Background rectangle for the panel
         this.background = scene.add.rectangle(x, y, width, height, 0x000000).setOrigin(0);
         this.add(this.background);
 
         // Card image display area
-        const imageRectWidth = width; // Set width to full width
-        const imageRectHeight = height * 0.4; // Adjust height based on desired proportion (60% for example)
+        const imageRectWidth = width; 
+        const imageRectHeight = height * 0.4; // aspect ratio
         this.imageRect = scene.add.rectangle(x + 0, y + 0, imageRectWidth, imageRectHeight)
             .setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.add(this.imageRect);
 
         // Card image
         this.cardImage = scene.add.image(this.imageRect.getCenter().x, this.imageRect.getCenter().y, '')
-            .setDisplaySize(imageRectWidth, imageRectHeight) // Fill the rectangle completely
+            .setDisplaySize(imageRectWidth, imageRectHeight) 
             .setOrigin(0.5, 0.5); // Center the image within the rectangle
         this.add(this.cardImage);
 
-        // Card name and cost positioned on top of the image
-        this.cardNameText = scene.add.text(x + 10, y + 10, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 0);
-        this.costText = scene.add.text(x + width - 10, y + 10, '', { font: '18px Arial', color: '#000' }).setOrigin(1, 0);
+        // Card name and cost
+        this.cardNameText = scene.add.text(x + 7, y + 7, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 0);
+        this.costText = scene.add.text(x + width - 7, y + 7, '', { font: '18px Arial', color: '#000' }).setOrigin(1, 0);
 
-
-        // Attribute texts at the bottom of the card image
+        // First row of attribute texts at the bottom of the card image
         const attrY = y + imageRectHeight - TEXT_SPACING;
-
-        // Attribute texts at the bottom of the card image
         this.movementText = scene.add.text(TEXT_X_OFFSET, attrY, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
         this.damageText = scene.add.text(TEXT_X_OFFSET + imageRectWidth / 3, attrY, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
         this.hpText = scene.add.text(TEXT_X_OFFSET + (2 * imageRectWidth) / 3, attrY, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
 
-        // Next row of texts
+        // Second row of texts
         this.rangedDamageText = scene.add.text(TEXT_X_OFFSET, attrY + TEXT_SPACING, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
-        this.rangeText = scene.add.text(TEXT_X_OFFSET + (2 * imageRectWidth) / 3, attrY + TEXT_SPACING, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
+        this.rangeText = scene.add.text(TEXT_X_OFFSET + (1.5 * imageRectWidth) / 3, attrY + TEXT_SPACING, '', { font: '18px Arial', color: '#000' }).setOrigin(0, 1);
 
         // Description and keywords rectangles positioned below the image area
         this.descriptionRect = scene.add.rectangle(x , y + imageRectHeight + 20, imageRectWidth, 100)
@@ -63,7 +60,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             .setOrigin(0);
         this.add(this.descriptionRect);
 
-        this.descriptionText = scene.add.text(x + 15, y + imageRectHeight + 30, '', {
+        this.descriptionText = scene.add.text(x + 10, y + imageRectHeight + 30, '', {
             font: '16px Arial',
             color: '#fff',
             wordWrap: { width: imageRectWidth - 10 }
@@ -75,7 +72,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             .setOrigin(0);
         this.add(this.keywordsRect);
 
-        this.keywordsText = scene.add.text(x + 15, y + imageRectHeight + 140, '', {
+        this.keywordsText = scene.add.text(x + 10, y + imageRectHeight + 140, '', {
             font: '16px Arial',
             color: '#fff',
             wordWrap: { width: imageRectWidth - 10 }
@@ -126,7 +123,6 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
                 this.imageRect.height
             );
 
-            // Resize and center placeholder image
             resizeAndCenterImage(this.cardImage, boundingBox);
 
             this.movementText.setText('Move: 0');
