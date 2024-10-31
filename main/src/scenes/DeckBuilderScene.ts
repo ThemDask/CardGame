@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { Card } from '../entities/Card'; 
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
-import { resizeAndCenterImage } from '../utils/helpers/resizeAndCenterImage';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
 import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
@@ -30,12 +29,16 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('Goblin', '/assets/crossbow.png'); 
         this.load.image('archer', '/assets/archer.png'); 
-        this.load.image('banner', '/assets/banner.png'); 
+        this.load.image('damage', '/assets/damage.png'); 
+        this.load.image('health', '/assets/hp.png'); 
+        this.load.image('movement', '/assets/movement.png'); 
+        this.load.image('range', '/assets/range.png'); 
+        this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
     }
 
     create() {
+        this.add.image(400,110, 'health');
         this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 350, this.cameras.main.height); 
         this.cardDetailsPanel.updatePanel(null);
 
@@ -60,7 +63,7 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createBackButton() {
-        const backButton = this.add.text(1800, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+        const backButton = this.add.text(1770, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
             .setInteractive()
             .on('pointerdown', () => {
                 this.scene.stop('DeckBuilderScene');
@@ -81,11 +84,9 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createDeckRectangles() {
-        // Draw boundary rectangles for visual feedback
         const myDeckRect = this.add.rectangle(500, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
         const globalPoolRect = this.add.rectangle(1300, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
-    
-        // Labels to indicate which container is which
+
         this.add.text(500, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
         this.add.text(1300, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
     
@@ -121,7 +122,6 @@ export class DeckBuilderScene extends Phaser.Scene {
             const slotX = col * (slotWidth + marginX);
             const slotY = row * (slotHeight + marginY);
     
-            // Slot background
             const slotBackground = this.add.rectangle(slotX, slotY, slotWidth, slotHeight).setStrokeStyle(2, 0xffffff).setOrigin(0);
             container.add(slotBackground);
     
@@ -228,8 +228,7 @@ export class DeckBuilderScene extends Phaser.Scene {
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const contents = e.target?.result as string;
-    
-                // Ensure we have contents to parse
+
                 if (!contents) {
                     console.error("Loaded file is empty");
                     return;
@@ -237,7 +236,6 @@ export class DeckBuilderScene extends Phaser.Scene {
     
                 try {
                     const loadedIds: string[] = JSON.parse(contents);
-    
                     // reset gold and deck
                     this.myDeck = [];
                     this.gold = 100; 
@@ -265,17 +263,13 @@ export class DeckBuilderScene extends Phaser.Scene {
                             console.warn(`Card with ID ${id} not found in card data.`);
                         }
                     });
-
                     this.scene.restart();
-
                 } catch (error) {
                     console.error("Error processing loaded deck:", error);
                 }
             };
-    
             reader.readAsText(file); 
         });
-    
         input.click(); 
     }
     
@@ -302,12 +296,10 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createScrollingMasks() {
-        // Create mask for "My Deck"
         this.myDeckMask = this.add.graphics();
         this.myDeckMask.fillRect(this.myDeckContainer.x, this.myDeckContainer.y, 600, 800);
         this.myDeckContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.myDeckMask));
-    
-        // Create mask for "Global Pool"
+
         this.globalPoolMask = this.add.graphics();
         this.globalPoolMask.fillRect(this.globalPoolContainer.x, this.globalPoolContainer.y, 600, 800);
         this.globalPoolContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.globalPoolMask));
