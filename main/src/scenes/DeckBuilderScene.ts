@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Card } from '../entities/Card'; 
+import { Card } from '../entities/Card';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';

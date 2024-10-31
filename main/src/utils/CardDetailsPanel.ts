@@ -1,5 +1,7 @@
 import { Card } from "../entities/Card";
 import { resizeAndCenterImage } from "../utils/helpers/resizeAndCenterImage";
+import { KeywordDirectory } from "./keywordDirectory";
+import { KeywordsModal } from "./keywordsModal";
 
 export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private background: Phaser.GameObjects.Rectangle;
@@ -21,7 +23,8 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private descriptionRect: Phaser.GameObjects.Rectangle;
     private keywordsText: Phaser.GameObjects.Text;
     private keywordsRect: Phaser.GameObjects.Rectangle;
-
+    private keywordsModal: KeywordsModal;
+    
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene, x, y);
         const TEXT_SPACING = 35;
@@ -97,6 +100,10 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         }).setOrigin(0);
         this.add(this.keywordsText);
 
+        //keywords modal setup
+        this.keywordsModal = new KeywordsModal(scene);
+        this.setupKeywordsInteraction();
+
         // Add all elements to the container
         this.add([this.cardNameText, this.costText, this.movementIcon, this.movementText, this.damageIcon, this.damageText, this.hpIcon, this.hpText, this.rangedDamageIcon, this.rangedDamageText, this.rangeIcon, this.rangeText, this.descriptionText, this.keywordsText]);
 
@@ -147,5 +154,41 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             this.descriptionText.setText('-');
             this.keywordsText.setText('-');
         }
+    }
+
+    private setupKeywordsInteraction() {
+        // Add click event listener to keywordsText
+        this.keywordsText.setInteractive();
+        this.keywordsText.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            const clickedKeyword = this.getClickedKeyword(pointer);
+            if (clickedKeyword) {
+                const explanation = KeywordDirectory[clickedKeyword];
+                this.keywordsModal.openModal(clickedKeyword, explanation);
+            }
+        });
+    }
+
+    private getClickedKeyword(pointer: Phaser.Input.Pointer): string | null {
+        const text = this.keywordsText.text.split(', ');
+        const keywordWidths: number[] = [];
+
+        // Calculate widths of each keyword
+        for (const keyword of text) {
+            const tempText = this.keywordsText.scene.add.text(0, 0, keyword, this.keywordsText.style);
+            keywordWidths.push(tempText.getBounds().width);
+            tempText.destroy(); // Clean up temporary text object
+        }
+
+        // Determine if a keyword was clicked based on pointer position
+        let currentX = this.keywordsText.x;
+        for (let i = 0; i < text.length; i++) {
+            const keywordWidth = keywordWidths[i];
+            if (pointer.x >= currentX && pointer.x <= currentX + keywordWidth &&
+                pointer.y >= this.keywordsText.y && pointer.y <= this.keywordsText.y + this.keywordsText.getBounds().height) {
+                return text[i];
+            }
+            currentX += keywordWidth; // Move to the next keyword's starting position
+        }
+        return null; // No keyword clicked
     }
 }
