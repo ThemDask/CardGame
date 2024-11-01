@@ -27,9 +27,9 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene, x, y);
-        const TEXT_SPACING = 35;
         const TEXT_X_OFFSET = 15;
-        const ICON_SIZE = 40; // Set an appropriate size for the icons
+        const ICON_SIZE = 60; // Set an appropriate size for the icons
+        const GAP_BETWEEN_ICONS = 30; // Space between each icon-text pair
 
         // Background rectangle for the panel
         this.background = scene.add.rectangle(x, y, width, height, 0x000000).setOrigin(0);
@@ -37,7 +37,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
 
         // Card image display area
         const imageRectWidth = width; 
-        const imageRectHeight = height * 0.4;
+        const imageRectHeight = width * 0.93;
         this.imageRect = scene.add.rectangle(x, y, imageRectWidth, imageRectHeight)
             .setStrokeStyle(2, 0xffffff).setOrigin(0);
         this.add(this.imageRect);
@@ -52,28 +52,45 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.cardNameText = scene.add.text(x + 7, y + 7, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 0);
         this.costText = scene.add.text(x + width - 7, y + 7, '', { font: '24px Arial', color: '#000' }).setOrigin(1, 0);
 
-        // Attribute icons and text
-        const attrY = y + imageRectHeight - TEXT_SPACING;
+        // Row position for icons and texts
+        const ROW_Y = y + imageRectHeight ; // Adjust as needed based on layout
+
+        // Position for each icon and text
+        let currentX = x + TEXT_X_OFFSET;
 
         // Movement icon and text
-        this.movementIcon = scene.add.image(TEXT_X_OFFSET, attrY, 'movement').setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
-        this.movementText = scene.add.text(TEXT_X_OFFSET + ICON_SIZE + 5, attrY-5, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 1);
+        this.movementIcon = scene.add.image(currentX, ROW_Y, 'movement')
+            .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
+        this.movementText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '', 
+            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+        currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // Damage icon and text
-        this.damageIcon = scene.add.image(TEXT_X_OFFSET + imageRectWidth / 3, attrY, 'damage').setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
-        this.damageText = scene.add.text(TEXT_X_OFFSET + imageRectWidth / 3 + ICON_SIZE + 5, attrY-5, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 1);
+        this.damageIcon = scene.add.image(currentX, ROW_Y, 'damage')
+            .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
+        this.damageText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '', 
+            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+        currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // HP icon and text
-        this.hpIcon = scene.add.image(TEXT_X_OFFSET + (2 * imageRectWidth) / 3, attrY, 'health').setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
-        this.hpText = scene.add.text(TEXT_X_OFFSET + (2 * imageRectWidth) / 3 + ICON_SIZE + 5, attrY -5, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 1);
+        this.hpIcon = scene.add.image(currentX, ROW_Y, 'health')
+            .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
+        this.hpText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '', 
+            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+        currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // Ranged damage icon and text
-        this.rangedDamageIcon = scene.add.image(TEXT_X_OFFSET, attrY + TEXT_SPACING, 'ranged_dmg').setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
-        this.rangedDamageText = scene.add.text(TEXT_X_OFFSET + ICON_SIZE + 5, attrY + TEXT_SPACING -5, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 1);
+        this.rangedDamageIcon = scene.add.image(currentX, ROW_Y, 'ranged_dmg')
+            .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
+        this.rangedDamageText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '', 
+            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+        currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // Range icon and text
-        this.rangeIcon = scene.add.image(TEXT_X_OFFSET + (1.5 * imageRectWidth) / 3, attrY + TEXT_SPACING, 'range').setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
-        this.rangeText = scene.add.text(TEXT_X_OFFSET + (1.5 * imageRectWidth) / 3 + ICON_SIZE + 5, attrY + TEXT_SPACING -5, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 1);
+        this.rangeIcon = scene.add.image(currentX, ROW_Y, 'range')
+            .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
+        this.rangeText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '', 
+            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
 
         // Description and keywords rectangles positioned below the image area
         this.descriptionRect = scene.add.rectangle(x, y + imageRectHeight + 20, imageRectWidth, 100)

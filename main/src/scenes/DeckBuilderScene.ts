@@ -38,16 +38,15 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(400,110, 'health');
-        this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 350, this.cameras.main.height); 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 500, this.cameras.main.height); 
         this.cardDetailsPanel.updatePanel(null);
 
         this.createDeckRectangles();
 
-        this.add.text(1100, 50, `🪙: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
+        this.add.text(1200, 50, `🪙: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
-        this.myDeckContainer = this.add.container(510, 105);
-        this.globalPoolContainer = this.add.container(1310, 105);
+        this.myDeckContainer = this.add.container(610, 105);
+        this.globalPoolContainer = this.add.container(1360, 105);
         
         // Display decks within containers
         this.displayDeck(this.myDeck, this.myDeckContainer); 
@@ -84,11 +83,11 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     createDeckRectangles() {
-        const myDeckRect = this.add.rectangle(500, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
-        const globalPoolRect = this.add.rectangle(1300, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
+        const myDeckRect = this.add.rectangle(600, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
+        const globalPoolRect = this.add.rectangle(1350, 100, 560, 810).setStrokeStyle(5, 0xffffff).setOrigin(0);
 
-        this.add.text(500, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
-        this.add.text(1300, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
+        this.add.text(600, 50, 'My Deck', { font: '32px Arial', color: '#ffffff' });
+        this.add.text(1400, 50, 'Global Pool', { font: '32px Arial', color: '#ffffff' });
     
         // Input handling for scroll
         this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {

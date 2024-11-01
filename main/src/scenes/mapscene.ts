@@ -30,7 +30,7 @@ export class MapScene extends Phaser.Scene {
         this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
 
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 350, containerHeight); 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 500, containerHeight); 
         this.add.existing(this.cardDetailsPanel);
         this.cardDetailsPanel.updatePanel(null)
 
