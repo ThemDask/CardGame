@@ -3,6 +3,7 @@ import { Hex } from '../entities/Hex';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
+import { createBackButton } from '../utils/helpers/backButton';
 
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
@@ -46,6 +47,8 @@ export class MapScene extends Phaser.Scene {
     }
 
     create() {
+        // TODO create UIScene
+        // this.scene.launch('UIScene');
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
@@ -54,7 +57,7 @@ export class MapScene extends Phaser.Scene {
         this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
 
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 500, containerHeight); 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 450, 600); 
         this.add.existing(this.cardDetailsPanel);
         this.cardDetailsPanel.updatePanel(null)
 
@@ -63,6 +66,8 @@ export class MapScene extends Phaser.Scene {
 
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
+
+        createBackButton(this)
     }
 
 
@@ -94,15 +99,14 @@ export class MapScene extends Phaser.Scene {
     
             for (let col = 0; col < numberOfHexes; col++) {
                 const xPos = centerX + col * xOffset; // Adjust horizontal position for centering
-                
-                const hexType = this.hexMapConfig[row][col] as HexType; // Get the hex type from the config
     
+                const hexType = this.hexMapConfig[row][col] as HexType;
                 const tile = new Hex(this, xPos, yPos, this.hexRadius, hexType);
-    
                 tile.drawHex(hexTypes[hexType].default);
-                this.hexMap[row].push(tile); // Add the tile to the hexMap
+
+                this.hexMap[row].push(tile);
     
-                this.mapContainer.add(tile.hex); // Add the hex to the map container
+                this.mapContainer.add(tile.hex); 
             }
         }
     }

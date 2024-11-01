@@ -5,12 +5,14 @@ export class Player {
     deck: Card[];
     time: number;
     seconds: number;
+    availableGold: number;
   
-    constructor(name: string, deck: Card[], time: number = 300, seconds: number = 300) { // TODO remove time OR seconds
+    constructor(name: string, deck: Card[], time: number = 300, seconds: number = 300, availableGold: number = 100) { // TODO remove time OR seconds
       this.name = name;
       this.deck = deck;
       this.time = time; // 300 seconds timer
       this.seconds = seconds;
+      this.availableGold = availableGold;
     }
   
     // drawCard() {

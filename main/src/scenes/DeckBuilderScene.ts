@@ -3,8 +3,7 @@ import { Card } from '../entities/Card';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
-import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
-    buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
+import { createBackButton } from '../utils/helpers/backButton';
 
 
 export class DeckBuilderScene extends Phaser.Scene {
@@ -38,7 +37,7 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     create() {
-        this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 500, this.cameras.main.height); 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 500, 700); 
         this.cardDetailsPanel.updatePanel(null);
 
         this.createDeckRectangles();
@@ -58,28 +57,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         // add save/load deck buttons
         this.createDeckButtons()
 
-        this.createBackButton()
-    }
-
-    createBackButton() {
-        const backButton = this.add.text(1770, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
-            .setInteractive()
-            .on('pointerdown', () => {
-                this.scene.stop('DeckBuilderScene');
-                this.scene.start('MenuScene');
-            })
-            .on('pointerover', () => {
-                backButton.setStroke(buttonOverStroke.colour, buttonOverStroke.thickness);
-                backButton.setStyle(buttonOverStyle);
-            })
-            .on('pointerout', () => {
-                backButton.setStroke(buttonOutStroke.colour, buttonOutStroke.thickness);
-                backButton.setStyle(buttonOutStyle);
-            })
-            .on('pointerup', () => {
-                backButton.setStroke(buttonUpStroke.colour, buttonUpStroke.thickness);
-                backButton.setStyle(buttonUpStyle);
-            });
+        createBackButton(this)
     }
 
     createDeckRectangles() {
@@ -304,7 +282,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.globalPoolContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.globalPoolMask));
     }
     
-
     handleScroll(dy: number, deck: string) {
         const scrollSpeed = 1; 
     
@@ -323,5 +300,4 @@ export class DeckBuilderScene extends Phaser.Scene {
         }
     }
     
-
 }
