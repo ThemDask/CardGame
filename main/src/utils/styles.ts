@@ -3,17 +3,60 @@
 
 
 //------------------------BOARD HEXES------------------------//
-export const hexLand = 0xffffff;
-export const hexLandHover = '';
+export const hexColors = {
+    land: 0x7fffb2,
+    landDeploy: 0x5bc485,
+    landHover: 0xbbf2d0,
 
-export const hexSea = '';
-export const hexSeaHover = '';
+    water: 0x5494ff,
+    waterDeploy: 0x3e72c8,
+    waterHover: 0x8ab6ff,
 
-export const hexObjective = '';
-export const hexMine = '';
+    objective: 0xff3e3e,
+    objectiveHover: 0xfa8c8c,
 
-export const hexHover = '';
-export const hexClick = '';
+    mine: 0xffe154,
+    mineHover: 0xffefa6,
+
+    click: 0xffffff,
+};
+
+// Define a union type for the valid hex types
+export type HexType = 'land' | 'water' | 'landDeploy' | 'waterDeploy' | 'objective' | 'mine';
+
+export const hexTypes: Record<HexType, { default: number; hover: number; click: number }> = {
+    land: {
+        default: hexColors.land,
+        hover: hexColors.landHover,
+        click: hexColors.click,
+    },
+    water: {
+        default: hexColors.water,
+        hover: hexColors.waterHover,
+        click: hexColors.click,
+    },
+    landDeploy: {
+        default: hexColors.landDeploy,
+        hover: hexColors.landHover,
+        click: hexColors.click,
+    },
+    waterDeploy: {
+        default: hexColors.waterDeploy,
+        hover: hexColors.waterHover,
+        click: hexColors.click,
+    },
+    objective: {
+        default: hexColors.objective,
+        hover: hexColors.objectiveHover,
+        click: hexColors.click,
+    },
+    mine: {
+        default: hexColors.mine,
+        hover: hexColors.mineHover,
+        click: hexColors.click,
+    }
+};
+
 
 //--------------------------FONTS----------------------------//
 

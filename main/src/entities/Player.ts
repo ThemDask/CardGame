@@ -1,17 +1,17 @@
-// import { Card } from "./Card";
+import { Card } from "./Card";
 
-class Player {
-    // name: string;
-    // deck: Card[];
-    // activeCards: Card[];
-    // time: number;
+export class Player {
+    name: string;
+    deck: Card[];
+    time: number;
+    seconds: number;
   
-    // constructor(name: string, deck: Card[], time: number = 1000) {
-    //   this.name = name;
-    //   this.deck = deck;
-    //   this.activeCards = [];
-    //   this.time = time;
-    // }
+    constructor(name: string, deck: Card[], time: number = 300, seconds: number = 300) { // TODO remove time OR seconds
+      this.name = name;
+      this.deck = deck;
+      this.time = time; // 300 seconds timer
+      this.seconds = seconds;
+    }
   
     // drawCard() {
 
@@ -24,5 +24,13 @@ class Player {
     // pass() {
 
     // }
+    countSeconds(count: boolean) {
+      if (count) {
+        this.seconds -= 1;
+      }
+      console.log(this.seconds)
+  }
+  
+ 
   }
   

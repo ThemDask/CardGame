@@ -1,7 +1,9 @@
+import { HexType, hexTypes } from "../utils/styles";
+
 export class Hex {
     occupied: boolean;
     occupiedBy: string | null;
-    type: string;
+    type: HexType;
     hex: Phaser.GameObjects.Graphics;
     hexRadius: number;
     defaultFillColor: number = 0x419627; // Default hex fill color
@@ -11,7 +13,7 @@ export class Hex {
         x: number,
         y: number,
         hexRadius: number,
-        type: string,
+        type: HexType,
         occupied: boolean = false,
         occupiedBy: string | null = null
     ) {
@@ -22,7 +24,7 @@ export class Hex {
 
         // Create the visual hex
         this.hex = scene.add.graphics({ x: x, y: y });
-        this.hex.lineStyle(2, 0xffffff, 1);
+        this.hex.lineStyle(2, 0x000000, 1);
         this.drawHex(this.defaultFillColor); // Default fill color
 
         // Define a hit area as a polygon that matches the hex shape 
@@ -63,7 +65,7 @@ export class Hex {
     drawHex(fillColor: number) {
         const angle = Phaser.Math.DegToRad(60);
         this.hex.clear(); // Clear previous drawings
-        this.hex.lineStyle(2, 0xffffff, 1); // Set the line color again (optional)
+        this.hex.lineStyle(2, 0x000000, 1); // Set the line color again (optional)
         this.hex.fillStyle(fillColor); // Apply the fill color
 
         // Draw the hexagon shape
@@ -81,15 +83,16 @@ export class Hex {
     }
 
     redraw(invocation: string) {
+        const hexColor = hexTypes[this.type]; // Access the hex type colors based on the current type
         if (invocation === 'hover') {
             console.log('Hovering redraw');
-            this.drawHex(0x00ff00); // Red for hover
+            this.drawHex(hexColor.hover); // Use hover color
         } else if (invocation === 'click') {
             console.log('Click redraw');
-            this.drawHex(0xffffff); // Yellow for click
+            this.drawHex(hexColor.click); // Use click color
         } else {
             console.log('Default redraw');
-            this.drawHex(this.defaultFillColor); // Default fill color
+            this.drawHex(hexColor.default); // Use default color
         }
     }
 }
