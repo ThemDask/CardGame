@@ -12,7 +12,7 @@ export class UIScene extends Phaser.Scene {
 
     create() {
         // TODO Fix
-        // createBackButton(this)
+        createBackButton(this)
 
         
         

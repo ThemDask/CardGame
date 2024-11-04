@@ -46,12 +46,12 @@ export class MapScene extends Phaser.Scene {
         this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
     }
 
-    create() {
-        // TODO create UIScene
-        // this.scene.launch('UIScene');
+    create() {        
+        this.scene.launch('UIScene');
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
+        // TODO later intialize player beforehand
         this.player = new Player("TestPlayer", [])
 
         this.mapContainer = this.add.container(300, 40);  
@@ -61,13 +61,12 @@ export class MapScene extends Phaser.Scene {
         this.add.existing(this.cardDetailsPanel);
         this.cardDetailsPanel.updatePanel(null)
 
-        setInterval(() => this.player.countSeconds(true), 1000)
+        setInterval(() => this.player.countSeconds(true), 1000/*ms*/)
         this.generateHexMap(containerWidth, containerHeight);
 
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
 
-        createBackButton(this)
     }
 
 

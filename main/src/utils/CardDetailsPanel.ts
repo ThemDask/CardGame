@@ -28,8 +28,8 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         super(scene, x, y);
         const TEXT_X_OFFSET = 15;
-        const ICON_SIZE = 60; // Set an appropriate size for the icons
-        const GAP_BETWEEN_ICONS = 30; // Space between each icon-text pair
+        const ICON_SIZE = 50;
+        const GAP_BETWEEN_ICONS = 50;
 
         // Background rectangle for the panel
         this.background = scene.add.rectangle(x, y, width, height, 0x000000).setOrigin(0);
@@ -127,7 +127,6 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         scene.add.existing(this);
     }
 
-    // Method to update panel details based on the selected card
     updatePanel(card: Card | null) {
         if (card) {
             this.cardNameText.setText(`${card.name}`);
