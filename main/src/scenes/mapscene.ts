@@ -4,6 +4,7 @@ import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
 import { createBackButton } from '../utils/helpers/backButton';
+import { GameStateManager } from '../state/GameStateManager';
 
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
@@ -47,12 +48,16 @@ export class MapScene extends Phaser.Scene {
     }
 
     create() {        
-        this.scene.launch('UIScene');
+
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
         // TODO later intialize player beforehand
-        this.player = new Player("TestPlayer", [])
+        // also create those for second player leter
+        this.player = new Player("Player 1", [], 300);
+        setInterval(() => this.player.countSeconds(true), 1000/*ms*/)
+        GameStateManager.getInstance().setPlayer1(this.player);
+        
 
         this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
@@ -61,11 +66,11 @@ export class MapScene extends Phaser.Scene {
         this.add.existing(this.cardDetailsPanel);
         this.cardDetailsPanel.updatePanel(null)
 
-        setInterval(() => this.player.countSeconds(true), 1000/*ms*/)
         this.generateHexMap(containerWidth, containerHeight);
 
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
+        this.scene.launch('UIScene');
 
     }
 
