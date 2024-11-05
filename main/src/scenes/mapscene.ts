@@ -3,7 +3,6 @@ import { Hex } from '../entities/Hex';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
-import { createBackButton } from '../utils/helpers/backButton';
 import { GameStateManager } from '../state/GameStateManager';
 
 export class MapScene extends Phaser.Scene {
@@ -14,7 +13,8 @@ export class MapScene extends Phaser.Scene {
     private containerX: number;
     private containerWidth: number;
     private containerHeight: number;
-    private player: Player;
+    private player1: Player;
+    private player2: Player;
     private hexMapConfig: Array<Array<HexType>>;
 
 
@@ -52,11 +52,15 @@ export class MapScene extends Phaser.Scene {
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
-        // TODO later intialize player beforehand
-        // also create those for second player leter
-        this.player = new Player("Player 1", [], 300);
-        setInterval(() => this.player.countSeconds(true), 1000/*ms*/)
-        GameStateManager.getInstance().setPlayer1(this.player);
+        // TODO later intialize players beforehand
+        this.player1 = new Player("Player 1", [], 300);
+        setInterval(() => this.player1.countSeconds(true), 1000/*ms*/)
+        GameStateManager.getInstance().setPlayer1(this.player1);
+
+        this.player2 = new Player("Player 2", [], 300);
+        // TODO start interval on player 2's turn
+        // setInterval(() => this.player2.countSeconds(true), 1000/*ms*/)
+        GameStateManager.getInstance().setPlayer2(this.player2);
         
 
         this.mapContainer = this.add.container(300, 40);  
