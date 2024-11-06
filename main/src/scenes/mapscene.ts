@@ -4,6 +4,7 @@ import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
+import { DeckDisplayModal } from '../utils/deckDisplayModal';
 
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
@@ -16,6 +17,9 @@ export class MapScene extends Phaser.Scene {
     private player1: Player;
     private player2: Player;
     private hexMapConfig: Array<Array<HexType>>;
+    private deckDisplay: DeckDisplayModal;
+    private modalOverlay: Phaser.GameObjects.Rectangle;
+    private modalButton: Phaser.GameObjects.Text;
 
 
     constructor() {
@@ -74,6 +78,11 @@ export class MapScene extends Phaser.Scene {
 
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
+
+        // TODO move to UIScene
+        // Initialize deck modal
+        
+        
         this.scene.launch('UIScene');
 
     }
