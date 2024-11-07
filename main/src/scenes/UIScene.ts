@@ -1,6 +1,6 @@
 import { createBackButton } from "../utils/helpers/backButton";
 import { GameStateManager } from "../state/GameStateManager";
-import { DeckDisplayModal } from "../utils/deckDisplayModal";
+import { DeckDisplayModal } from "../utils/DeckDisplayModal";
 // UIScene with Back Button
 export class UIScene extends Phaser.Scene {
     private player1Timer: Phaser.GameObjects.Text;
@@ -26,6 +26,8 @@ export class UIScene extends Phaser.Scene {
 
         const player1 = GameStateManager.getInstance().getPlayer1();
         const player2 = GameStateManager.getInstance().getPlayer2();
+
+        const playerDeck = player1 ? player1.getDeck() : [];
     
         // Container for Player 1
         const player1Container = this.add.container(1800, 60); // Adjust position as needed
@@ -65,9 +67,12 @@ export class UIScene extends Phaser.Scene {
         this.turnCounterText = turnCounterText; // Store it for updating in `update()`
 
         this.modalButton = this.add.text(500, 100, "Show Deck", { font: '32px Arial', color: "#fff" });
+        // FIX -> no toglle and displayDeck
         this.modalButton.setInteractive().on('pointerdown', () => this.deckDisplay.toggle());
 
+        // Create the deck display modal
         this.deckDisplay = new DeckDisplayModal(this, 300, 100, 600, 800);
+        this.deckDisplay.displayDeck(playerDeck);
 
 
     }

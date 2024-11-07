@@ -22,6 +22,10 @@ export class Player {
     console.log(this.seconds)
   }
 
+  getDeck() {
+    return this.deck
+  }
+
   getPlayerRemainingTime(): number {
     return this.seconds;
   }

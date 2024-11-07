@@ -4,7 +4,8 @@ import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
-import { DeckDisplayModal } from '../utils/deckDisplayModal';
+import { DeckDisplayModal } from '../utils/DeckDisplayModal';
+import { Card } from '../entities/Card';
 
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
@@ -42,6 +43,19 @@ export class MapScene extends Phaser.Scene {
         ];
     }
 
+    init(data: { playerDeck: Card[] }) {
+        console.log("data transferred: ", data.playerDeck);
+        const initialDeck = data.playerDeck || []; // Fallback in case no deck is passed
+    
+        // Initialize Player 1 with the passed deck
+        this.player1 = new Player("Player 1", initialDeck, 300);
+        GameStateManager.getInstance().setPlayer1(this.player1);
+
+        // Initialize Player 2 with an empty or default deck
+        this.player2 = new Player("Player 2", [], 300);
+        GameStateManager.getInstance().setPlayer2(this.player2);
+    }
+
     preload() {
         this.load.image('archer', '/assets/archer.png'); 
         this.load.image('damage', '/assets/damage.png'); 
@@ -56,15 +70,15 @@ export class MapScene extends Phaser.Scene {
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
-        // TODO later intialize players beforehand
-        this.player1 = new Player("Player 1", [], 300);
+        // // TODO later intialize players beforehand
+        // this.player1 = new Player("Player 1", [], 300);
         setInterval(() => this.player1.countSeconds(true), 1000/*ms*/)
-        GameStateManager.getInstance().setPlayer1(this.player1);
+        // GameStateManager.getInstance().setPlayer1(this.player1);
 
-        this.player2 = new Player("Player 2", [], 300);
-        // TODO start interval on player 2's turn
-        // setInterval(() => this.player2.countSeconds(true), 1000/*ms*/)
-        GameStateManager.getInstance().setPlayer2(this.player2);
+        // this.player2 = new Player("Player 2", [], 300);
+        // // TODO start interval on player 2's turn
+        // // setInterval(() => this.player2.countSeconds(true), 1000/*ms*/)
+        // GameStateManager.getInstance().setPlayer2(this.player2);
         
 
         this.mapContainer = this.add.container(300, 40);  

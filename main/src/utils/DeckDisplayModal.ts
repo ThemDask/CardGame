@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { Card } from '../entities/Card';  // Adjust path as necessary
+import { Card } from '../entities/Card';
+import cardData from '../../../public/cardData.json';
 
 export class DeckDisplayModal {
     private scene: Phaser.Scene;
@@ -8,6 +9,7 @@ export class DeckDisplayModal {
     private scrollMask: Phaser.GameObjects.Graphics;
     private deckContainer: Phaser.GameObjects.Container;
     private slots: Phaser.GameObjects.Rectangle[] = [];
+    private cards: Card[] = [];
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
         this.scene = scene;
@@ -21,15 +23,15 @@ export class DeckDisplayModal {
         const background = this.scene.add.rectangle(0, 0, width, height, 0x000000).setOrigin(0).setStrokeStyle(2, 0xffffff);
         this.container.add(background);
 
-        // Deck container for slots
-        this.deckContainer = this.scene.add.container(10, 10); // Positioned inside modal
+        // Deck container for cards and slots
+        this.deckContainer = this.scene.add.container(10, 10);
         this.container.add(this.deckContainer);
 
-        // Create slots and scrolling mask
+        // Create initial slots
         this.createSlots();
         this.createScrollMask(width, height);
 
-        // Handle scroll input
+        // Scroll input
         this.scene.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
             this.handleScroll(dy);
         });
@@ -46,7 +48,6 @@ export class DeckDisplayModal {
         for (let i = 0; i < totalSlots; i++) {
             const row = Math.floor(i / slotsPerRow);
             const col = i % slotsPerRow;
-
             const slotX = col * (slotWidth + marginX);
             const slotY = row * (slotHeight + marginY);
 
@@ -65,37 +66,67 @@ export class DeckDisplayModal {
         this.deckContainer.setMask(new Phaser.Display.Masks.GeometryMask(this.scene, this.scrollMask));
     }
 
-    private handleScroll(dy: number) {
-        const scrollSpeed = 1;
-        this.deckContainer.y -= dy * scrollSpeed;
+    public displayDeck(deckIds: Card[]) {
+        // Clear any existing card images, but keep slots visible
+        // TODO fix
+        // this.cards.forEach(card => card.destroy());
+        this.cards = [];
+        console.log(deckIds)
+        let cardIndex = 0;
+        deckIds.forEach(id => {
+            console.log(deckIds)
+            const originalCard = cardData.find((card: any) => card.id === id);
+            if (originalCard && cardIndex < this.slots.length) {
+                const card = new Card(
+                    originalCard.id,
+                    originalCard.type,
+                    originalCard.name,
+                    originalCard.movement ?? 0,
+                    originalCard.damage ?? 0,
+                    originalCard.ranged_damage ?? 0,
+                    originalCard.range ?? 0,
+                    originalCard.hp ?? 0,
+                    originalCard.cost ?? 0,
+                    originalCard.description ?? "",
+                    originalCard.imagePath,
+                    originalCard.keywords || []
+                );
 
-        // Set limits for scrolling to avoid empty space
-        const minY = 10;
-        const maxY = -((this.slots.length / 5) * (120 + 20) - 780); // Adjust for slot height and margin
-        if (this.deckContainer.y > minY) {
-            this.deckContainer.y = minY;
-        } else if (this.deckContainer.y < maxY) {
-            this.deckContainer.y = maxY;
-        }
+                const slot = this.slots[cardIndex];
+                const cardImage = this.scene.add.image(slot.x + 50, slot.y + 60, originalCard.imagePath)
+                    .setDisplaySize(80, 100); // Adjust as needed
+
+                this.deckContainer.add(cardImage);
+                this.cards.push(card);
+                cardIndex++;
+            } else if (!originalCard) {
+                console.warn(`Card with ID ${id} not found in card data.`);
+            }
+        });
     }
 
-    open() {
+    public open() {
         this.overlay.setVisible(true);
         this.container.setVisible(true);
     }
 
-    close() {
+    public close() {
         this.overlay.setVisible(false);
         this.container.setVisible(false);
     }
 
-    toggle() {
-        if (this.container.visible) {
-            this.close();
+    public toggle() {
+        if (this.container.visible == true) {
+            this.overlay.setVisible(false);
+            this.container.setVisible(false);
         } else {
-            this.open();
+            this.overlay.setVisible(true);
+            this.container.setVisible(true);
         }
     }
-}
 
-// export default DeckDisplayModal;
+    private handleScroll(dy: number) {
+        const scrollSpeed = 1;
+        this.deckContainer.y -= dy * scrollSpeed;
+    }
+}
