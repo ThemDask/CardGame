@@ -33,8 +33,10 @@ export class DeckDisplayModal {
 
         // Scroll input
         this.scene.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
-            this.handleScroll(dy);
-        });
+            if (this.container.visible) {
+                this.handleScroll(dy);
+            }
+        }, this);
     }
 
     private createSlots() {
@@ -130,17 +132,32 @@ export class DeckDisplayModal {
     }
 
     public toggle() {
-        if (this.container.visible == true) {
-            this.overlay.setVisible(false);
-            this.container.setVisible(false);
+        if (this.container.visible) {
+            this.close();
         } else {
-            this.overlay.setVisible(true);
-            this.container.setVisible(true);
+            this.open();
         }
     }
 
     private handleScroll(dy: number) {
-        const scrollSpeed = 1;
-        this.deckContainer.y -= dy * scrollSpeed;
+        const scrollAmount = 10; // Adjust as needed
+    
+        // Update the Y position of the deckContainer
+        this.deckContainer.y -= dy * scrollAmount;
+    
+        // Define the scrollable bounds manually
+        const maskHeight = this.deckContainer.height > this.container.height ? this.container.height - 20 : this.deckContainer.height; // Adjust based on margin/padding
+    
+        const minY = 10; // Top limit (adjust if necessary)
+        const maxY = this.container.height - maskHeight; // Bottom limit (container height minus maskHeight)
+    
+        // Clamp to prevent scrolling out of bounds
+        if (this.deckContainer.y > minY) {
+            this.deckContainer.y = minY;
+        } else if (this.deckContainer.y < maxY) {
+            this.deckContainer.y = maxY;
+        }
     }
+    
+    
 }
