@@ -45,13 +45,11 @@ export class MapScene extends Phaser.Scene {
 
     init(data: { playerDeck: Card[] }) {
         console.log("data transferred: ", data.playerDeck);
-        const initialDeck = data.playerDeck || []; // Fallback in case no deck is passed
+        const initialDeck = data.playerDeck || [];
     
-        // Initialize Player 1 with the passed deck
         this.player1 = new Player("Player 1", initialDeck, 300);
         GameStateManager.getInstance().setPlayer1(this.player1);
 
-        // Initialize Player 2 with an empty or default deck
         this.player2 = new Player("Player 2", [], 300);
         GameStateManager.getInstance().setPlayer2(this.player2);
     }
@@ -66,20 +64,11 @@ export class MapScene extends Phaser.Scene {
     }
 
     create() {        
+        // TODO set this to start after deployment
+        setInterval(() => this.player1.countSeconds(true), 1000/*ms*/)
 
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
-
-        // // TODO later intialize players beforehand
-        // this.player1 = new Player("Player 1", [], 300);
-        setInterval(() => this.player1.countSeconds(true), 1000/*ms*/)
-        // GameStateManager.getInstance().setPlayer1(this.player1);
-
-        // this.player2 = new Player("Player 2", [], 300);
-        // // TODO start interval on player 2's turn
-        // // setInterval(() => this.player2.countSeconds(true), 1000/*ms*/)
-        // GameStateManager.getInstance().setPlayer2(this.player2);
-        
 
         this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
@@ -93,10 +82,6 @@ export class MapScene extends Phaser.Scene {
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
 
-        // TODO move to UIScene
-        // Initialize deck modal
-        
-        
         this.scene.launch('UIScene');
 
     }

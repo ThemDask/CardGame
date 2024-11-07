@@ -20,7 +20,7 @@ export class DeckDisplayModal {
 
         // Container setup
         this.container = this.scene.add.container(x, y).setVisible(false);
-        const background = this.scene.add.rectangle(0, 0, width, height, 0x000000).setOrigin(0).setStrokeStyle(2, 0xffffff);
+        const background = this.scene.add.rectangle(0, 0, width, height, 0x000000).setOrigin(0).setStrokeStyle(2, 0xffffff); // TODO add different colors according to the deck 
         this.container.add(background);
 
         // Deck container for cards and slots
@@ -66,43 +66,57 @@ export class DeckDisplayModal {
         this.deckContainer.setMask(new Phaser.Display.Masks.GeometryMask(this.scene, this.scrollMask));
     }
 
-    public displayDeck(deckIds: Card[]) {
+    public displayDeck(deckIds: Card[], type: string) {
         // Clear any existing card images, but keep slots visible
         // TODO fix
-        // this.cards.forEach(card => card.destroy());
         this.cards = [];
-        console.log(deckIds)
         let cardIndex = 0;
-        deckIds.forEach(id => {
-            console.log(deckIds)
-            const originalCard = cardData.find((card: any) => card.id === id);
-            if (originalCard && cardIndex < this.slots.length) {
-                const card = new Card(
-                    originalCard.id,
-                    originalCard.type,
-                    originalCard.name,
-                    originalCard.movement ?? 0,
-                    originalCard.damage ?? 0,
-                    originalCard.ranged_damage ?? 0,
-                    originalCard.range ?? 0,
-                    originalCard.hp ?? 0,
-                    originalCard.cost ?? 0,
-                    originalCard.description ?? "",
-                    originalCard.imagePath,
-                    originalCard.keywords || []
-                );
+        if (type == "playerDeck") {
+            deckIds.forEach(id => {
+                const originalCard = cardData.find((card: any) => card.id === id);
+                if (originalCard && cardIndex < this.slots.length) {
+                    const card = new Card(
+                        originalCard.id,
+                        originalCard.type,
+                        originalCard.name,
+                        originalCard.movement ?? 0,
+                        originalCard.damage ?? 0,
+                        originalCard.ranged_damage ?? 0,
+                        originalCard.range ?? 0,
+                        originalCard.hp ?? 0,
+                        originalCard.cost ?? 0,
+                        originalCard.description ?? "",
+                        originalCard.imagePath,
+                        originalCard.keywords || []
+                    );
+    
+                    const slot = this.slots[cardIndex];
+                    const cardImage = this.scene.add.image(slot.x + 50, slot.y + 60, originalCard.imagePath)
+                        .setDisplaySize(80, 100); // Adjust as needed
+    
+                    this.deckContainer.add(cardImage);
+                    this.cards.push(card);
+                    cardIndex++;
+                } else if (!originalCard) {
+                    console.warn(`Card with ID ${id} not found in card data.`);
+                }
+            });
+        }
+        else if (type === "schemeDeck") {
+            // Directly use the `Card` objects passed in `deckIds`
+            deckIds.forEach(card => {
+                if (cardIndex < this.slots.length) {
+                    const slot = this.slots[cardIndex];
+                    const cardImage = this.scene.add.image(slot.x + 50, slot.y + 60, card.imagePath)
+                        .setDisplaySize(80, 100); // Adjust as needed
+    
+                    this.deckContainer.add(cardImage);
+                    this.cards.push(card);
+                    cardIndex++;
+                }
+            });
+        }
 
-                const slot = this.slots[cardIndex];
-                const cardImage = this.scene.add.image(slot.x + 50, slot.y + 60, originalCard.imagePath)
-                    .setDisplaySize(80, 100); // Adjust as needed
-
-                this.deckContainer.add(cardImage);
-                this.cards.push(card);
-                cardIndex++;
-            } else if (!originalCard) {
-                console.warn(`Card with ID ${id} not found in card data.`);
-            }
-        });
     }
 
     public open() {

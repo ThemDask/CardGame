@@ -1,7 +1,10 @@
 import { createBackButton } from "../utils/helpers/backButton";
 import { GameStateManager } from "../state/GameStateManager";
 import { DeckDisplayModal } from "../utils/DeckDisplayModal";
-// UIScene with Back Button
+import schemeData from '../../../public/schemeData.json';
+import { Card } from "../entities/Card";
+
+
 export class UIScene extends Phaser.Scene {
     private player1Timer: Phaser.GameObjects.Text;
     private player1Name: Phaser.GameObjects.Text;
@@ -9,7 +12,9 @@ export class UIScene extends Phaser.Scene {
     private player2Name: Phaser.GameObjects.Text;
     private turnCounterText: Phaser.GameObjects.Text;
     private deckDisplay: DeckDisplayModal;
-    private modalButton: Phaser.GameObjects.Text;
+    private schemeDeckDisplay: DeckDisplayModal;
+    private deckModalButton: Phaser.GameObjects.Text;
+    private schemeDeckModalButton: Phaser.GameObjects.Text;
     private overlay: Phaser.GameObjects.Rectangle;
     private modalContainer: Phaser.GameObjects.Container;
     
@@ -18,7 +23,6 @@ export class UIScene extends Phaser.Scene {
     }
 
     preload() {
-
     }
 
     create() {
@@ -28,6 +32,26 @@ export class UIScene extends Phaser.Scene {
         const player2 = GameStateManager.getInstance().getPlayer2();
 
         const playerDeck = player1 ? player1.getDeck() : [];
+        
+         // Convert schemeData to Card objects
+        const schemeDeck: Card[] = schemeData.map((cardData: any) => {
+            return new Card(
+                cardData.id,
+                cardData.type,
+                cardData.name,
+                cardData.movement ?? 0,
+                cardData.damage ?? 0,
+                cardData.ranged_damage ?? 0,
+                cardData.range ?? 0,
+                cardData.hp ?? 0,
+                cardData.cost ?? 0,
+                cardData.description ?? "",
+                cardData.imagePath,
+                cardData.keywords || []
+            );
+        });
+
+        console.log(schemeDeck);
     
         // Container for Player 1
         const player1Container = this.add.container(1800, 60); // Adjust position as needed
@@ -66,14 +90,19 @@ export class UIScene extends Phaser.Scene {
     
         this.turnCounterText = turnCounterText; // Store it for updating in `update()`
 
-        this.modalButton = this.add.text(500, 100, "Show Deck", { font: '32px Arial', color: "#fff" });
+        this.deckModalButton = this.add.text(500, 100, "View Deck", { font: '32px Arial', color: "#fff" });
         // FIX -> no toglle and displayDeck
-        this.modalButton.setInteractive().on('pointerdown', () => this.deckDisplay.toggle());
+        this.deckModalButton.setInteractive().on('pointerdown', () => this.deckDisplay.toggle());
+
+        this.schemeDeckModalButton = this.add.text(500, 800, "View Scheme Deck", { font: '32px Arial', color: "#fff" });
+        this.schemeDeckModalButton.setInteractive().on('pointerdown', () => this.schemeDeckDisplay.toggle());
 
         // Create the deck display modal
-        this.deckDisplay = new DeckDisplayModal(this, 300, 100, 600, 800);
-        this.deckDisplay.displayDeck(playerDeck);
+        this.deckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
+        this.deckDisplay.displayDeck(playerDeck, "playerDeck");
 
+        this.schemeDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
+        this.schemeDeckDisplay.displayDeck(schemeDeck, "schemeDeck");
 
     }
 
