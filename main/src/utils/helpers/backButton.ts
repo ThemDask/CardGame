@@ -21,7 +21,7 @@ export function createBackButton(scene: Phaser.Scene) {
             });
     }
     else if (scene.scene.key =="UIScene" ) {
-        const backButton = scene.add.text(500, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+        const backButton = scene.add.text(1770, 500, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
         .setInteractive()
         .on('pointerdown', () => {
                 scene.scene.stop("UIScene");

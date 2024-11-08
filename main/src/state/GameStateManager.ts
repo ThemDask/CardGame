@@ -5,8 +5,8 @@ import { Player } from "../entities/Player";
 export class GameStateManager {
     private static instance: GameStateManager;
     
-    private player1: Player | null = null;
-    private player2: Player | null = null;
+    private player1: Player;
+    private player2: Player;
     private turnCounter: number;
 
     private constructor() {
@@ -24,7 +24,7 @@ export class GameStateManager {
         this.player1 = player;
     }
 
-    public getPlayer1(): Player | null {
+    public getPlayer1() {
         return this.player1;
     }
 
@@ -32,7 +32,7 @@ export class GameStateManager {
         this.player2 = player;
     }
 
-    public getPlayer2(): Player | null {
+    public getPlayer2() {
         return this.player2;
     }
 

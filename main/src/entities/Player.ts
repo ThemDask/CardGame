@@ -34,4 +34,8 @@ export class Player {
     return this.name;
   }
 
+  getGold() {
+    return this.availableGold;
+  }
+
 }

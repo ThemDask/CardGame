@@ -17,12 +17,17 @@ export class UIScene extends Phaser.Scene {
     private schemeDeckModalButton: Phaser.GameObjects.Text;
     private overlay: Phaser.GameObjects.Rectangle;
     private modalContainer: Phaser.GameObjects.Container;
-    
+    private graveyard: Phaser.GameObjects.Image;
+    private graveyardDeckDisplay: DeckDisplayModal;
+    private player1GoldText: Phaser.GameObjects.Text;
+    private player2GoldText: Phaser.GameObjects.Text;
+
     constructor() {
         super({ key: 'UIScene' });
     }
 
     preload() {
+        this.load.image('demoGraveyard', '/assets/demoGraveyard.png');
     }
 
     create() {
@@ -59,10 +64,11 @@ export class UIScene extends Phaser.Scene {
         player1Background.setStrokeStyle(2, 0xffffff); // White border with 2px thickness
     
         this.player1Name = this.add.text(0, -20, player1 ? player1.getName() : '-', { font: '32px Arial', color: '#ffffff' });
-        this.player1Timer = this.add.text(0, 20, player1 ? player1.getPlayerRemainingTime().toString() : '0', { font: '32px Arial', color: '#ffffff' });
-    
+        this.player1Timer = this.add.text(60, 20, player1 ? player1.getPlayerRemainingTime().toString() : '0', { font: '32px Arial', color: '#ffffff' });
+        this.player1GoldText = this.add.text(-90, 3,'G: '.concat(player1.getGold().toString()), { font: '32px Arial', color: '#ffffff' }) ;
+
         // Add elements to player1Container
-        player1Container.add([player1Background, this.player1Name, this.player1Timer]);
+        player1Container.add([player1Background, this.player1Name, this.player1Timer, this.player1GoldText]);
         
         // Adjust text alignment within container
         this.player1Name.setOrigin(0.5, 0.5);
@@ -74,10 +80,11 @@ export class UIScene extends Phaser.Scene {
         player2Background.setStrokeStyle(2, 0xffffff); // White border with 2px thickness
 
         this.player2Name = this.add.text(0, -20, player2 ? player2.getName() : '-', { font: '32px Arial', color: '#ffffff' });
-        this.player2Timer = this.add.text(0, 20, player2 ? player2.getPlayerRemainingTime().toString() : '0', { font: '32px Arial', color: '#ffffff' });
+        this.player2Timer = this.add.text(60, 20, player2 ? player2.getPlayerRemainingTime().toString() : '0', { font: '32px Arial', color: '#ffffff' });
+        this.player2GoldText = this.add.text(-90, 3,'G: '.concat(player2.getGold().toString()),  { font: '32px Arial', color: '#ffffff' })
 
         // Add elements to player2Container
-        player2Container.add([player2Background, this.player2Name, this.player2Timer]);
+        player2Container.add([player2Background, this.player2Name, this.player2Timer, this.player2GoldText]);
 
         // Adjust text alignment within container
         this.player2Name.setOrigin(0.5, 0.5);
@@ -97,13 +104,15 @@ export class UIScene extends Phaser.Scene {
         this.schemeDeckModalButton = this.add.text(500, 800, "View Scheme Deck", { font: '32px Arial', color: "#fff" });
         this.schemeDeckModalButton.setInteractive().on('pointerdown', () => this.schemeDeckDisplay.toggle());
 
-        // Create the deck display modal
         this.deckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
         this.deckDisplay.displayDeck(playerDeck, "playerDeck");
 
         this.schemeDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
         this.schemeDeckDisplay.displayDeck(schemeDeck, "schemeDeck");
 
+        this.graveyardDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
+        const graveyard = this.add.image(520, 980, 'demoGraveyard');
+        graveyard.setInteractive().on('pointerdown', () => this.graveyardDeckDisplay.toggle());
     }
 
     update() {

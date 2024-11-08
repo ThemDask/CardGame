@@ -130,8 +130,8 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
     
     createDeckButtons() {
-        this.loadDeckButtonRect = this.add.rectangle(550,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
-        this.saveDeckButtonRect = this.add.rectangle(690,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+        this.loadDeckButtonRect = this.add.rectangle(600,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+        this.saveDeckButtonRect = this.add.rectangle(740,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
 
         this.loadDeckButtonText = this.add.text(this.loadDeckButtonRect.getCenter().x, this.loadDeckButtonRect.getCenter().y, 'Load Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
         this.saveDeckButtonText = this.add.text(this.saveDeckButtonRect.getCenter().x, this.saveDeckButtonRect.getCenter().y, 'Save Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
