@@ -1,5 +1,4 @@
 import { buttonOutStroke, buttonOutStyle, buttonOverStroke, buttonOverStyle, buttonUpStroke, buttonUpStyle } from "../styles";
-
 export function createBackButton(scene: Phaser.Scene) {
     if (scene.scene.key == 'DeckBuilderScene') {
         const backButton = scene.add.text(1770, 960, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })

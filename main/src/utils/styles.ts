@@ -59,7 +59,41 @@ export const hexTypes: Record<HexType, { default: number; hover: number; click: 
 
 
 //--------------------------FONTS----------------------------//
+// gia arithmus: trajan pro
+// gia text: cambia
+// gia flavor ability text: Chaparel pro + light italic + italic filter+ crisp
+// gia keywords: cambia + bold
 
+export const textFont = {
+    font: '28px Cambay',
+    fontFamily: 'Cambay',
+    fontSize: '32px',
+    color: '#ffffff',
+};
+
+export const keywordFont = {
+    font: '22px Cambay',
+    fontFamily: 'Cambay',
+    fontSize: '32px',
+    fontStyle: 'bold',
+    color: '#ffffff',
+};
+
+export const flavorFont =  {
+    font: '20px Chaparral Pro',
+    fontFamily: 'Chaparral Pro',
+    fontSize: '32px',
+    fontStyle: 'bold italic',
+    color: '#ffffff',
+};
+
+export const numberFont = {
+    font: '28px Trajan Pro',
+    fontFamily: 'Trajan Pro',
+    fontSize: '32px',
+    color: '#ffffff',
+    fontStyle: 'bold',
+};
 
 //-------------------------BUTTONS---------------------------//
 

@@ -2,6 +2,7 @@ import { Card } from "../entities/Card";
 import { resizeAndCenterImage } from "../utils/helpers/resizeAndCenterImage";
 import { KeywordDirectory } from "./keywordDirectory";
 import { KeywordsModal } from "./keywordsModal";
+import { flavorFont, keywordFont, textFont, numberFont } from "./styles";
 
 export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private background: Phaser.GameObjects.Rectangle;
@@ -49,8 +50,8 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.add(this.cardImage);
 
         // Card name and cost
-        this.cardNameText = scene.add.text(x + 7, y + 7, '', { font: '24px Arial', color: '#000' }).setOrigin(0, 0);
-        this.costText = scene.add.text(x + width - 7, y + 7, '', { font: '24px Arial', color: '#000' }).setOrigin(1, 0);
+        this.cardNameText = scene.add.text(x + 7, y + 7, '', { font: textFont.font, color: '#000' }).setOrigin(0, 0);
+        this.costText = scene.add.text(x + width - 7, y + 7, '', { font: numberFont.font, color: '#000' }).setOrigin(1, 0);
 
         // Row position for icons and texts
         const ROW_Y = y + imageRectHeight; // Adjust as needed based on layout
@@ -62,35 +63,35 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.movementIcon = scene.add.image(currentX, ROW_Y, 'movement')
             .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
         this.movementText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '',
-            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+            { font: numberFont.font, color: '#000' }).setOrigin(0, 1);
         currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // Damage icon and text
         this.damageIcon = scene.add.image(currentX, ROW_Y, 'damage')
             .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
         this.damageText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '',
-            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+            { font: numberFont.font, color: '#000' }).setOrigin(0, 1);
         currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // HP icon and text
         this.hpIcon = scene.add.image(currentX, ROW_Y, 'health')
             .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
         this.hpText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '',
-            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+            { font: numberFont.font, color: '#000' }).setOrigin(0, 1);
         currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // Ranged damage icon and text
         this.rangedDamageIcon = scene.add.image(currentX, ROW_Y, 'ranged_dmg')
             .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
         this.rangedDamageText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '',
-            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+            { font: numberFont.font, color: '#000' }).setOrigin(0, 1);
         currentX += ICON_SIZE + GAP_BETWEEN_ICONS;
 
         // Range icon and text
         this.rangeIcon = scene.add.image(currentX, ROW_Y, 'range')
             .setDisplaySize(ICON_SIZE, ICON_SIZE).setOrigin(0, 1);
         this.rangeText = scene.add.text(currentX + ICON_SIZE + 5, ROW_Y - 10, '',
-            { font: '30px Arial', color: '#000' }).setOrigin(0, 1);
+            { font: numberFont.font, color: '#000' }).setOrigin(0, 1);
 
         // Description and keywords rectangles positioned below the image area
         this.descriptionRect = scene.add.rectangle(x, y + imageRectHeight + 20, imageRectWidth, 100)
@@ -99,7 +100,8 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.add(this.descriptionRect);
 
         this.descriptionText = scene.add.text(x + 10, y + imageRectHeight + 30, '', {
-            font: '22px Arial',
+            font: flavorFont.font,
+            fontStyle: flavorFont.fontStyle,
             color: '#fff',
             wordWrap: { width: imageRectWidth - 10 }
         }).setOrigin(0);
@@ -111,7 +113,8 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.add(this.keywordsRect);
 
         this.keywordsText = scene.add.text(x + 10, y + imageRectHeight + 140, '', {
-            font: '22px Arial',
+            font: keywordFont.font,
+            fontStyle: keywordFont.fontStyle,
             color: '#fff',
             wordWrap: { width: imageRectWidth - 10 }
         }).setOrigin(0);
@@ -130,7 +133,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     updatePanel(card: Card | null) {
         if (card) {
             this.cardNameText.setText(`${card.name}`);
-            this.costText.setText(`Cost: ${card.cost}`);
+            this.costText.setText(` ${card.cost}`);
             this.cardImage.setTexture(card.imagePath);
 
             const boundingBox = new Phaser.Geom.Rectangle(

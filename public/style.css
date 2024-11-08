@@ -19,3 +19,18 @@ body {
     margin: 0;
     padding: 0;
 }
+
+@font-face {
+    font-family: 'Trajan Pro';
+    src: url('assets/fonts/TrajanPro-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+/* url('assets/fonts/TrajanPro-Bold.otf') format('opentype'), */
+
+@font-face {
+    font-family: 'Chaparral Pro';
+    src: url('assets/fonts/ChaparralPro-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
