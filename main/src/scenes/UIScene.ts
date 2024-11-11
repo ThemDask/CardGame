@@ -3,6 +3,7 @@ import { GameStateManager } from "../state/GameStateManager";
 import { DeckDisplayModal } from "../utils/DeckDisplayModal";
 import schemeData from '../../../public/schemeData.json';
 import { Card } from "../entities/Card";
+import { createPlayerContainer } from "../utils/helpers/playerContainer";
 
 
 export class UIScene extends Phaser.Scene {
@@ -56,39 +57,14 @@ export class UIScene extends Phaser.Scene {
             );
         });
 
-        console.log(schemeDeck);
-    
-        // Container for Player 1
-        const player1Container = this.add.container(1800, 60); // Adjust position as needed
-        const player1Background = this.add.rectangle(0, 0, 200, 100, 0x000000); // Background (black fill, change if desired)
-        player1Background.setStrokeStyle(2, 0xffffff); // White border with 2px thickness
-    
-        this.player1Name = this.add.text(0, -20, player1 ? player1.getName() : '-', { font: '32px Arial', color: '#ffffff' });
-        this.player1Timer = this.add.text(60, 20, player1 ? player1.getPlayerRemainingTime().toString() : '0', { font: '32px Arial', color: '#ffffff' });
-        this.player1GoldText = this.add.text(-90, 3,'G: '.concat(player1.getGold().toString()), { font: '32px Arial', color: '#ffffff' }) ;
+        const { container: player1Container, playerTimer: player1Timer } = createPlayerContainer(this, 1800, 60, player1);
+        const { container: player2Container, playerTimer: player2Timer } = createPlayerContainer(this, 1800, 1000, player2);
 
-        // Add elements to player1Container
-        player1Container.add([player1Background, this.player1Name, this.player1Timer, this.player1GoldText]);
-        
-        // Adjust text alignment within container
-        this.player1Name.setOrigin(0.5, 0.5);
-        this.player1Timer.setOrigin(0.5, 0.5);
+        this.player1Timer = player1Timer;
+        this.player2Timer = player2Timer;
 
-         // Container for Player 2
-        const player2Container = this.add.container(1800, 1000); // Adjust position as needed
-        const player2Background = this.add.rectangle(0, 0, 200, 100, 0x000000);
-        player2Background.setStrokeStyle(2, 0xffffff); // White border with 2px thickness
-
-        this.player2Name = this.add.text(0, -20, player2 ? player2.getName() : '-', { font: '32px Arial', color: '#ffffff' });
-        this.player2Timer = this.add.text(60, 20, player2 ? player2.getPlayerRemainingTime().toString() : '0', { font: '32px Arial', color: '#ffffff' });
-        this.player2GoldText = this.add.text(-90, 3,'G: '.concat(player2.getGold().toString()),  { font: '32px Arial', color: '#ffffff' })
-
-        // Add elements to player2Container
-        player2Container.add([player2Background, this.player2Name, this.player2Timer, this.player2GoldText]);
-
-        // Adjust text alignment within container
-        this.player2Name.setOrigin(0.5, 0.5);
-        this.player2Timer.setOrigin(0.5, 0.5);
+        this.add.existing(player1Container);
+        this.add.existing(player2Container);
 
         const turnCounterText = this.add.text(500, 520, `Turn: ${GameStateManager.getInstance().getTurnCounter()}`, {
             font: '32px Arial',
