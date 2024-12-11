@@ -1,6 +1,4 @@
-// GameStateManager.ts
 import { Player } from "../entities/Player";
-// import { Card } from "../entities/Card";
 
 export class GameStateManager {
     private static instance: GameStateManager;
@@ -8,6 +6,8 @@ export class GameStateManager {
     private player1: Player;
     private player2: Player;
     private turnCounter: number;
+
+    public selectedDeck: string[] | null = null;
 
     private constructor() {
         this.turnCounter = 1;
@@ -42,6 +42,14 @@ export class GameStateManager {
 
     public incrementTurn(): void {
         this.turnCounter += 1;
+    }
+
+    public setSelectedDeck(deck: string[]): void {
+        this.selectedDeck = deck;
+    }
+
+    public getSelectedDeck(): string[] | null {
+        return this.selectedDeck;
     }
 
 }

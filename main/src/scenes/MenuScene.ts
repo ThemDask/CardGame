@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
          buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
+import { GameStateManager } from '../state/GameStateManager';
 
 export class MenuScene extends Phaser.Scene {
     private playButton!: Phaser.GameObjects.Text;
@@ -36,7 +37,7 @@ export class MenuScene extends Phaser.Scene {
 
          // Add event listener for the play button to show the modal
          this.playButton.on('pointerdown', () => {
-             this.showModal();
+             this.startMapScene();
          });
     }
 
@@ -117,6 +118,18 @@ export class MenuScene extends Phaser.Scene {
     shutdown() {
         if (this.fileInputElement) {
             this.fileInputElement.remove();
+        }
+    }
+
+    startMapScene() {
+        const gameState = GameStateManager.getInstance();
+    
+        if (!gameState.selectedDeck) {
+            // Show a prompt to select a deck in DeckBuilderScene.
+            this.add.text(400, 300, 'Please select a deck in Deck Builder!', { font: '24px Arial', color: '#ff0000' }).setOrigin(0.5);
+        } else {
+            // Start the MapScene with the selected deck.
+            this.scene.start('MapScene', { playerDeck: gameState.selectedDeck });
         }
     }
 

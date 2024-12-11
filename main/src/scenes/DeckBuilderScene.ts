@@ -4,6 +4,7 @@ import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
 import { createBackButton } from '../utils/helpers/backButton';
+import { GameStateManager } from '../state/GameStateManager';
 
 
 export class DeckBuilderScene extends Phaser.Scene {
@@ -15,10 +16,12 @@ export class DeckBuilderScene extends Phaser.Scene {
     private cardDetailsPanel: CardDetailsPanel;
     private myDeckMask: Phaser.GameObjects.Graphics;
     private globalPoolMask: Phaser.GameObjects.Graphics;
-    private loadDeckButtonRect: Phaser.GameObjects.Rectangle;
-    private loadDeckButtonText: Phaser.GameObjects.Text;
-    private saveDeckButtonRect: Phaser.GameObjects.Rectangle;
-    private saveDeckButtonText: Phaser.GameObjects.Text;
+    private importDeckButtonRect: Phaser.GameObjects.Rectangle;
+    private useDeckButtonRect: Phaser.GameObjects.Rectangle;
+    private exportDeckButtonRect: Phaser.GameObjects.Rectangle;
+    private importDeckButtonText: Phaser.GameObjects.Text;
+    private exportDeckButtonText: Phaser.GameObjects.Text;
+    private useDeckButtonText: Phaser.GameObjects.Text;
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
@@ -54,10 +57,10 @@ export class DeckBuilderScene extends Phaser.Scene {
         // Add mask for scrolling areas
         this.createScrollingMasks();
 
-        // add save/load deck buttons
-        this.createDeckButtons()
+        // add save/load/download deck buttons
+        this.createDeckButtons();
 
-        createBackButton(this)
+        createBackButton(this);
     }
 
     createDeckRectangles() {
@@ -120,59 +123,80 @@ export class DeckBuilderScene extends Phaser.Scene {
     
                 cardImage.on('pointerover', () => {
                     this.cardDetailsPanel.updatePanel(card);
+                    slotBackground.setStrokeStyle(5, 0x00cc00); // Increase border thickness and change color
                 });
     
                 cardImage.on('pointerout', () => {
                     this.cardDetailsPanel.updatePanel(null);
+                    slotBackground.setStrokeStyle(2, 0xffffff); // Reset border thickness and color
                 });
             }
         }
     }
     
     createDeckButtons() {
-        this.loadDeckButtonRect = this.add.rectangle(600,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
-        this.saveDeckButtonRect = this.add.rectangle(740,950, 120,50).setStrokeStyle(3, 0xffffff).setOrigin(0);
-
-        this.loadDeckButtonText = this.add.text(this.loadDeckButtonRect.getCenter().x, this.loadDeckButtonRect.getCenter().y, 'Load Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
-        this.saveDeckButtonText = this.add.text(this.saveDeckButtonRect.getCenter().x, this.saveDeckButtonRect.getCenter().y, 'Save Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
-
-        this.loadDeckButtonRect.setInteractive();
-        this.saveDeckButtonRect.setInteractive();
-
-        this.saveDeckButtonRect.on('pointerdown', () => {
-            this.saveDeckButtonRect.setFillStyle(0x7fffb2)
-            this.saveDeck()
+        this.importDeckButtonRect = this.add.rectangle(600, 950, 120, 50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+        this.exportDeckButtonRect = this.add.rectangle(740, 950, 120, 50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+        this.useDeckButtonRect = this.add.rectangle(1040, 950, 120, 50).setStrokeStyle(3, 0xffffff).setOrigin(0);
+    
+        this.importDeckButtonText = this.add.text(this.importDeckButtonRect.getCenter().x, this.importDeckButtonRect.getCenter().y, 'Import Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
+        this.exportDeckButtonText = this.add.text(this.exportDeckButtonRect.getCenter().x, this.exportDeckButtonRect.getCenter().y, 'Export Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
+        this.useDeckButtonText = this.add.text(this.useDeckButtonRect.getCenter().x, this.useDeckButtonRect.getCenter().y, 'Use Deck', { font: '20px Arial', color: '#fff' }).setOrigin(0.5);
+    
+        this.importDeckButtonRect.setInteractive();
+        this.exportDeckButtonRect.setInteractive();
+        this.useDeckButtonRect.setInteractive();
+    
+        this.useDeckButtonRect.on('pointerdown', () => {
+            this.useDeckButtonRect.setFillStyle(0x7fffb2);
+            this.useDeck();
         });
-
-        this.loadDeckButtonRect.on('pointerdown', () => {
-            this.loadDeckButtonRect.setFillStyle(0x7fffb2);
-            this.loadDeck()
+    
+        this.importDeckButtonRect.on('pointerdown', () => {
+            this.importDeckButtonRect.setFillStyle(0x7fffb2);
+            this.loadDeck();
         });
-
-        this.saveDeckButtonRect.on('pointerup', () => {
-            this.saveDeckButtonRect.setFillStyle(0x000000)
+    
+        this.exportDeckButtonRect.on('pointerdown', () => {
+            this.exportDeckButtonRect.setFillStyle(0x7fffb2);
+            this.saveDeck();
         });
-
-        this.loadDeckButtonRect.on('pointerup', () => {
-            this.loadDeckButtonRect.setFillStyle(0x000000)
+    
+        this.useDeckButtonRect.on('pointerup', () => {
+            this.useDeckButtonRect.setFillStyle(0x000000);
         });
-
-        this.saveDeckButtonRect.on('pointerover', () => {
-            this.saveDeckButtonRect.setFillStyle(0x7fffb2)
+    
+        this.importDeckButtonRect.on('pointerup', () => {
+            this.importDeckButtonRect.setFillStyle(0x000000);
         });
-
-        this.loadDeckButtonRect.on('pointerover', () => {
-            this.loadDeckButtonRect.setFillStyle(0x7fffb2)
+    
+        this.exportDeckButtonRect.on('pointerup', () => {
+            this.exportDeckButtonRect.setFillStyle(0x000000);
         });
-
-        this.saveDeckButtonRect.on('pointerout', () => {
-            this.saveDeckButtonRect.setFillStyle(0x000000)
+    
+        this.useDeckButtonRect.on('pointerover', () => {
+            this.useDeckButtonRect.setFillStyle(0x7fffb2);
         });
-
-        this.loadDeckButtonRect.on('pointerout', () => {
-            this.loadDeckButtonRect.setFillStyle(0x000000)
+    
+        this.importDeckButtonRect.on('pointerover', () => {
+            this.importDeckButtonRect.setFillStyle(0x7fffb2);
         });
-
+    
+        this.exportDeckButtonRect.on('pointerover', () => {
+            this.exportDeckButtonRect.setFillStyle(0x7fffb2);
+        });
+    
+        this.useDeckButtonRect.on('pointerout', () => {
+            this.useDeckButtonRect.setFillStyle(0x000000);
+        });
+    
+        this.importDeckButtonRect.on('pointerout', () => {
+            this.importDeckButtonRect.setFillStyle(0x000000);
+        });
+    
+        this.exportDeckButtonRect.on('pointerout', () => {
+            this.exportDeckButtonRect.setFillStyle(0x000000);
+        });
     }
 
     saveDeck() {
@@ -249,6 +273,13 @@ export class DeckBuilderScene extends Phaser.Scene {
         });
         input.click(); 
     }
+
+    private useDeck(): void {
+        const deckIds = this.myDeck.map(card => card.id);
+        GameStateManager.getInstance().setSelectedDeck(deckIds);
+    
+        this.add.text(1250, 975, "Deck Selected!", { font: "20px Arial", color: "#00ff00" }).setOrigin(0.5);
+    }    
     
     handleCardClick(card: Card, isMyDeck: boolean) {
         if (isMyDeck) {
