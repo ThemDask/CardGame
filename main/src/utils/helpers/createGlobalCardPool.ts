@@ -43,6 +43,7 @@ export function createGlobalCardPool(replaceWithPlaceholder: boolean): Card[] {
 }
 
 // Function to update the imagePath of all cards to 'archer' (placeholder)
+// TODO update this when we have all card images
 function addPlaceholderImage(cards: Card[]): Card[] {
   return cards.map(card => {
     card.imagePath = 'archer';

@@ -5,12 +5,13 @@ import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
 import { createBackButton } from '../utils/helpers/backButton';
 import { GameStateManager } from '../state/GameStateManager';
-
+import { SearchBox } from '../utils/SearchBox';
+import { extractKeywordBase } from '../utils/helpers/extractKeywordBase';
 
 export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
     private myDeck: Card[];
-    private globalPool: Card[];
+    public globalPool: Card[];
     private myDeckContainer: Phaser.GameObjects.Container;
     private globalPoolContainer: Phaser.GameObjects.Container;
     private cardDetailsPanel: CardDetailsPanel;
@@ -22,6 +23,7 @@ export class DeckBuilderScene extends Phaser.Scene {
     private importDeckButtonText: Phaser.GameObjects.Text;
     private exportDeckButtonText: Phaser.GameObjects.Text;
     private useDeckButtonText: Phaser.GameObjects.Text;
+    private filteredCards: Card[] = [];
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
@@ -47,12 +49,21 @@ export class DeckBuilderScene extends Phaser.Scene {
 
         this.add.text(1200, 50, `🪙: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
+        const searchBox = new SearchBox(this, 50, 770);
+
+        this.events.on('searchChange', (searchTerm: string, activeFilters: Set<string>) => {
+            console.log("sds")
+            this.updateFilteredCards(searchTerm, activeFilters);
+        });
+
+        this.filteredCards = this.globalPool;
+
         this.myDeckContainer = this.add.container(610, 105);
         this.globalPoolContainer = this.add.container(1360, 105);
         
         // Display decks within containers
         this.displayDeck(this.myDeck, this.myDeckContainer); 
-        this.displayDeck(this.globalPool, this.globalPoolContainer);
+        this.displayDeck(this.filteredCards, this.globalPoolContainer);
 
         // Add mask for scrolling areas
         this.createScrollingMasks();
@@ -330,5 +341,49 @@ export class DeckBuilderScene extends Phaser.Scene {
             }
         }
     }
+
+
+    private updateFilteredCards(searchTerm: string, activeFilters: Set<string>) {
+        // Check if the search term is still the default placeholder ('Search...')
+        if (searchTerm === 'Search...') {
+            searchTerm = ''; // Treat it as an empty string for filtering purposes
+        }
+    
+        // If searchTerm is empty, only apply the active keyword filters
+        if (searchTerm.trim() === "") {
+            this.filteredCards = this.globalPool.filter(card => {
+                // Check if card matches any of the active keyword filters
+                const keywordMatches = activeFilters.size === 0 || [...activeFilters].every(filter => 
+                    card.keywords.some(keyword => extractKeywordBase(keyword) === filter)
+                );
+                return keywordMatches;
+            });
+        } 
+        else {
+            // Otherwise, apply both search and keyword filters
+            this.filteredCards = this.globalPool.filter(card => {
+                const nameMatches = card.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+                // Keyword matching (filter for base keywords like "armour")
+                const keywordMatches = card.keywords.some(keyword => {
+                    return activeFilters.size === 0 || activeFilters.has(extractKeywordBase(keyword));
+                });
+    
+                return nameMatches && keywordMatches;
+            });
+        }
+    
+        // Update the global pool container with the filtered cards
+        this.updateGlobalPool();
+    }
+    
+
+    
+    private updateGlobalPool() {
+        this.globalPoolContainer.removeAll(true); // Clear existing cards
+        this.displayDeck(this.filteredCards, this.globalPoolContainer); // Display the filtered cards
+    }
+    
+    
     
 }

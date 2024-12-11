@@ -10,6 +10,9 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 1920,
     height: 1080,
     parent: 'game-container',
+    dom: {
+        createContainer: true, // Enable DOM container
+    },
     physics: {
         default: 'arcade',
         arcade: {

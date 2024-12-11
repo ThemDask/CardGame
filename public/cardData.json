@@ -853,8 +853,8 @@
         "hp": 3,
         "description": "Can move and shoot in the same action.",
         "keywords": [
-            "LIne of Sight",
-            "Shield PIercing"
+            "Line of Sight",
+            "Shield Piercing"
         ],
         "imagePath": "public/assets/Goblino_Pistolero.png",
         "ranged_damage": 4,
