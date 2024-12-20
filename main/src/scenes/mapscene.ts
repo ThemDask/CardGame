@@ -9,6 +9,10 @@ import { Card } from '../entities/Card';
 
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
+    private zoomScale: number;
+    private maxZoom: number;
+    private minZoom: number;
+    private zoomLevels: number[];
     private hexMap: Hex[][];
     private cardDetailsPanel: CardDetailsPanel;
     private mapContainer: Phaser.GameObjects.Container;
@@ -26,6 +30,11 @@ export class MapScene extends Phaser.Scene {
     constructor() {
         super({ key: 'MapScene' });
         this.hexRadius = 55;  
+
+        this.zoomScale = 1; // Initial zoom scale
+        this.zoomLevels = [0.5, 0.75, 1, 1.25, 1.5]; // 4 zoom stages (plus initial)
+        this.minZoom = this.zoomLevels[0]; // Minimum zoom
+        this.maxZoom = this.zoomLevels[this.zoomLevels.length - 1]; // Maximum zoom
         this.hexMap = [];
 
         this.hexMapConfig = [
@@ -82,6 +91,12 @@ export class MapScene extends Phaser.Scene {
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
 
+        // Listen for mouse wheel events to zoom
+        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+            if (dy > 0) this.zoomOut();
+            else if (dy < 0) this.zoomIn();
+        });
+
         this.scene.launch('UIScene');
 
     }
@@ -126,5 +141,73 @@ export class MapScene extends Phaser.Scene {
             }
         }
     }
+
+    zoomIn() {
+        const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
+        if (currentIndex < this.zoomLevels.length - 1) {
+            this.zoomScale = this.zoomLevels[currentIndex + 1];
+            this.redrawMap();
+        }
+    }
     
+    zoomOut() {
+        const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
+        if (currentIndex > 0) {
+            this.zoomScale = this.zoomLevels[currentIndex - 1];
+            this.redrawMap();
+        }
+    }
+    
+    redrawMap() {
+        const containerWidth = this.game.config.width as number;
+        const containerHeight = this.game.config.height as number;
+    
+        const rows = this.hexMapConfig.length; // Total rows (based on map config)
+        const hexHeight = Math.sqrt(3) * this.hexRadius * this.zoomScale; // Height of a hexagon, scaled
+        const hexWidth = 2 * this.hexRadius * this.zoomScale; // Width of a hexagon, scaled
+        const xOffset = hexWidth * 0.85; // Horizontal offset
+        const yOffset = hexHeight * 0.85; // Vertical offset
+    
+        // Centering the entire map
+        const totalMapHeight = rows * yOffset; 
+        const centerY = (containerHeight - totalMapHeight) / 2; 
+    
+        // Clear any previous hexes from the container
+        this.mapContainer.removeAll(true); // This ensures all existing hexes are removed before drawing new ones
+    
+        this.hexMap = []; // Reinitialize hexMap as an empty array
+    
+        // Now we redraw the hex map with the new zoom scale
+        for (let row = 0; row < rows; row++) {
+            this.hexMap[row] = []; // Initialize each row as an empty array
+    
+            const numberOfHexes = this.hexMapConfig[row].length; 
+            const rowWidth = numberOfHexes * xOffset; 
+            const centerX = (containerWidth - rowWidth) / 2; // Center horizontally
+    
+            const yPos = centerY + row * yOffset; // Adjust vertical position
+    
+            for (let col = 0; col < numberOfHexes; col++) {
+                const xPos = centerX + col * xOffset; // Adjust horizontal position for centering
+    
+                const hexType = this.hexMapConfig[row][col] as HexType;
+                const tile = new Hex(this, xPos, yPos, this.hexRadius * this.zoomScale, hexType); // Use the scaled radius
+                tile.drawHex(hexTypes[hexType].default);
+    
+                this.hexMap[row].push(tile); // Add the tile to the hex map array
+    
+                this.mapContainer.add(tile.hex); // Add the tile to the map container
+            }
+        }
+    }
+
+        // Optional: If you add images to the hexes, you should scale them in this function as well
+        // Example:
+        // this.hexMap.forEach(row => {
+        //     row.forEach(hex => {
+        //         hex.updateImagesScale(this.zoomScale);
+        //     });
+        // });
 }
+    
+
