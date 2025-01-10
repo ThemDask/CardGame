@@ -353,29 +353,29 @@ export class DeckBuilderScene extends Phaser.Scene {
         if (searchTerm.trim() === "") {
             this.filteredCards = this.globalPool.filter(card => {
                 // Check if card matches any of the active keyword filters
-                const keywordMatches = activeFilters.size === 0 || [...activeFilters].every(filter => 
-                    card.keywords.some(keyword => extractKeywordBase(keyword) === filter)
-                );
+                const keywordMatches =
+                    activeFilters.size === 0 || 
+                    (card.keywords && card.keywords.some(keyword => activeFilters.has(extractKeywordBase(keyword))));
+    
                 return keywordMatches;
             });
-        } 
-        else {
-            // Otherwise, apply both search and keyword filters
+        } else {
+            // Apply both search and keyword filters
             this.filteredCards = this.globalPool.filter(card => {
                 const nameMatches = card.name.toLowerCase().includes(searchTerm.toLowerCase());
     
-                // Keyword matching (filter for base keywords like "armour")
-                const keywordMatches = card.keywords.some(keyword => {
-                    return activeFilters.size === 0 || activeFilters.has(extractKeywordBase(keyword));
-                });
+                // Keyword matching (include cards with no keywords)
+                const keywordMatches =
+                    card.keywords.length === 0 ||
+                    activeFilters.size === 0 ||
+                    card.keywords.some(keyword => activeFilters.has(extractKeywordBase(keyword)));
     
                 return nameMatches && keywordMatches;
             });
         }
-    
-        // Update the global pool container with the filtered cards
         this.updateGlobalPool();
     }
+    
     
 
     
