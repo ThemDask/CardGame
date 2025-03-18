@@ -1,9 +1,11 @@
 import { DeckBuilderScene } from './scenes/DeckBuilderScene';
 import { MenuScene } from './scenes/MenuScene';
-import { MapScene } from './scenes/MapScene';
+import { MapScene } from './scenes/mapscene';
 import { UIScene } from './scenes/UIScene';
-
+import { DeploymentScene } from './scenes/DeploymentScene';
+import { EscapeMenu } from './utils/EscapeMenu';
 import Phaser from 'phaser';
+
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -25,7 +27,7 @@ const config: Phaser.Types.Core.GameConfig = {
         mode: Phaser.Scale.FIT,
         // autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [MenuScene, DeckBuilderScene, MapScene, UIScene]
+    scene: [MenuScene, DeckBuilderScene, MapScene, UIScene, DeploymentScene, EscapeMenu]
 };
 
 export default new Phaser.Game(config);

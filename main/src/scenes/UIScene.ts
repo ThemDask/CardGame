@@ -5,7 +5,7 @@ import schemeData from '../../../public/schemeData.json';
 import { Card } from "../entities/Card";
 import { createPlayerContainer } from "../utils/helpers/playerContainer";
 
-
+// main game UI scene
 export class UIScene extends Phaser.Scene {
     private player1Timer: Phaser.GameObjects.Text;
     private player1Name: Phaser.GameObjects.Text;
@@ -80,13 +80,13 @@ export class UIScene extends Phaser.Scene {
         this.schemeDeckModalButton = this.add.text(500, 800, "View Scheme Deck", { font: '32px Arial', color: "#fff" });
         this.schemeDeckModalButton.setInteractive().on('pointerdown', () => this.schemeDeckDisplay.toggle());
 
-        this.deckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
+        this.deckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800, true);
         this.deckDisplay.displayDeck(playerDeck, "playerDeck");
 
-        this.schemeDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
+        this.schemeDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800, true);
         this.schemeDeckDisplay.displayDeck(schemeDeck, "schemeDeck");
 
-        this.graveyardDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800);
+        this.graveyardDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800, true);
         const graveyard = this.add.image(520, 980, 'demoGraveyard');
         graveyard.setInteractive().on('pointerdown', () => this.graveyardDeckDisplay.toggle());
     }

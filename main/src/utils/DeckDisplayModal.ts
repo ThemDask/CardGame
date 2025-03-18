@@ -10,17 +10,24 @@ export class DeckDisplayModal {
     private deckContainer: Phaser.GameObjects.Container;
     private slots: Phaser.GameObjects.Rectangle[] = [];
     private cards: Card[] = [];
+    private isModal: boolean;
 
-    constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number) {
+    constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number, isModal: boolean = true) {
         this.scene = scene;
+        this.isModal = isModal;
 
         // Overlay setup
         this.overlay = this.scene.add.rectangle(0, 0, this.scene.scale.width, this.scene.scale.height, 0x000000, 0.5)
-            .setOrigin(0).setInteractive().setVisible(false).on('pointerdown', () => this.close());
+            .setOrigin(0)
+            .setInteractive()
+            .setVisible(false)  // Initially hidden (for modals)
+            .on('pointerdown', () => this.close());
 
         // Container setup
-        this.container = this.scene.add.container(x, y).setVisible(false);
-        const background = this.scene.add.rectangle(0, 0, width, height, 0x000000).setOrigin(0).setStrokeStyle(2, 0xffffff); // TODO add different colors according to the deck 
+        this.container = this.scene.add.container(x, y).setVisible(!isModal);  // Show the container by default if not a modal
+        const background = this.scene.add.rectangle(0, 0, width, height, 0x000000)
+            .setOrigin(0)
+            .setStrokeStyle(2, 0xffffff); // TODO: add different colors according to the deck
         this.container.add(background);
 
         // Deck container for cards and slots
@@ -91,11 +98,11 @@ export class DeckDisplayModal {
                         originalCard.imagePath,
                         originalCard.keywords || []
                     );
-    
+
                     const slot = this.slots[cardIndex];
                     const cardImage = this.scene.add.image(slot.x + 50, slot.y + 60, originalCard.imagePath)
                         .setDisplaySize(80, 100); // Adjust as needed
-    
+
                     this.deckContainer.add(cardImage);
                     this.cards.push(card);
                     cardIndex++;
@@ -103,32 +110,34 @@ export class DeckDisplayModal {
                     console.warn(`Card with ID ${id} not found in card data.`);
                 }
             });
-        }
-        else if (type === "schemeDeck") {
+        } else if (type === "schemeDeck") {
             // Directly use the `Card` objects passed in `deckIds`
             deckIds.forEach(card => {
                 if (cardIndex < this.slots.length) {
                     const slot = this.slots[cardIndex];
                     const cardImage = this.scene.add.image(slot.x + 50, slot.y + 60, card.imagePath)
                         .setDisplaySize(80, 100); // Adjust as needed
-    
+
                     this.deckContainer.add(cardImage);
                     this.cards.push(card);
                     cardIndex++;
                 }
             });
         }
-
     }
 
     public open() {
-        this.overlay.setVisible(true);
-        this.container.setVisible(true);
+        if (this.isModal) {
+            this.overlay.setVisible(true);
+            this.container.setVisible(true);
+        }
     }
 
     public close() {
-        this.overlay.setVisible(false);
-        this.container.setVisible(false);
+        if (this.isModal) {
+            this.overlay.setVisible(false);
+            this.container.setVisible(false);
+        }
     }
 
     public toggle() {
@@ -142,22 +151,29 @@ export class DeckDisplayModal {
     private handleScroll(dy: number) {
         const scrollAmount = 10; // Adjust as needed
     
-        // Update the Y position of the deckContainer
-        this.deckContainer.y -= dy * scrollAmount;
+        // Get the mouse pointer position
+        const pointer = this.scene.input.activePointer;
     
-        // Define the scrollable bounds manually
-        const maskHeight = this.deckContainer.height > this.container.height ? this.container.height - 20 : this.deckContainer.height; // Adjust based on margin/padding
+        // Check if the pointer is inside the deck container
+        const isPointerInsideDeck = this.deckContainer.getBounds().contains(pointer.x, pointer.y);
     
-        const minY = 10; // Top limit (adjust if necessary)
-        const maxY = this.container.height - maskHeight; // Bottom limit (container height minus maskHeight)
+        // If the pointer is inside the deck container, allow scrolling
+        if (isPointerInsideDeck) {
+            // Update the Y position of the deckContainer
+            this.deckContainer.y -= dy * scrollAmount;
     
-        // Clamp to prevent scrolling out of bounds
-        if (this.deckContainer.y > minY) {
-            this.deckContainer.y = minY;
-        } else if (this.deckContainer.y < maxY) {
-            this.deckContainer.y = maxY;
+            // Define the scrollable bounds manually
+            const maskHeight = this.deckContainer.height > this.container.height ? this.container.height - 20 : this.deckContainer.height; // Adjust based on margin/padding
+    
+            const minY = 10; // Top limit (adjust if necessary)
+            const maxY = this.container.height - maskHeight; // Bottom limit (container height minus maskHeight)
+    
+            // Clamp to prevent scrolling out of bounds
+            if (this.deckContainer.y > minY) {
+                this.deckContainer.y = minY;
+            } else if (this.deckContainer.y < maxY) {
+                this.deckContainer.y = maxY;
+            }
         }
     }
-    
-    
 }

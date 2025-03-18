@@ -7,6 +7,7 @@ import { GameStateManager } from '../state/GameStateManager';
 import { DeckDisplayModal } from '../utils/DeckDisplayModal';
 import { Card } from '../entities/Card';
 
+// Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
     private zoomScale: number;
@@ -97,7 +98,9 @@ export class MapScene extends Phaser.Scene {
             else if (dy < 0) this.zoomIn();
         });
 
-        this.scene.launch('UIScene');
+        // IMPORTANT! toogle here
+        this.scene.launch('DeploymentScene')
+        // this.scene.launch('UIScene');
 
     }
 
@@ -143,18 +146,28 @@ export class MapScene extends Phaser.Scene {
     }
 
     zoomIn() {
-        const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
-        if (currentIndex < this.zoomLevels.length - 1) {
-            this.zoomScale = this.zoomLevels[currentIndex + 1];
-            this.redrawMap();
+        const pointer = this.input.activePointer;
+    
+        // Check if the cursor's x-position is >= 500
+        if (pointer.x >= 500) {
+            const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
+            if (currentIndex < this.zoomLevels.length - 1) {
+                this.zoomScale = this.zoomLevels[currentIndex + 1];
+                this.redrawMap();
+            }
         }
     }
     
     zoomOut() {
-        const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
-        if (currentIndex > 0) {
-            this.zoomScale = this.zoomLevels[currentIndex - 1];
-            this.redrawMap();
+        const pointer = this.input.activePointer;
+    
+        // Check if the cursor's x-position is >= 500
+        if (pointer.x >= 500) {
+            const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
+            if (currentIndex > 0) {
+                this.zoomScale = this.zoomLevels[currentIndex - 1];
+                this.redrawMap();
+            }
         }
     }
     
