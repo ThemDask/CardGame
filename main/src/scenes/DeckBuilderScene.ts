@@ -42,6 +42,13 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     create() {
+
+        this.input.keyboard?.on('keydown-ESC', () => {
+            if (!this.scene.isActive('EscapeMenu')) {
+                this.scene.launch('EscapeMenu');
+            }
+        });
+        
         this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 500, 700); 
         this.cardDetailsPanel.updatePanel(null);
 

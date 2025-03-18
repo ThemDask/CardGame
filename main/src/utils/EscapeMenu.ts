@@ -27,8 +27,7 @@ export class EscapeMenu extends Phaser.Scene {
 
         // **Exit Button**
         const exitButton = this.createButton(centerX, centerY - 50, 'Exit', () => {
-            this.scene.stop(); 
-            this.scene.start('MenuScene'); 
+            this.exitToMenu();
         });
 
         // **Mute Button (Placeholder)**
@@ -78,5 +77,20 @@ export class EscapeMenu extends Phaser.Scene {
         });
 
         return this.add.container(0, 0, [buttonRect, buttonText]);
+    }
+
+    private exitToMenu() {
+        // Get a reference to the Scene Manager
+        const sceneManager = this.scene.manager;
+
+        // Stop all scenes except MenuScene
+        sceneManager.getScenes(true).forEach(scene => {
+            if (scene.scene.key !== 'MenuScene') {
+                scene.scene.stop();
+            }
+        });
+
+        // Start the MenuScene
+        sceneManager.start('MenuScene');
     }
 }

@@ -4,13 +4,15 @@ import { createBackButton } from "../utils/helpers/backButton";
 import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "../entities/Card";
 import { createPlayerContainer } from "../utils/helpers/playerContainer";
+import { CardDetailsPanel } from "../utils/CardDetailsPanel";
+import cardData from '../../../public/cardData.json';
 
 export class DeploymentScene extends Phaser.Scene {
     private player1Timer: Phaser.GameObjects.Text;
     private player2Timer: Phaser.GameObjects.Text;
     private player1GoldText: Phaser.GameObjects.Text;
     private player2GoldText: Phaser.GameObjects.Text;
-    
+    private cardDetailsPanel: CardDetailsPanel;
     private deckContainer: Phaser.GameObjects.Container;
     private scrollMask: Phaser.GameObjects.Graphics;
     private slots: Phaser.GameObjects.Rectangle[] = [];
@@ -22,13 +24,15 @@ export class DeploymentScene extends Phaser.Scene {
 
     create() {
 
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 450, 600); 
+        this.add.existing(this.cardDetailsPanel);
+        this.cardDetailsPanel.updatePanel(null)
+
         this.input.keyboard?.on('keydown-ESC', () => {
-            this.scene.launch('EscapeMenu');
+            if (!this.scene.isActive('EscapeMenu')) {
+                this.scene.launch('EscapeMenu');
+            }
         });
-
-
-        // TODO: doesnt work will replace with esc menu
-        createBackButton(this);
 
         const player1 = GameStateManager.getInstance().getPlayer1();
         const player2 = GameStateManager.getInstance().getPlayer2();
@@ -47,8 +51,10 @@ export class DeploymentScene extends Phaser.Scene {
         this.createDeckDisplay();
 
         // Display player's deck inside the container
+        console.log(playerDeck);
         this.displayDeck(playerDeck);
 
+        console.log(playerDeck)
         // Handle scroll input for deck
         this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
             if (this.isPointerInsideDeck(pointer)) {
@@ -81,7 +87,7 @@ export class DeploymentScene extends Phaser.Scene {
         this.deckContainer.setMask(new Phaser.Display.Masks.GeometryMask(this, this.scrollMask));
     }
     
-    private displayDeck(cards: Card[]) {
+    private displayDeck(deck: Card[]) {
         const slotWidth = 90; // Slightly reduced for 500px width
         const slotHeight = 110;
         const marginX = 8;
@@ -102,10 +108,36 @@ export class DeploymentScene extends Phaser.Scene {
             this.deckContainer.add(slotBackground);
             this.slots.push(slotBackground);
     
-            // Add card image
-            if (i < cards.length) {
-                const card = cards[i];
-                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, card.imagePath)
+            // Get the card ID from the deck array and use it to look up the card data
+            if (i < deck.length) {
+                const cardId = deck[i]; // The deck has just card IDs (like "1", "2", "3", etc.)
+    
+                // Find the card data using the card ID
+                const fullCardData = this.getCardDataById(cardId.toString());
+    
+                // Handle the case where fullCardData might be undefined
+                if (!fullCardData) {
+                    console.warn(`Card with ID ${cardId} not found in card data.`);
+                    continue; // Skip this iteration and go to the next card
+                }
+    
+                // Create the card object using the full card data
+                const cardDetails = new Card(
+                    fullCardData.id,
+                    fullCardData.type,
+                    fullCardData.name,
+                    fullCardData.movement ?? 0,
+                    fullCardData.damage ?? 0,
+                    fullCardData.ranged_damage ?? 0,
+                    fullCardData.range ?? 0,
+                    fullCardData.hp ?? 0,
+                    fullCardData.cost ?? 0,
+                    fullCardData.description ?? "",
+                    fullCardData.imagePath,
+                    fullCardData.keywords || []
+                );
+    
+                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, fullCardData.imagePath)
                     .setDisplaySize(slotWidth, slotHeight)
                     .setInteractive();
     
@@ -114,14 +146,22 @@ export class DeploymentScene extends Phaser.Scene {
     
                 // Hover interaction
                 cardImage.on('pointerover', () => {
+                    this.cardDetailsPanel.updatePanel(cardDetails);  // Pass the full card details
                     slotBackground.setStrokeStyle(5, 0x00cc00);
                 });
                 cardImage.on('pointerout', () => {
+                    this.cardDetailsPanel.updatePanel(null);
                     slotBackground.setStrokeStyle(2, 0xffffff);
                 });
             }
         }
     }
+    
+    // Helper function to map card ID to the full card data (using the imported JSON)
+    private getCardDataById(id: string) {
+        return cardData.find((card: any) => card.id === id);
+    }
+    
     
     private isPointerInsideDeck(pointer: Phaser.Input.Pointer): boolean {
         return pointer.x >= 5 && pointer.x <= 505 && pointer.y >= 720 && pointer.y <= 1220;

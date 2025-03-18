@@ -33,17 +33,17 @@ export class Hex {
 
         // Add event listeners for pointer events
         this.hex.on('pointerover', () => {
-            console.log(`Hovering over hex`);
+            // console.log(`Hovering over hex`);
             this.redraw('hover');
         });
 
         this.hex.on('pointerout', () => {
-            console.log(`Pointer out of hex`);
+            // console.log(`Pointer out of hex`);
             this.redraw('default');
         });
 
         this.hex.on('pointerdown', () => {
-            console.log(`Clicked on hex`);
+            // console.log(`Clicked on hex`);
             this.redraw('click');
         });
     }

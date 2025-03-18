@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { Hex } from '../entities/Hex';  
-import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
@@ -15,7 +14,6 @@ export class MapScene extends Phaser.Scene {
     private minZoom: number;
     private zoomLevels: number[];
     private hexMap: Hex[][];
-    private cardDetailsPanel: CardDetailsPanel;
     private mapContainer: Phaser.GameObjects.Container;
     private containerX: number;
     private containerWidth: number;
@@ -83,9 +81,6 @@ export class MapScene extends Phaser.Scene {
         this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
 
-        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 450, 600); 
-        this.add.existing(this.cardDetailsPanel);
-        this.cardDetailsPanel.updatePanel(null)
 
         this.generateHexMap(containerWidth, containerHeight);
 
