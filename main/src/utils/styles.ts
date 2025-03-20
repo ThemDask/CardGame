@@ -97,8 +97,8 @@ export const numberFont = {
 
 //-------------------------BUTTONS---------------------------//
 
-export const buttonOverStroke = {colour: '#0000ff', thickness: 2};
-export const buttonOverStyle = { fontSize: '36px', color: '#0000ff'};
+export const buttonOverStroke = {colour: '#e51717', thickness: 2};
+export const buttonOverStyle = { fontSize: '36px', color: '#e51717'};
 
 export const buttonOutStroke = {colour: '#ffffff', thickness: 2};
 export const buttonOutStyle = { fontSize: '36px', color: '#ffffff'};
@@ -106,7 +106,7 @@ export const buttonOutStyle = { fontSize: '36px', color: '#ffffff'};
 export const buttonDownStroke = {colour: '#ffffff', thickness: 2};
 export const buttonDownStyle = { fontSize: '36px', color: '#ffffff' };
 
-export const buttonUpStroke = {colour: '#0000ff', thickness: 2};
-export const buttonUpStyle = { fontSize: '36px', color: '#0000ff'};
+export const buttonUpStroke = {colour: '#e51717', thickness: 2};
+export const buttonUpStyle = { fontSize: '36px', color: '#e51717'};
 
 //-------------------------COLOURS---------------------------//

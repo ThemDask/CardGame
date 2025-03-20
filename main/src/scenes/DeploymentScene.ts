@@ -144,14 +144,20 @@ export class DeploymentScene extends Phaser.Scene {
                 this.deckContainer.add(cardImage);
                 this.cards.push(cardImage);
     
-                // Hover interaction
+                // Card interactions
                 cardImage.on('pointerover', () => {
                     this.cardDetailsPanel.updatePanel(cardDetails);  // Pass the full card details
                     slotBackground.setStrokeStyle(5, 0x00cc00);
                 });
+
                 cardImage.on('pointerout', () => {
                     this.cardDetailsPanel.updatePanel(null);
                     slotBackground.setStrokeStyle(2, 0xffffff);
+                });
+
+                cardImage.on('pointerdown', () => {
+                    GameStateManager.getInstance().setSelectedCard(cardDetails);
+                    console.log(`Selected card: ${cardDetails.name}`);
                 });
             }
         }
@@ -181,6 +187,32 @@ export class DeploymentScene extends Phaser.Scene {
             this.deckContainer.y = maxY;
         }
     }
+
+
+    removeCardFromDeck(card: Card) {
+    // Find the card in the deck array
+    const player = GameStateManager.getInstance().getPlayer1();
+    if (!player) return;
+
+    const deck = player.getDeck();
+    const index = deck.findIndex((c) => c.id === card.id);
+
+    if (index !== -1) {
+        // Remove from player's deck
+        deck.splice(index, 1);
+
+        // Remove from the display
+        const cardImage = this.cards[index];
+        if (cardImage) {
+            cardImage.destroy();
+            this.cards.splice(index, 1);
+        }
+
+        // Refresh display (optional)
+        this.deckContainer.removeAll(true);
+        this.displayDeck(deck);
+    }
+}
 
     update(): void {
         const player1 = GameStateManager.getInstance().getPlayer1();

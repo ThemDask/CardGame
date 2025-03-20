@@ -30,13 +30,18 @@ export class Card {
     }
   
   
-  
     untap() {
 
     }
 
     tap() {
         
+    }
+
+    findImage() {
+      if (this.imagePath) {
+        // check if imagePath leads to png else display placeholder
+      }
     }
 
   }

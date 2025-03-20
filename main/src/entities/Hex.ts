@@ -1,12 +1,16 @@
 import { HexType, hexTypes } from "../utils/styles";
+import { GameStateManager } from "../state/GameStateManager";
+import { Card } from "./Card";
+import { DeploymentScene } from "../scenes/DeploymentScene";
 
 export class Hex {
     occupied: boolean;
-    occupiedBy: string | null;
+    occupiedBy: Card | null;
     type: HexType;
     hex: Phaser.GameObjects.Graphics;
     hexRadius: number;
     defaultFillColor: number = 0x419627; // Default hex fill color
+    selected: boolean = false; // Track selection state
 
     constructor(
         scene: Phaser.Scene,
@@ -15,7 +19,8 @@ export class Hex {
         hexRadius: number,
         type: HexType,
         occupied: boolean = false,
-        occupiedBy: string | null = null
+        occupiedBy: Card | null = null
+        
     ) {
         this.type = type;
         this.occupied = occupied;
@@ -26,7 +31,7 @@ export class Hex {
         this.hex = scene.add.graphics({ x: x, y: y });
         this.hex.lineStyle(2, 0x000000, 1);
         this.drawHex(this.defaultFillColor); // Default fill color
-
+        this.hex.setAlpha(0.8); // Adjust this value between 0 (fully transparent) and 1 (fully opaque)
         // Define a hit area as a polygon that matches the hex shape 
         const hitArea = new Phaser.Geom.Polygon(this.getHexPoints());
         this.hex.setInteractive(hitArea, Phaser.Geom.Polygon.Contains);
@@ -44,7 +49,7 @@ export class Hex {
 
         this.hex.on('pointerdown', () => {
             // console.log(`Clicked on hex`);
-            this.redraw('click');
+            this.handleClick(scene);
         });
     }
 
@@ -85,14 +90,40 @@ export class Hex {
     redraw(invocation: string) {
         const hexColor = hexTypes[this.type]; // Access the hex type colors based on the current type
         if (invocation === 'hover') {
-            console.log('Hovering redraw');
+            // console.log('Hovering redraw');
             this.drawHex(hexColor.hover); // Use hover color
         } else if (invocation === 'click') {
-            console.log('Click redraw');
+            // console.log('Click redraw');
             this.drawHex(hexColor.click); // Use click color
         } else {
-            console.log('Default redraw');
+            // console.log('Default redraw');
             this.drawHex(hexColor.default); // Use default color
         }
+    }
+
+    handleClick(scene: Phaser.Scene) {
+        const selectedCard = GameStateManager.getInstance().getSelectedCard();
+        if (!selectedCard || this.occupied) return;
+
+        this.occupied = true;
+        this.occupiedBy = selectedCard;
+
+        // Create the card image on the hex
+        const cardImage = scene.add.image(this.hex.x+300, this.hex.y+40, selectedCard.imagePath);
+        cardImage.setDisplaySize(50, 50);
+
+        // Ensure the image is properly positioned inside the hex
+        this.hex.scene.add.existing(cardImage);
+
+        // Remove the card from DeploymentScene's deck
+        const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
+        if (deploymentScene) {
+            deploymentScene.removeCardFromDeck(selectedCard);
+        }
+
+        // Clear selected card after placing it
+        GameStateManager.getInstance().setSelectedCard(null);
+
+        this.redraw("click"); // Update hex appearance
     }
 }

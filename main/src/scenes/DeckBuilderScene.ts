@@ -7,6 +7,7 @@ import { createBackButton } from '../utils/helpers/backButton';
 import { GameStateManager } from '../state/GameStateManager';
 import { SearchBox } from '../utils/SearchBox';
 import { extractKeywordBase } from '../utils/helpers/extractKeywordBase';
+import { configureBackground } from '../utils/helpers/configureBackground';
 
 export class DeckBuilderScene extends Phaser.Scene {
     private gold: number;
@@ -39,9 +40,12 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.load.image('movement', '/assets/movement.png'); 
         this.load.image('range', '/assets/range.png'); 
         this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
+
+        this.load.image('bg', '/assets/bg1.png')
     }
 
     create() {
+        configureBackground(this);
 
         this.input.keyboard?.on('keydown-ESC', () => {
             if (!this.scene.isActive('EscapeMenu')) {

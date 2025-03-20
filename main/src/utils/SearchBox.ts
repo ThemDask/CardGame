@@ -75,7 +75,7 @@ export class SearchBox {
             const keywordButton = scene.add.text(col * 140, row * 50, keywordBase, {
                 font: '20px Arial',
                 color: '#ffffff',
-                backgroundColor: '#3da968',
+                backgroundColor: '#9c2f2f',
                 padding: { left: 10, right: 10, top: 5, bottom: 5 },
             }).setInteractive();
 
@@ -83,10 +83,10 @@ export class SearchBox {
                 // Toggle the keyword filter on or off
                 if (this.keywordFilters.has(keywordBase)) {
                     this.keywordFilters.delete(keywordBase);
-                    keywordButton.setStyle({ backgroundColor: '#3da968' });
+                    keywordButton.setStyle({ backgroundColor: '#9c2f2f' }); 
                 } else {
                     this.keywordFilters.add(keywordBase);
-                    keywordButton.setStyle({ backgroundColor: '#7fffb2' });
+                    keywordButton.setStyle({ backgroundColor: '#e51717' });
                 }
 
                 // Notify scene about the filter change

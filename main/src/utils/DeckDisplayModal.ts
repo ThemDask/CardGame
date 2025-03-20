@@ -39,7 +39,7 @@ export class DeckDisplayModal {
         this.createScrollMask(width, height);
 
         // Scroll input
-        this.scene.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+        this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
             if (this.container.visible) {
                 this.handleScroll(dy);
             }

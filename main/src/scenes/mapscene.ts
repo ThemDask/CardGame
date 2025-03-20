@@ -5,6 +5,7 @@ import { HexType, hexTypes } from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
 import { DeckDisplayModal } from '../utils/DeckDisplayModal';
 import { Card } from '../entities/Card';
+import { configureBackground } from '../utils/helpers/configureBackground';
 
 // Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
@@ -69,9 +70,14 @@ export class MapScene extends Phaser.Scene {
         this.load.image('movement', '/assets/movement.png'); 
         this.load.image('range', '/assets/range.png'); 
         this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
+
+        this.load.image('bg', '/assets/bg1.png')
     }
 
     create() {        
+
+        configureBackground(this);
+        
         // TODO set this to start after deployment
         setInterval(() => this.player1.countSeconds(true), 1000/*ms*/)
 
@@ -92,6 +98,8 @@ export class MapScene extends Phaser.Scene {
             if (dy > 0) this.zoomOut();
             else if (dy < 0) this.zoomIn();
         });
+
+        // this.input.on('pointerdown', this.handleHexClick, this);
 
         // IMPORTANT! toogle here
         this.scene.launch('DeploymentScene')
@@ -136,6 +144,9 @@ export class MapScene extends Phaser.Scene {
                 this.hexMap[row].push(tile);
     
                 this.mapContainer.add(tile.hex); 
+
+                // Store row/col position inside hex for reference
+                tile.hex.setData({ row, col });
             }
         }
     }
@@ -208,6 +219,7 @@ export class MapScene extends Phaser.Scene {
             }
         }
     }
+
 
         // Optional: If you add images to the hexes, you should scale them in this function as well
         // Example:

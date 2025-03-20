@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
          buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
+import { configureBackground } from '../utils/helpers/configureBackground';
 
 export class MenuScene extends Phaser.Scene {
     private playButton!: Phaser.GameObjects.Text;
@@ -15,12 +16,14 @@ export class MenuScene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image('bg', '/assets/bg1.png')
 
     }
 
     create() {
-        const { width, height } = this.scale;
+      configureBackground(this);
 
+        const { width, height } = this.scale;
         const menuContainer = this.add.container(width / 2, height / 2);
 
         this.playButton = this.createButton(0, -100, 'Play');
