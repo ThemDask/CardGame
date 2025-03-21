@@ -11,6 +11,12 @@ export class DeckDisplayModal {
     private slots: Phaser.GameObjects.Rectangle[] = [];
     private cards: Card[] = [];
     private isModal: boolean;
+    private slotWidth: number = 100;
+    private slotHeight: number = 120;
+    private marginX: number = 10;
+    private marginY: number = 20;
+    private slotsPerRow: number = 5; // We will recalculate this
+    private totalSlots: number = 100; // Will be adjusted dynamically
 
     constructor(scene: Phaser.Scene, x: number, y: number, width: number, height: number, isModal: boolean = true) {
         this.scene = scene;
@@ -34,8 +40,8 @@ export class DeckDisplayModal {
         this.deckContainer = this.scene.add.container(10, 10);
         this.container.add(this.deckContainer);
 
-        // Create initial slots
-        this.createSlots();
+        // Create initial slots based on the current width and height
+        this.createSlots(width, height);
         this.createScrollMask(width, height);
 
         // Scroll input
@@ -46,21 +52,23 @@ export class DeckDisplayModal {
         }, this);
     }
 
-    private createSlots() {
-        const slotWidth = 100;
-        const slotHeight = 120;
-        const marginX = 10;
-        const marginY = 20;
-        const slotsPerRow = 5;
-        const totalSlots = 100;
+    private createSlots(containerWidth: number, containerHeight: number) {
+        // Calculate the number of columns and rows based on the container dimensions
+        const slotsPerRow = Math.floor((containerWidth - 20) / (this.slotWidth + this.marginX)); // Subtract margins for padding
+        const slotsPerColumn = Math.floor((containerHeight - 20) / (this.slotHeight + this.marginY)); // Subtract margins for padding
 
-        for (let i = 0; i < totalSlots; i++) {
-            const row = Math.floor(i / slotsPerRow);
-            const col = i % slotsPerRow;
-            const slotX = col * (slotWidth + marginX);
-            const slotY = row * (slotHeight + marginY);
+        this.slotsPerRow = slotsPerRow;
+        this.totalSlots = slotsPerRow * slotsPerColumn;
 
-            const slotBackground = this.scene.add.rectangle(slotX, slotY, slotWidth, slotHeight)
+        // Create the slots dynamically
+        this.slots = []; // Reset slots array
+        for (let i = 0; i < this.totalSlots; i++) {
+            const row = Math.floor(i / this.slotsPerRow);
+            const col = i % this.slotsPerRow;
+            const slotX = col * (this.slotWidth + this.marginX);
+            const slotY = row * (this.slotHeight + this.marginY);
+
+            const slotBackground = this.scene.add.rectangle(slotX, slotY, this.slotWidth, this.slotHeight)
                 .setStrokeStyle(2, 0xffffff)
                 .setOrigin(0);
 
@@ -77,10 +85,9 @@ export class DeckDisplayModal {
 
     public displayDeck(deckIds: Card[], type: string) {
         // Clear any existing card images, but keep slots visible
-        // TODO fix
         this.cards = [];
         let cardIndex = 0;
-        if (type == "playerDeck") {
+        if (type === "playerDeck") {
             deckIds.forEach(id => {
                 const originalCard = cardData.find((card: any) => card.id === id);
                 if (originalCard && cardIndex < this.slots.length) {

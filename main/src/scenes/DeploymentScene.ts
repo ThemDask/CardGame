@@ -17,6 +17,7 @@ export class DeploymentScene extends Phaser.Scene {
     private scrollMask: Phaser.GameObjects.Graphics;
     private slots: Phaser.GameObjects.Rectangle[] = [];
     private cards: Phaser.GameObjects.Image[] = [];
+    deckDisplay: DeckDisplayModal;
 
     constructor() {
         super({ key: 'DeploymentScene' });
@@ -48,19 +49,20 @@ export class DeploymentScene extends Phaser.Scene {
         this.add.existing(player2Container);
 
         // Create deck display area
-        this.createDeckDisplay();
+        // TODO: maybe use already existing DeckDisplayModal class
+        // this.createDeckDisplay();
+        // this.displayDeck(playerDeck);
 
-        // Display player's deck inside the container
-        console.log(playerDeck);
-        this.displayDeck(playerDeck);
-
-        console.log(playerDeck)
+        this.deckDisplay = new DeckDisplayModal(this, 5, 720, 500, 800, false); 
+        this.add.existing(this.deckDisplay.container);
+        this.deckDisplay.displayDeck(playerDeck, "playerDeck"); 
+        this.deckDisplay.container.setDepth(100); 
         // Handle scroll input for deck
-        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
-            if (this.isPointerInsideDeck(pointer)) {
-                this.handleScroll(dy);
-            }
-        });
+        // this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+        //     if (this.isPointerInsideDeck(pointer)) {
+        //         this.handleScroll(dy);
+        //     }
+        // });
     }
 
     private createDeckDisplay() {
@@ -188,7 +190,7 @@ export class DeploymentScene extends Phaser.Scene {
         }
     }
 
-
+    // TODO not used
     removeCardFromDeck(card: Card) {
     // Find the card in the deck array
     const player = GameStateManager.getInstance().getPlayer1();
