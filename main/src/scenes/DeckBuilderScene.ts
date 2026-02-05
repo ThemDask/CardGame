@@ -25,6 +25,7 @@ export class DeckBuilderScene extends Phaser.Scene {
     private exportDeckButtonText: Phaser.GameObjects.Text;
     private useDeckButtonText: Phaser.GameObjects.Text;
     private filteredCards: Card[] = [];
+    private deckSelectedText: Phaser.GameObjects.Text | null = null;
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
@@ -297,10 +298,29 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     private useDeck(): void {
+        // Validate deck is not empty
+        if (this.myDeck.length === 0) {
+            // Show error message
+            if (this.deckSelectedText) {
+                this.deckSelectedText.destroy();
+            }
+            this.deckSelectedText = this.add.text(1250, 975, "Deck is empty!", { font: "20px Arial", color: "#ff0000" }).setOrigin(0.5);
+            return;
+        }
+
         const deckIds = this.myDeck.map(card => card.id);
         GameStateManager.getInstance().setSelectedDeck(deckIds);
     
-        this.add.text(1250, 975, "Deck Selected!", { font: "20px Arial", color: "#00ff00" }).setOrigin(0.5);
+        // Remove old confirmation text if it exists
+        if (this.deckSelectedText) {
+            this.deckSelectedText.destroy();
+        }
+        
+        // Show confirmation message
+        this.deckSelectedText = this.add.text(1250, 975, "Deck Selected!", { font: "20px Arial", color: "#00ff00" }).setOrigin(0.5);
+        
+        // Log for debugging
+        console.log("Deck selected with", deckIds.length, "cards:", deckIds);
     }    
     
     handleCardClick(card: Card, isMyDeck: boolean) {

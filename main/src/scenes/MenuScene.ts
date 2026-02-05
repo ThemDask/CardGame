@@ -125,14 +125,15 @@ export class MenuScene extends Phaser.Scene {
     }
 
     startMapScene() {
-        const gameState = GameStateManager.getInstance();
+        const gameStateManager = GameStateManager.getInstance();
+        const selectedDeck = gameStateManager.getSelectedDeck();
     
-        if (!gameState.selectedDeck) {
+        if (!selectedDeck) {
             // Show a prompt to select a deck in DeckBuilderScene.
             this.add.text(400, 300, 'Please select a deck in Deck Builder!', { font: '24px Arial', color: '#ff0000' }).setOrigin(0.5);
         } else {
             // Start the MapScene with the selected deck.
-            this.scene.start('MapScene', { playerDeck: gameState.selectedDeck });
+            this.scene.start('MapScene', { playerDeck: selectedDeck });
         }
     }
 

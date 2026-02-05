@@ -2,15 +2,20 @@ import { HexType, hexTypes } from "../utils/styles";
 import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "./Card";
 import { DeploymentScene } from "../scenes/DeploymentScene";
+import { PlaceCardAction } from "../core/actions/PlaceCardAction";
+import { GameEventEmitter, GameEventType, CardPlacedEvent } from "../core/events/GameEvents";
 
 export class Hex {
     occupied: boolean;
     occupiedBy: Card | null;
+    occupiedByPlayerId: string | null = null; // Track which player owns the card
     type: HexType;
     hex: Phaser.GameObjects.Graphics;
     hexRadius: number;
     defaultFillColor: number = 0x419627; // Default hex fill color
     selected: boolean = false; // Track selection state
+    row: number = -1; // Row position in hex map
+    col: number = -1; // Column position in hex map
 
     constructor(
         scene: Phaser.Scene,
@@ -19,13 +24,17 @@ export class Hex {
         hexRadius: number,
         type: HexType,
         occupied: boolean = false,
-        occupiedBy: Card | null = null
+        occupiedBy: Card | null = null,
+        row: number = -1,
+        col: number = -1
         
     ) {
         this.type = type;
         this.occupied = occupied;
         this.occupiedBy = occupiedBy;
         this.hexRadius = hexRadius;
+        this.row = row;
+        this.col = col;
 
         // Create the visual hex
         this.hex = scene.add.graphics({ x: x, y: y });
@@ -73,9 +82,12 @@ export class Hex {
         this.hex.lineStyle(2, 0x000000, 1); // Set the line color again (optional)
         this.hex.fillStyle(fillColor); // Apply the fill color
 
-        // Draw the hexagon shape
+        // Draw flat-top hexagon (flat edges on top/bottom)
+        // The hex is drawn centered at (0, 0) relative to graphics object
         this.hex.beginPath();
+        // Start from top-left vertex
         this.hex.moveTo(this.hexRadius * Math.cos(-Math.PI / 6), this.hexRadius * Math.sin(-Math.PI / 6));
+        // Draw all 6 vertices
         for (let i = 1; i <= 6; i++) {
             const x = this.hexRadius * Math.cos(i * angle - Math.PI / 6);
             const y = this.hexRadius * Math.sin(i * angle - Math.PI / 6);
@@ -102,28 +114,57 @@ export class Hex {
     }
 
     handleClick(scene: Phaser.Scene) {
-        const selectedCard = GameStateManager.getInstance().getSelectedCard();
-        if (!selectedCard || this.occupied) return;
+        const gameStateManager = GameStateManager.getInstance();
+        const selectedCard = gameStateManager.getSelectedCard();
+        const gameState = gameStateManager.getGameState();
+        
+        if (!gameState) return;
 
-        this.occupied = true;
-        this.occupiedBy = selectedCard;
+        // If card is selected from deck, place it
+        if (selectedCard && !this.occupied) {
+            const currentPlayerId = gameState.currentPlayerId;
+            
+            // Check if this is a valid deployment hex during deployment phase
+            const isDeploymentPhase = gameState.gamePhase === 'deployment';
+            if (isDeploymentPhase) {
+                // Only allow deployment on deploy-type hexes
+                if (this.type !== 'landDeploy' && this.type !== 'waterDeploy') {
+                    console.warn("Can only deploy on deployment zones");
+                    return;
+                }
+                
+                // Check marine unit restrictions
+                if (selectedCard.keywords && selectedCard.keywords.some((kw: string) => kw.includes('Marine'))) {
+                    if (this.type !== 'waterDeploy') {
+                        console.warn("Marine units can only be deployed on water");
+                        return;
+                    }
+                }
+            }
+            
+            const action = new PlaceCardAction(
+                currentPlayerId,
+                selectedCard.id,
+                this.row,
+                this.col
+            );
 
-        // Create the card image on the hex
-        const cardImage = scene.add.image(this.hex.x+300, this.hex.y+40, selectedCard.imagePath);
-        cardImage.setDisplaySize(50, 50);
-
-        // Ensure the image is properly positioned inside the hex
-        this.hex.scene.add.existing(cardImage);
-
-        // Remove the card from DeploymentScene's deck
-        const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
-        if (deploymentScene) {
-            deploymentScene.removeCardFromDeck(selectedCard);
+            const success = gameStateManager.executeAction(action);
+            
+            if (success) {
+                gameStateManager.setSelectedCard(null);
+                this.redraw("click");
+                
+                // Notify DeploymentScene to update deck display
+                const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
+                if (deploymentScene) {
+                    deploymentScene.onCardPlaced(selectedCard);
+                }
+            } else {
+                console.warn("Failed to place card:", selectedCard.name);
+            }
         }
-
-        // Clear selected card after placing it
-        GameStateManager.getInstance().setSelectedCard(null);
-
-        this.redraw("click"); // Update hex appearance
+        // If hex is clicked without card selected, let MapScene handle it
+        // (for movement/attack selection)
     }
 }

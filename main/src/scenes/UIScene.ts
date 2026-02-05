@@ -4,6 +4,7 @@ import { DeckDisplayModal } from "../utils/DeckDisplayModal";
 import schemeData from '../../../public/schemeData.json';
 import { Card } from "../entities/Card";
 import { createPlayerContainer } from "../utils/helpers/playerContainer";
+import { GameEventEmitter, GameEventType, StateChangedEvent, TurnEndedEvent } from "../core/events/GameEvents";
 
 // main game UI scene
 export class UIScene extends Phaser.Scene {
@@ -89,21 +90,62 @@ export class UIScene extends Phaser.Scene {
         this.graveyardDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800, true);
         const graveyard = this.add.image(520, 980, 'demoGraveyard');
         graveyard.setInteractive().on('pointerdown', () => this.graveyardDeckDisplay.toggle());
+        
+        // Set up event listeners instead of polling
+        this.setupEventListeners();
+        
+        // Initial update
+        this.updateUI();
     }
-
-    update() {
-        const player1 = GameStateManager.getInstance().getPlayer1();
-        if (player1) {
+    
+    private setupEventListeners() {
+        // Listen for state changes
+        GameEventEmitter.on(GameEventType.STATE_CHANGED, (event: StateChangedEvent) => {
+            this.updateUI();
+        }, this);
+        
+        // Listen for turn changes
+        GameEventEmitter.on(GameEventType.TURN_ENDED, (event: TurnEndedEvent) => {
+            this.updateUI();
+        }, this);
+    }
+    
+    private updateUI() {
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        const player1 = gameState.players[Object.keys(gameState.players)[0]];
+        const player2 = gameState.players[Object.keys(gameState.players)[1]];
+        
+        if (player1 && this.player1Timer) {
             this.player1Timer.setText(player1.getPlayerRemainingTime().toString());
         }
 
-        const player2 = GameStateManager.getInstance().getPlayer2();
-        if (player2) {
+        if (player2 && this.player2Timer) {
             this.player2Timer.setText(player2.getPlayerRemainingTime().toString());
         }
 
-        const currentTurn = GameStateManager.getInstance().getTurnCounter();
-        this.turnCounterText.setText(`Turn: ${currentTurn}`);
+        if (this.turnCounterText) {
+            this.turnCounterText.setText(`Turn: ${gameState.turnCounter}`);
+        }
+    }
+
+    update() {
+        // Still poll for timer updates (since timer counts down every second)
+        // In a fully event-driven system, we'd emit timer events, but for now this is fine
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (gameState) {
+            const player1 = gameState.players[Object.keys(gameState.players)[0]];
+            const player2 = gameState.players[Object.keys(gameState.players)[1]];
+            
+            if (player1 && this.player1Timer) {
+                this.player1Timer.setText(player1.getPlayerRemainingTime().toString());
+            }
+
+            if (player2 && this.player2Timer) {
+                this.player2Timer.setText(player2.getPlayerRemainingTime().toString());
+            }
+        }
     }
 
     
