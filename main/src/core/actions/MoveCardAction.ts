@@ -1,4 +1,5 @@
 import { BaseGameAction } from "./GameAction";
+import { GameRules } from "../rules/GameRules";
 
 export interface MoveCardActionData {
     fromRow: number;
@@ -42,53 +43,7 @@ export class MoveCardAction extends BaseGameAction {
     }
 
     validate(state: any): boolean {
-        // Check if source hex exists and is occupied by this player
-        if (!state.hexMap || !state.hexMap[this.fromRow] || !state.hexMap[this.fromRow][this.fromCol]) {
-            return false;
-        }
-
-        const fromHex = state.hexMap[this.fromRow][this.fromCol];
-        if (!fromHex.occupied || !fromHex.occupiedBy) {
-            return false;
-        }
-
-        // Check if player owns the card
-        if (fromHex.occupiedByPlayerId !== this.playerId) {
-            return false;
-        }
-
-        // Check if destination hex exists and is not occupied
-        if (!state.hexMap[this.toRow] || !state.hexMap[this.toRow][this.toCol]) {
-            return false;
-        }
-
-        const toHex = state.hexMap[this.toRow][this.toCol];
-        if (toHex.occupied) {
-            return false;
-        }
-
-        // Check if it's player's turn
-        if (state.currentPlayerId !== this.playerId) {
-            return false;
-        }
-
-        // Check if card is tapped (can't move if tapped)
-        const card = fromHex.occupiedBy;
-        if (card.isTapped) {
-            return false;
-        }
-
-        // Check movement range (using GameRules)
-        const { GameRules } = require("../rules/GameRules");
-        const distance = GameRules.getHexDistance(this.fromRow, this.fromCol, this.toRow, this.toCol);
-        
-        if (distance > card.movement) {
-            return false;
-        }
-
-        // After deployment phase, cards can move more freely
-        // (no hex type restrictions for movement)
-        return true;
+        return GameRules.canMoveCard(state, this.playerId, this.fromRow, this.fromCol, this.toRow, this.toCol).valid;
     }
 
     apply(state: any): any {

@@ -30,23 +30,28 @@ export class EndTurnAction extends BaseGameAction {
             throw new Error(`Invalid EndTurnAction: Not player ${this.playerId}'s turn`);
         }
 
-        // Shallow clone to preserve object references
-        const newState = {
-            ...state,
-            players: { ...state.players }
-        };
-        
-        // Switch to next player
-        const playerIds = Object.keys(newState.players);
+        const playerIds = Object.keys(state.players);
         const currentIndex = playerIds.indexOf(this.playerId);
         const nextIndex = (currentIndex + 1) % playerIds.length;
         const nextPlayerId = playerIds[nextIndex];
-        
-        newState.currentPlayerId = nextPlayerId;
-        newState.turnCounter += 1;
 
-        // Note: Card untapping happens in GameStateManager after state update
-        // This allows the event system to know which player's cards to untap
+        const newState = {
+            ...state,
+            players: { ...state.players },
+            currentPlayerId: nextPlayerId,
+            turnCounter: state.turnCounter + 1,
+            hexMap: state.hexMap.map((row: any[], rowIndex: number) =>
+                row.map((hex: any, colIndex: number) => {
+                    if (!hex.occupied || !hex.occupiedBy || hex.occupiedByPlayerId !== nextPlayerId) {
+                        return hex;
+                    }
+                    return {
+                        ...hex,
+                        occupiedBy: { ...hex.occupiedBy, isTapped: false }
+                    };
+                })
+            )
+        };
 
         return newState;
     }

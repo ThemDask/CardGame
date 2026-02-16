@@ -1,5 +1,5 @@
 import { BaseGameAction } from "./GameAction";
-import { Card } from "../../entities/Card";
+import { GameRules } from "../rules/GameRules";
 
 export interface AttackActionData {
     attackerRow: number;
@@ -43,47 +43,7 @@ export class AttackAction extends BaseGameAction {
     }
 
     validate(state: any): boolean {
-        // Check if attacker hex exists and is occupied
-        if (!state.hexMap || !state.hexMap[this.attackerRow] || !state.hexMap[this.attackerRow][this.attackerCol]) {
-            return false;
-        }
-
-        const attackerHex = state.hexMap[this.attackerRow][this.attackerCol];
-        if (!attackerHex.occupied || !attackerHex.occupiedBy) {
-            return false;
-        }
-
-        // Check if player owns the attacker
-        if (attackerHex.occupiedByPlayerId !== this.playerId) {
-            return false;
-        }
-
-        // Check if target hex exists and is occupied
-        if (!state.hexMap[this.targetRow] || !state.hexMap[this.targetRow][this.targetCol]) {
-            return false;
-        }
-
-        const targetHex = state.hexMap[this.targetRow][this.targetCol];
-        if (!targetHex.occupied || !targetHex.occupiedBy) {
-            return false;
-        }
-
-        // Check if it's player's turn
-        if (state.currentPlayerId !== this.playerId) {
-            return false;
-        }
-
-        // Check if attacker is tapped (can't attack if already tapped)
-        const attacker = attackerHex.occupiedBy;
-        if (attacker.isTapped) {
-            return false;
-        }
-
-        // Check attack range using GameRules
-        const { GameRules } = require("../rules/GameRules");
-        const canAttack = GameRules.canAttack(state, this.attackerRow, this.attackerCol, this.targetRow, this.targetCol);
-        
-        return canAttack.valid;
+        return GameRules.canAttack(state, this.playerId, this.attackerRow, this.attackerCol, this.targetRow, this.targetCol).valid;
     }
 
     apply(state: any): any {
@@ -109,8 +69,7 @@ export class AttackAction extends BaseGameAction {
         // Calculate damage
         let damage = attacker.damage;
         if (attacker.ranged_damage > 0) {
-            // Use ranged damage if available
-            const distance = require("../rules/GameRules").GameRules.getHexDistance(
+            const distance = GameRules.getHexDistance(
                 this.attackerRow, this.attackerCol, this.targetRow, this.targetCol
             );
             if (distance <= attacker.range) {
@@ -119,25 +78,16 @@ export class AttackAction extends BaseGameAction {
         }
 
         // Apply damage to target
-        // Initialize currentHP if not set
         if (target.currentHP === undefined) {
             target.currentHP = target.hp;
         }
         target.currentHP -= damage;
 
-        // If target is destroyed, remove it
         if (target.currentHP <= 0) {
             targetHex.occupied = false;
             targetHex.occupiedBy = null;
             targetHex.occupiedByPlayerId = null;
-            
-            // Emit card destroyed event
-            require("../events/GameEvents").GameEventEmitter.emit(
-                require("../events/GameEvents").GameEventType.CARD_DESTROYED,
-                { row: this.targetRow, col: this.targetCol }
-            );
         } else {
-            // Update target card
             targetHex.occupiedBy = target;
         }
 

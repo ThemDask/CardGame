@@ -1,5 +1,5 @@
 import { BaseGameAction } from "./GameAction";
-import { Card } from "../../entities/Card";
+import { GameRules } from "../rules/GameRules";
 
 export interface PlaceCardActionData {
     cardId: string;
@@ -39,54 +39,7 @@ export class PlaceCardAction extends BaseGameAction {
     }
 
     validate(state: any): boolean {
-        // Check if hex exists and is not occupied
-        if (!state.hexMap || !state.hexMap[this.hexRow] || !state.hexMap[this.hexRow][this.hexCol]) {
-            return false;
-        }
-
-        const hex = state.hexMap[this.hexRow][this.hexCol];
-        if (hex.occupied) {
-            return false;
-        }
-
-        // Check if player owns the card
-        const player = state.players[this.playerId];
-        if (!player) {
-            return false;
-        }
-
-        const card = player.deck.find((c: Card) => c.id === this.cardId);
-        if (!card) {
-            return false;
-        }
-
-        // Check if player has enough gold
-        if (player.availableGold < card.cost) {
-            return false;
-        }
-
-        // Check deployment restrictions: can only deploy on deploy-type hexes
-        // After deployment phase, cards can move freely, but initial placement requires deploy hexes
-        const hexType = hex.type;
-        const isDeploymentPhase = state.gamePhase === 'deployment';
-        
-        if (isDeploymentPhase) {
-            // During deployment, only allow placement on deploy hexes
-            if (hexType !== 'landDeploy' && hexType !== 'waterDeploy') {
-                return false;
-            }
-            
-            // Check if marine units can only be placed on water
-            if (card.keywords && card.keywords.some((kw: string) => kw.includes('Marine'))) {
-                if (hexType !== 'waterDeploy') {
-                    return false;
-                }
-            }
-        }
-        // After deployment phase, cards can be placed anywhere (via movement, not initial placement)
-        // But this action is for initial placement, so we keep the restriction
-
-        return true;
+        return GameRules.canPlaceCard(state, this.playerId, this.cardId, this.hexRow, this.hexCol).valid;
     }
 
     apply(state: any): any {

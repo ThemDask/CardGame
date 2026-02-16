@@ -90,10 +90,17 @@ export class GameRules {
             return { valid: false, reason: "No card on source hex" };
         }
 
-        // Check if player owns the card
-        // Note: This assumes we track ownership. For now, we'll need to add this.
-        // For MVP, we can check if card is in player's deck (but this won't work after placement)
-        // TODO: Add ownership tracking to hex state
+        if (state.currentPlayerId !== playerId) {
+            return { valid: false, reason: "Not your turn" };
+        }
+
+        if (fromHex.occupiedByPlayerId !== playerId) {
+            return { valid: false, reason: "You don't own this card" };
+        }
+
+        if (fromHex.occupiedBy.isTapped) {
+            return { valid: false, reason: "Card is tapped" };
+        }
 
         // Check if destination hex exists and is not occupied
         if (!state.hexMap[toRow] || !state.hexMap[toRow][toCol]) {
@@ -130,6 +137,7 @@ export class GameRules {
      */
     static canAttack(
         state: GameState,
+        playerId: string,
         attackerRow: number,
         attackerCol: number,
         targetRow: number,
@@ -141,6 +149,14 @@ export class GameRules {
             return { valid: false, reason: "Attacker not found" };
         }
 
+        if (state.currentPlayerId !== playerId) {
+            return { valid: false, reason: "Not your turn" };
+        }
+
+        if (attackerHex.occupiedByPlayerId !== playerId) {
+            return { valid: false, reason: "You don't own the attacker" };
+        }
+
         // Check if target exists
         const targetHex = state.hexMap[targetRow]?.[targetCol];
         if (!targetHex || !targetHex.occupied || !targetHex.occupiedBy) {
@@ -148,7 +164,6 @@ export class GameRules {
         }
 
         const attacker = attackerHex.occupiedBy;
-        const target = targetHex.occupiedBy;
 
         // Check if attacker is tapped
         if (attacker.isTapped) {

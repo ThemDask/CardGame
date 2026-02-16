@@ -7,7 +7,7 @@ import { Card } from '../entities/Card';
 import { configureBackground } from '../utils/helpers/configureBackground';
 import cardData from '../../../public/cardData.json';
 import { GameEventEmitter, GameEventType } from '../core/events/GameEvents';
-import { EnemyDeployment } from '../core/helpers/EnemyDeployment';
+import { EnemyDeployment } from '../utils/helpers/EnemyDeployment';
 import { MoveCardAction } from '../core/actions/MoveCardAction';
 import { AttackAction } from '../core/actions/AttackAction';
 import { EndTurnAction } from '../core/actions/EndTurnAction';
@@ -34,21 +34,17 @@ export class MapScene extends Phaser.Scene {
         this.hexRadius = 55;  
 
         this.zoomScale = 1; // Initial zoom scale
-        this.zoomLevels = [0.5, 0.75, 1, 1.25, 1.5]; // 4 zoom stages (plus initial)
+        this.zoomLevels = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5]; // 4 zoom stages (plus initial)
         this.hexMap = [];
 
         this.hexMapConfig = [
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'], 
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'], 
-            ['land', 'landDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'landDeploy', 'land'], 
-            ['land', 'land', 'water', 'water', 'water', 'water', 'water', 'land', 'land'],
-            ['land', 'land', 'water', 'water', 'land', 'land', 'water', 'water', 'land', 'land'],
-            ['mine', 'land', 'water', 'water', 'land', 'objective', 'land', 'water', 'water', 'land', 'mine'],
-            ['land', 'land', 'water', 'water', 'land', 'land', 'water', 'water', 'land', 'land'],
-            ['land', 'land', 'water', 'water', 'water', 'water', 'water', 'land', 'land'],
-            ['land', 'landDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'landDeploy', 'land'],
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'],
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'],
+            ['pinkTP', 'landDeploy', 'landDeploy', 'landDeploy', 'pinkTP'], 
+            ['orangeTP', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'orangeTP', ], 
+            ['purpleTP', 'land', 'land', 'land', 'land', 'land', 'purpleTP'], 
+            ['whiteTP', 'water', 'water', 'water', 'water', 'water', 'water', 'whiteTP'],
+            ['yellowTP', 'land', 'land', 'land', 'land', 'land', 'yellowTP'],
+            ['AzureTP', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'AzureTP'],
+            ['redTP', 'landDeploy', 'landDeploy', 'landDeploy', 'redTP'],
         ];
     }
 

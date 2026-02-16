@@ -121,13 +121,13 @@ export class GameStateManager {
                 targetCol: action.targetCol,
                 playerId: action.playerId
             });
+            const targetHexAfter = this.gameState!.hexMap[action.targetRow]?.[action.targetCol];
+            if (targetHexAfter && !targetHexAfter.occupied) {
+                GameEventEmitter.emit(GameEventType.CARD_DESTROYED, { row: action.targetRow, col: action.targetCol });
+            }
         } else if (action instanceof EndTurnAction) {
             const previousPlayerId = previousState.currentPlayerId;
             const newPlayerId = this.gameState!.currentPlayerId;
-            
-            // Untap all cards for the new player
-            this.untapPlayerCards(newPlayerId);
-            
             const event: TurnEndedEvent = {
                 previousPlayerId,
                 newPlayerId,
@@ -135,23 +135,6 @@ export class GameStateManager {
             };
             GameEventEmitter.emit(GameEventType.TURN_ENDED, event);
             GameEventEmitter.emit(GameEventType.TURN_STARTED, { playerId: newPlayerId });
-        }
-    }
-
-    /**
-     * Untap all cards for a player
-     */
-    private untapPlayerCards(playerId: string): void {
-        if (!this.gameState) return;
-        
-        // Find all hexes occupied by this player and untap their cards
-        for (let row = 0; row < this.gameState.hexMap.length; row++) {
-            for (let col = 0; col < this.gameState.hexMap[row].length; col++) {
-                const hex = this.gameState.hexMap[row][col];
-                if (hex.occupied && hex.occupiedBy && hex.occupiedByPlayerId === playerId) {
-                    hex.occupiedBy.isTapped = false;
-                }
-            }
         }
     }
 
