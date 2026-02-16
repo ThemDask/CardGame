@@ -21,8 +21,6 @@ export class UIScene extends Phaser.Scene {
     private modalContainer: Phaser.GameObjects.Container;
     private graveyard: Phaser.GameObjects.Image;
     private graveyardDeckDisplay: DeckDisplayModal;
-    private player1GoldText: Phaser.GameObjects.Text;
-    private player2GoldText: Phaser.GameObjects.Text;
 
     constructor() {
         super({ key: 'UIScene' });
@@ -51,7 +49,7 @@ export class UIScene extends Phaser.Scene {
                 cardData.ranged_damage ?? 0,
                 cardData.range ?? 0,
                 cardData.hp ?? 0,
-                cardData.cost ?? 0,
+                (cardData as any).actions ?? (cardData as any).cost ?? 0,
                 cardData.description ?? "",
                 cardData.imagePath,
                 cardData.keywords || []

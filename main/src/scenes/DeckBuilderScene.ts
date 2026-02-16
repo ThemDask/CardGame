@@ -10,7 +10,6 @@ import { extractKeywordBase } from '../utils/helpers/extractKeywordBase';
 import { configureBackground } from '../utils/helpers/configureBackground';
 
 export class DeckBuilderScene extends Phaser.Scene {
-    private gold: number;
     private myDeck: Card[];
     public globalPool: Card[];
     private myDeckContainer: Phaser.GameObjects.Container;
@@ -29,9 +28,8 @@ export class DeckBuilderScene extends Phaser.Scene {
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
-        this.gold = 100; 
-        this.myDeck = []; 
-        this.globalPool = createGlobalCardPool(true); 
+        this.myDeck = [];
+        this.globalPool = createGlobalCardPool(true);
     }
 
     preload() {
@@ -58,8 +56,6 @@ export class DeckBuilderScene extends Phaser.Scene {
         this.cardDetailsPanel.updatePanel(null);
 
         this.createDeckRectangles();
-
-        this.add.text(1200, 50, `🪙: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
         const searchBox = new SearchBox(this, 50, 770);
 
@@ -139,10 +135,6 @@ export class DeckBuilderScene extends Phaser.Scene {
                 cardImage.on('pointerdown', () => {
                     this.handleCardClick(card, container === this.myDeckContainer);
                 });
-    
-                // Display card gold value
-                const goldText = this.add.text(slotX + 10, slotY + 10, `${card.cost}`, { font: '18px Arial', color: '#000' });
-                container.add(goldText); 
     
                 cardImage.on('pointerover', () => {
                     this.cardDetailsPanel.updatePanel(card);
@@ -260,10 +252,8 @@ export class DeckBuilderScene extends Phaser.Scene {
     
                 try {
                     const loadedIds: string[] = JSON.parse(contents);
-                    // reset gold and deck
                     this.myDeck = [];
-                    this.gold = 100; 
-    
+
                     loadedIds.forEach(id => {
                         const originalCard = cardData.find((card: any) => card.id === id);
                         if (originalCard) {
@@ -271,18 +261,17 @@ export class DeckBuilderScene extends Phaser.Scene {
                                 originalCard.id,
                                 originalCard.type,
                                 originalCard.name,
-                                originalCard.movement ?? 0,  
-                                originalCard.damage ?? 0,     
-                                originalCard.ranged_damage ?? 0, 
-                                originalCard.range ?? 0,       
-                                originalCard.hp ?? 0,          
-                                originalCard.cost ?? 0,        
+                                originalCard.movement ?? 0,
+                                originalCard.damage ?? 0,
+                                originalCard.ranged_damage ?? 0,
+                                originalCard.range ?? 0,
+                                originalCard.hp ?? 0,
+                                (originalCard as any).actions ?? (originalCard as any).cost ?? 0,
                                 originalCard.description ?? "",
                                 originalCard.imagePath,
                                 originalCard.keywords || []
                             );
                             this.myDeck.push(card);
-                            this.gold -= card.cost; 
                         } else {
                             console.warn(`Card with ID ${id} not found in card data.`);
                         }
@@ -325,23 +314,18 @@ export class DeckBuilderScene extends Phaser.Scene {
     
     handleCardClick(card: Card, isMyDeck: boolean) {
         if (isMyDeck) {
-            // Remove card from 'My Deck'
             const index = this.myDeck.indexOf(card);
             if (index > -1) {
                 this.myDeck.splice(index, 1);
-                this.globalPool.push(card); 
-                this.gold += card.cost; 
+                this.globalPool.push(card);
             }
-        } else { 
-            // Add card to 'My Deck' if there's enough gold and space
-            if (this.gold >= card.cost && this.myDeck.length < 40) {
-                this.gold -= card.cost;
+        } else {
+            if (this.myDeck.length < 40) {
                 this.myDeck.push(card);
                 const index = this.globalPool.indexOf(card);
-                this.globalPool.splice(index, 1); // Remove card from global pool
+                this.globalPool.splice(index, 1);
             }
         }
-        // Redraw the scene
         this.scene.restart();
     }
 

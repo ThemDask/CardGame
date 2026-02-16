@@ -11,8 +11,6 @@ import { GameEventEmitter, GameEventType, StateChangedEvent } from "../core/even
 export class DeploymentScene extends Phaser.Scene {
     private player1Timer: Phaser.GameObjects.Text;
     private player2Timer: Phaser.GameObjects.Text;
-    private player1GoldText: Phaser.GameObjects.Text;
-    private player2GoldText: Phaser.GameObjects.Text;
     private cardDetailsPanel: CardDetailsPanel;
     private deckContainer: Phaser.GameObjects.Container;
     private scrollMask: Phaser.GameObjects.Graphics;

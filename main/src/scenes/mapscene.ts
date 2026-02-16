@@ -70,7 +70,7 @@ export class MapScene extends Phaser.Scene {
                     cardDataItem.ranged_damage ?? 0,
                     cardDataItem.range ?? 0,
                     cardDataItem.hp ?? 0,
-                    cardDataItem.cost ?? 0,
+                    cardDataItem.actions ?? (cardDataItem as any).cost ?? 0,
                     cardDataItem.description ?? "",
                     cardDataItem.imagePath,
                     cardDataItem.keywords || []
@@ -207,7 +207,7 @@ export class MapScene extends Phaser.Scene {
         this.player2.deck = enemyDeck.filter(card => !deployedCards.includes(card));
         gameStateManager.setPlayer2(this.player2);
         
-        // Place enemy cards on the board (bypass gold cost for initial deployment)
+        // Place enemy cards on the board
         let gameState = gameStateManager.getGameState();
         if (!gameState) {
             console.error("Game state not initialized");
@@ -267,7 +267,9 @@ export class MapScene extends Phaser.Scene {
         if (this.cardSprites.has(key)) {
             const oldSprite = this.cardSprites.get(key);
             if (oldSprite && oldSprite.active) {
-                oldSprite.destroy(true); // Destroy and remove from scene
+                const actionsText = (oldSprite as any).actionsText;
+                if (actionsText && actionsText.active) actionsText.destroy(true);
+                oldSprite.destroy(true);
             }
             this.cardSprites.delete(key);
         }
@@ -311,9 +313,17 @@ export class MapScene extends Phaser.Scene {
             cardImage.setDisplaySize(cardSize, cardSize);
             cardImage.setOrigin(0.5, 0.5); // Center origin
             cardImage.setDepth(10); // Above hexes
-            
-            // Store reference with scale factor for future updates
+
+            // Show actions stat on the card (map scene only)
+            const actionsText = this.add.text(hexWorldX + cardSize / 2 - 4, hexWorldY + cardSize / 2 - 4, `A:${card.actions}`, {
+                font: `${Math.max(10, Math.floor(12 * scaleFactor))}px Arial`,
+                color: '#ffffff'
+            }).setOrigin(1, 1).setDepth(11);
+            actionsText.setStroke('#000000', 2);
+
+            // Store both so we can destroy the text when card is removed
             this.cardSprites.set(key, cardImage);
+            (cardImage as any).actionsText = actionsText;
             card.visualSprite = cardImage;
             
             // Make card interactive for selection
@@ -704,9 +714,10 @@ export class MapScene extends Phaser.Scene {
                         stateHex.occupiedBy.visualSprite = null;
                     }
                 }
-                // Destroy the sprite
+                const actionsText = (sprite as any).actionsText;
+                if (actionsText && actionsText.active) actionsText.destroy(true);
                 if (sprite.active) {
-                    sprite.destroy(true); // Destroy the sprite and remove from scene
+                    sprite.destroy(true);
                 }
             }
         });

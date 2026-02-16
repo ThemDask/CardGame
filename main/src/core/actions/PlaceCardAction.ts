@@ -70,9 +70,6 @@ export class PlaceCardAction extends BaseGameAction {
         // Remove card from player's deck
         newPlayer.deck.splice(cardIndex, 1);
         
-        // Deduct gold
-        newPlayer.availableGold -= card.cost;
-        
         // Clone the hex we're modifying
         const hexRow = [...newState.hexMap[this.hexRow]];
         const hex = { ...hexRow[this.hexCol] };

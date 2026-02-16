@@ -100,7 +100,7 @@ export class DeckDisplayModal {
                         originalCard.ranged_damage ?? 0,
                         originalCard.range ?? 0,
                         originalCard.hp ?? 0,
-                        originalCard.cost ?? 0,
+                        (originalCard as any).actions ?? (originalCard as any).cost ?? 0,
                         originalCard.description ?? "",
                         originalCard.imagePath,
                         originalCard.keywords || []

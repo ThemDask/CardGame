@@ -1,4 +1,3 @@
-import { Card } from "../../entities/Card";
 import { GameState } from "../state/GameState";
 
 /**
@@ -42,11 +41,6 @@ export class GameRules {
         const card = player.deck.find(c => c.id === cardId);
         if (!card) {
             return { valid: false, reason: "Card not in player's deck" };
-        }
-
-        // Check if player has enough gold
-        if (player.availableGold < card.cost) {
-            return { valid: false, reason: "Not enough gold" };
         }
 
         // Check deployment restrictions: can only deploy on deploy-type hexes during deployment phase

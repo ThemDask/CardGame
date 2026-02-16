@@ -27,7 +27,7 @@ export class EnemyDeployment {
                 cardDataItem.ranged_damage ?? 0,
                 cardDataItem.range ?? 0,
                 cardDataItem.hp ?? 0,
-                cardDataItem.cost ?? 0,
+                (cardDataItem as any).actions ?? (cardDataItem as any).cost ?? 0,
                 cardDataItem.description ?? "",
                 cardDataItem.imagePath,
                 cardDataItem.keywords || []

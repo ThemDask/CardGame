@@ -189,8 +189,7 @@ export class GameStateManager {
             playerData.name,
             this.reconstructCards(playerData.deck || []),
             playerData.time ?? 300,
-            playerData.seconds ?? 300,
-            playerData.availableGold ?? 100
+            playerData.seconds ?? 300
         );
         return player;
     }
@@ -214,7 +213,7 @@ export class GameStateManager {
                 cardData.ranged_damage ?? 0,
                 cardData.range ?? 0,
                 cardData.hp ?? 0,
-                cardData.cost ?? 0,
+                cardData.actions ?? (cardData as any).cost ?? 0,
                 cardData.description ?? "",
                 cardData.imagePath,
                 cardData.keywords || []

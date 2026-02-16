@@ -7,7 +7,7 @@ export class Card {
     ranged_damage: number;
     range: number;
     hp: number;
-    cost: number;
+    actions: number;
     description: string;
     imagePath: string;
     keywords: string[]; 
@@ -17,7 +17,7 @@ export class Card {
     visualSprite: Phaser.GameObjects.Image | null = null; // Reference to visual representation
 
     constructor(id: string, type: string, name: string, movement: number, damage: number, ranged_damage: number, range: number, hp: number,
-        cost: number,  description: string, imagePath: string,  keywords: string[]) {
+        actions: number, description: string, imagePath: string, keywords: string[]) {
       this.id = id;
       this.type = type;
       this.name = name;
@@ -26,7 +26,7 @@ export class Card {
       this.ranged_damage = ranged_damage
       this.range = range;
       this.hp = hp;
-      this.cost = cost;
+      this.actions = actions;
       this.description = description;
       this.imagePath = imagePath;
       this.keywords = keywords;
