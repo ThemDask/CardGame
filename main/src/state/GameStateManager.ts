@@ -5,8 +5,6 @@ import { GameState, GameStateHelper, GamePhase } from "../core/state/GameState";
 import { UIManager } from "../core/state/UIManager";
 import { GameAction } from "../core/actions/GameAction";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
-import { MoveCardAction } from "../core/actions/MoveCardAction";
-import { AttackAction } from "../core/actions/AttackAction";
 import { EndTurnAction } from "../core/actions/EndTurnAction";
 import { GameEventEmitter, GameEventType, StateChangedEvent, ActionExecutedEvent, ActionRejectedEvent, CardPlacedEvent, TurnEndedEvent } from "../core/events/GameEvents";
 
@@ -105,26 +103,6 @@ export class GameStateManager {
                 playerId: action.playerId
             };
             GameEventEmitter.emit(GameEventType.CARD_PLACED, event);
-        } else if (action instanceof MoveCardAction) {
-            GameEventEmitter.emit(GameEventType.CARD_MOVED, {
-                fromRow: action.fromRow,
-                fromCol: action.fromCol,
-                toRow: action.toRow,
-                toCol: action.toCol,
-                playerId: action.playerId
-            });
-        } else if (action instanceof AttackAction) {
-            GameEventEmitter.emit(GameEventType.CARD_ATTACKED, {
-                attackerRow: action.attackerRow,
-                attackerCol: action.attackerCol,
-                targetRow: action.targetRow,
-                targetCol: action.targetCol,
-                playerId: action.playerId
-            });
-            const targetHexAfter = this.gameState!.hexMap[action.targetRow]?.[action.targetCol];
-            if (targetHexAfter && !targetHexAfter.occupied) {
-                GameEventEmitter.emit(GameEventType.CARD_DESTROYED, { row: action.targetRow, col: action.targetCol });
-            }
         } else if (action instanceof EndTurnAction) {
             const previousPlayerId = previousState.currentPlayerId;
             const newPlayerId = this.gameState!.currentPlayerId;
@@ -317,6 +295,7 @@ export class GameStateManager {
     }
 
     private rejectAction(action: GameAction, reason: string): void {
+        console.warn(`Action rejected: ${action.type}`, { reason, action: action.serialize() });
         const event: ActionRejectedEvent = {
             action,
             reason

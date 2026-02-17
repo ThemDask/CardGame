@@ -3,7 +3,8 @@ import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "./Card";
 import { DeploymentScene } from "../scenes/DeploymentScene";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
-import { GameEventEmitter, GameEventType, CardPlacedEvent } from "../core/events/GameEvents";
+
+export type HighlightType = 'none' | 'movement' | 'attack';
 
 export class Hex {
     occupied: boolean;
@@ -14,6 +15,7 @@ export class Hex {
     hexRadius: number;
     defaultFillColor: number = 0x419627; // Default hex fill color
     selected: boolean = false; // Track selection state
+    highlightType: HighlightType = 'none'; // Track highlight state for movement/attack
     row: number = -1; // Row position in hex map
     col: number = -1; // Column position in hex map
 
@@ -47,13 +49,19 @@ export class Hex {
 
         // Add event listeners for pointer events
         this.hex.on('pointerover', () => {
-            // console.log(`Hovering over hex`);
-            this.redraw('hover');
+            // Only apply hover if hex is not highlighted for movement/attack
+            if (this.highlightType === 'none') {
+                this.redraw('hover');
+            }
         });
 
         this.hex.on('pointerout', () => {
-            // console.log(`Pointer out of hex`);
-            this.redraw('default');
+            // Restore highlight state if exists, otherwise default
+            if (this.highlightType === 'none') {
+                this.redraw('default');
+            } else {
+                this.redraw('highlight');
+            }
         });
 
         this.hex.on('pointerdown', () => {
@@ -76,10 +84,15 @@ export class Hex {
         return points;
     }
 
-    drawHex(fillColor: number) {
+    drawHex(fillColor: number, borderColor?: number, borderWidth?: number) {
         const angle = Phaser.Math.DegToRad(60);
         this.hex.clear(); // Clear previous drawings
-        this.hex.lineStyle(2, 0x000000, 1); // Set the line color again (optional)
+        
+        // Use provided border color/width or default
+        const strokeColor = borderColor !== undefined ? borderColor : 0x000000;
+        const strokeWidth = borderWidth !== undefined ? borderWidth : 2;
+        
+        this.hex.lineStyle(strokeWidth, strokeColor, 1);
         this.hex.fillStyle(fillColor); // Apply the fill color
 
         // Draw flat-top hexagon (flat edges on top/bottom)
@@ -101,16 +114,40 @@ export class Hex {
 
     redraw(invocation: string) {
         const hexColor = hexTypes[this.type]; // Access the hex type colors based on the current type
-        if (invocation === 'hover') {
-            // console.log('Hovering redraw');
+        
+        // If hex has a highlight (movement/attack), preserve it
+        if (this.highlightType === 'movement') {
+            this.drawHex(hexColor.default, 0xffffff, 4); // White border for movement
+        } else if (this.highlightType === 'attack') {
+            this.drawHex(hexColor.default, 0xff0000, 4); // Red border for attack
+        } else if (invocation === 'hover') {
+            // Only apply hover if not highlighted
             this.drawHex(hexColor.hover); // Use hover color
         } else if (invocation === 'click') {
-            // console.log('Click redraw');
             this.drawHex(hexColor.click); // Use click color
+        } else if (invocation === 'highlight') {
+            // Redraw with current highlight state (movement/attack already handled above)
+            this.drawHex(hexColor.default);
         } else {
-            // console.log('Default redraw');
+            // Default redraw
             this.drawHex(hexColor.default); // Use default color
         }
+    }
+    
+    /**
+     * Set highlight state for movement/attack
+     */
+    setHighlight(type: HighlightType) {
+        this.highlightType = type;
+        this.redraw('highlight');
+    }
+    
+    /**
+     * Clear highlight state
+     */
+    clearHighlight() {
+        this.highlightType = 'none';
+        this.redraw('default');
     }
 
     handleClick(scene: Phaser.Scene) {
@@ -127,15 +164,15 @@ export class Hex {
             // Check if this is a valid deployment hex during deployment phase
             const isDeploymentPhase = gameState.gamePhase === 'deployment';
             if (isDeploymentPhase) {
-                // Only allow deployment on deploy-type hexes
-                if (this.type !== 'landDeploy' && this.type !== 'waterDeploy') {
+                // Only allow deployment on deploy-type hexes (land or water)
+                if (this.type !== 'landDeploy' && this.type !== 'water') {
                     console.warn("Can only deploy on deployment zones");
                     return;
                 }
                 
-                // Check marine unit restrictions
+                // Check marine unit restrictions - must deploy on water
                 if (selectedCard.keywords && selectedCard.keywords.some((kw: string) => kw.includes('Marine'))) {
-                    if (this.type !== 'waterDeploy') {
+                    if (this.type !== 'water') {
                         console.warn("Marine units can only be deployed on water");
                         return;
                     }
@@ -164,7 +201,6 @@ export class Hex {
                 console.warn("Failed to place card:", selectedCard.name);
             }
         }
-        // If hex is clicked without card selected, let MapScene handle it
-        // (for movement/attack selection)
+        // If hex is clicked without card selected from deck, do nothing (movement/attack removed)
     }
 }
