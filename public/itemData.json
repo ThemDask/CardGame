@@ -1,7 +1,7 @@
 [
     {
         "id": "1",
-        "type": "creature",
+        "type": "item",
         "name": "Scheme1",
         "cost": 5,
         "movement": 1,

@@ -1,10 +1,10 @@
-import { createBackButton } from "../utils/helpers/backButton";
 import { GameStateManager } from "../state/GameStateManager";
 import { DeckDisplayModal } from "../utils/DeckDisplayModal";
 import schemeData from '../../../public/schemeData.json';
 import { Card } from "../entities/Card";
 import { createPlayerContainer } from "../utils/helpers/playerContainer";
 import { GameEventEmitter, GameEventType, StateChangedEvent, TurnEndedEvent } from "../core/events/GameEvents";
+import { buttonOutStroke, buttonOutStyle, buttonOverStroke, buttonOverStyle, buttonUpStroke, buttonUpStyle } from "../utils/styles";
 
 // main game UI scene
 export class UIScene extends Phaser.Scene {
@@ -21,6 +21,8 @@ export class UIScene extends Phaser.Scene {
     private modalContainer: Phaser.GameObjects.Container;
     private graveyard: Phaser.GameObjects.Image;
     private graveyardDeckDisplay: DeckDisplayModal;
+    private endTurnButton: Phaser.GameObjects.Text;
+    private backButton: Phaser.GameObjects.Text;
 
     constructor() {
         super({ key: 'UIScene' });
@@ -31,7 +33,7 @@ export class UIScene extends Phaser.Scene {
     }
 
     create() {
-        createBackButton(this)
+        this.createButtons();
 
         const player1 = GameStateManager.getInstance().getPlayer1();
         const player2 = GameStateManager.getInstance().getPlayer2();
@@ -72,12 +74,10 @@ export class UIScene extends Phaser.Scene {
     
         this.turnCounterText = turnCounterText; // Store it for updating in `update()`
 
-        this.deckModalButton = this.add.text(500, 100, "View Deck", { font: '32px Arial', color: "#fff" });
-        // FIX -> no toglle and displayDeck
-        this.deckModalButton.setInteractive().on('pointerdown', () => this.deckDisplay.toggle());
-
-        this.schemeDeckModalButton = this.add.text(500, 800, "View Scheme Deck", { font: '32px Arial', color: "#fff" });
-        this.schemeDeckModalButton.setInteractive().on('pointerdown', () => this.schemeDeckDisplay.toggle());
+        this.deckModalButton = this.styleButton(
+            this.add.text(500, 100, "View Deck", { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+        );
+        this.deckModalButton.on('pointerdown', () => this.deckDisplay.toggle());
 
         this.deckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800, true);
         this.deckDisplay.displayDeck(playerDeck, "playerDeck");
@@ -86,14 +86,61 @@ export class UIScene extends Phaser.Scene {
         this.schemeDeckDisplay.displayDeck(schemeDeck, "schemeDeck");
 
         this.graveyardDeckDisplay = new DeckDisplayModal(this, 10, 100, 600, 800, true);
-        const graveyard = this.add.image(520, 980, 'demoGraveyard');
+        const graveyard = this.add.image(570, 980, 'demoGraveyard');
         graveyard.setInteractive().on('pointerdown', () => this.graveyardDeckDisplay.toggle());
         
         // Set up event listeners instead of polling
         this.setupEventListeners();
         
+        // Start player timer countdown
+        // TODO set this to start after deployment
+        this.time.addEvent({
+            delay: 1000,
+            loop: true,
+            callback: () => {
+                try {
+                    const player1 = GameStateManager.getInstance().getPlayer1();
+                    if (player1 && typeof player1.countSeconds === 'function') {
+                        player1.countSeconds(true);
+                    }
+                } catch (error) {
+                    console.error("Error updating player timer:", error);
+                }
+            }
+        });
+        
         // Initial update
         this.updateUI();
+    }
+    
+    /**
+     * Apply interactive button styling (hover, out, up) to a text button
+     */
+    private styleButton(button: Phaser.GameObjects.Text): Phaser.GameObjects.Text {
+        return button
+            .setInteractive()
+            .on('pointerover', () => {
+                button.setStroke(buttonOverStroke.colour, buttonOverStroke.thickness);
+                button.setStyle(buttonOverStyle);
+            })
+            .on('pointerout', () => {
+                button.setStroke(buttonOutStroke.colour, buttonOutStroke.thickness);
+                button.setStyle(buttonOutStyle);
+            })
+            .on('pointerup', () => {
+                button.setStroke(buttonUpStroke.colour, buttonUpStroke.thickness);
+                button.setStyle(buttonUpStyle);
+            });
+    }
+    
+    private createButtons() {
+        this.endTurnButton = this.styleButton(
+            this.add.text(1700, 480, 'End Turn', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+        );
+
+        this.backButton = this.styleButton(
+            this.add.text(1750, 580, 'Back', { fontSize: '36px', color: '#ffffff', strokeThickness: 2 })
+        );
     }
     
     private setupEventListeners() {

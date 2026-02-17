@@ -7,8 +7,7 @@ import { Card } from '../entities/Card';
 import { configureBackground } from '../utils/helpers/configureBackground';
 import cardData from '../../../public/cardData.json';
 import { GameEventEmitter, GameEventType } from '../core/events/GameEvents';
-import { EnemyDeployment } from '../utils/helpers/EnemyDeployment';
-import { EndTurnAction } from '../core/actions/EndTurnAction';
+import { EnemyAI } from '../utils/helpers/EnemyAI';
 
 // Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
@@ -23,7 +22,6 @@ export class MapScene extends Phaser.Scene {
     private player2: Player;
     private hexMapConfig: Array<Array<HexType>>;
     private cardSprites: Map<string, Phaser.GameObjects.Image> = new Map(); // Track card visuals
-    private endTurnButton: Phaser.GameObjects.Text | null = null;
     private selectedCardHex: {row: number, col: number} | null = null; // For click highlight feedback
 
 
@@ -114,26 +112,17 @@ export class MapScene extends Phaser.Scene {
         const gameStateManager = GameStateManager.getInstance();
         gameStateManager.initializeGame(this.player1, this.player2, this.hexMap);
         
-        // Deploy enemy cards
-        this.deployEnemyCards();
+        // Deploy enemy cards and create their visuals
+        const deployedEnemyCards = EnemyAI.deployEnemyCards(this.hexMapConfig);
+        deployedEnemyCards.forEach(({ card, row, col }) => {
+            this.createCardVisual(card, row, col);
+        });
+        
+        // Set up enemy AI auto-turn
+        EnemyAI.setupAutoTurn();
         
         // Set up event listeners for state changes
         this.setupEventListeners();
-        
-        // Create UI elements
-        this.createGameUI();
-        
-        // TODO set this to start after deployment
-        setInterval(() => {
-            try {
-                const player1 = gameStateManager.getPlayer1();
-                if (player1 && typeof player1.countSeconds === 'function') {
-                    player1.countSeconds(true);
-                }
-            } catch (error) {
-                console.error("Error updating player timer:", error);
-            }
-        }, 1000/*ms*/);
 
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
@@ -148,7 +137,7 @@ export class MapScene extends Phaser.Scene {
 
         // IMPORTANT! toogle here
         this.scene.launch('DeploymentScene')
-        // this.scene.launch('UIScene');
+        this.scene.launch('UIScene');
 
     }
 
@@ -165,78 +154,8 @@ export class MapScene extends Phaser.Scene {
         GameEventEmitter.on(GameEventType.CARD_PLACED, (event: any) => {
             this.handleCardPlaced(event);
         }, this);
-        
-        GameEventEmitter.on(GameEventType.TURN_STARTED, (event: any) => {
-            this.handleTurnStarted(event);
-        }, this);
     }
     
-    /**
-     * Deploy enemy cards at game start
-     */
-    private deployEnemyCards() {
-        const gameStateManager = GameStateManager.getInstance();
-        const enemyDeck = EnemyDeployment.createEnemyDeck();
-        const deploymentPositions = EnemyDeployment.getEnemyDeploymentPositions(this.hexMapConfig);
-        
-        if (deploymentPositions.length === 0) {
-            console.warn("No deployment positions found for enemy cards");
-            return;
-        }
-        
-        // Update player2's deck (remove cards that will be deployed)
-        const deployedCards: Card[] = [];
-        const numToDeploy = Math.min(enemyDeck.length, deploymentPositions.length);
-        for (let i = 0; i < numToDeploy; i++) {
-            deployedCards.push(enemyDeck[i]);
-        }
-        this.player2.deck = enemyDeck.filter(card => !deployedCards.includes(card));
-        gameStateManager.setPlayer2(this.player2);
-        
-        // Place enemy cards on the board
-        let gameState = gameStateManager.getGameState();
-        if (!gameState) {
-            console.error("Game state not initialized");
-            return;
-        }
-        
-        const enemyPlayerId = "Player 2";
-        
-        // Deploy all cards in one state update
-        try {
-            const newState = JSON.parse(JSON.stringify(gameState));
-            
-            for (let i = 0; i < Math.min(deployedCards.length, deploymentPositions.length); i++) {
-                const card = deployedCards[i];
-                const pos = deploymentPositions[i];
-                
-                // Validate position exists
-                if (!newState.hexMap[pos.row] || !newState.hexMap[pos.row][pos.col]) {
-                    console.warn(`Invalid deployment position: row ${pos.row}, col ${pos.col}`);
-                    continue;
-                }
-                
-                const hex = newState.hexMap[pos.row][pos.col];
-                if (hex && !hex.occupied) {
-                    hex.occupied = true;
-                    hex.occupiedBy = card;
-                    hex.occupiedByPlayerId = enemyPlayerId;
-                    
-                    // Create visual
-                    this.createCardVisual(card, pos.row, pos.col);
-                } else {
-                    console.warn(`Hex at row ${pos.row}, col ${pos.col} is already occupied`);
-                }
-            }
-            
-            // Update state once with all deployments
-            (gameStateManager as any).gameState = newState;
-            (gameStateManager as any).gameState.lastUpdated = Date.now();
-            
-        } catch (error) {
-            console.error("Failed to deploy enemy cards:", error);
-        }
-    }
     
     /**
      * Create visual representation of card on hex
@@ -382,67 +301,6 @@ export class MapScene extends Phaser.Scene {
         }
     }
     
-    /**
-     * Handle turn started event
-     */
-    private handleTurnStarted(event: any) {
-        if (!event) return;
-        
-        const { playerId } = event;
-        if (!playerId) return;
-        
-        // Auto-skip enemy turn
-        if (playerId === "Player 2") {
-            setTimeout(() => {
-                try {
-                    const endTurnAction = new EndTurnAction("Player 2");
-                    GameStateManager.getInstance().executeAction(endTurnAction);
-                } catch (error) {
-                    console.error("Failed to auto-end enemy turn:", error);
-                }
-            }, 1000); // Wait 1 second then auto-end turn
-        }
-        
-        // Update UI
-        if (this.endTurnButton) {
-            this.endTurnButton.setVisible(playerId === "Player 1");
-        }
-    }
-    
-    /**
-     * Create game UI elements
-     */
-    private createGameUI() {
-        try {
-            // End Turn button
-            this.endTurnButton = this.add.text(1700, 50, "End Turn", {
-                font: '32px Arial',
-                color: '#ffffff',
-                backgroundColor: '#333333',
-                padding: { x: 20, y: 10 }
-            });
-            this.endTurnButton.setInteractive();
-            this.endTurnButton.on('pointerdown', () => {
-                try {
-                    const gameState = GameStateManager.getInstance().getGameState();
-                    if (gameState && gameState.currentPlayerId === "Player 1") {
-                        const action = new EndTurnAction("Player 1");
-                        GameStateManager.getInstance().executeAction(action);
-                    }
-                } catch (error) {
-                    console.error("Failed to end turn:", error);
-                }
-            });
-            
-            // Initially hide button if it's not player 1's turn
-            const gameState = GameStateManager.getInstance().getGameState();
-            if (gameState && gameState.currentPlayerId !== "Player 1") {
-                this.endTurnButton.setVisible(false);
-            }
-        } catch (error) {
-            console.error("Failed to create game UI:", error);
-        }
-    }
     
     private updateHexMapVisuals() {
         const gameState = GameStateManager.getInstance().getGameState();
