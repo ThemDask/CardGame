@@ -19,6 +19,9 @@ export class UIManager {
     private hoveredCard: Card | null = null;
     private hoveredHex: Hex | null = null;
     
+    // Board card selection for movement/attack
+    private selectedBoardCardPosition: { row: number; col: number } | null = null;
+
     // Deck builder state (local only)
     public selectedDeck: string[] | null = null;
 
@@ -74,12 +77,22 @@ export class UIManager {
         return this.hoveredHex;
     }
 
+    // Board card selection (for movement/attack)
+    public setSelectedBoardCardPosition(pos: { row: number; col: number } | null): void {
+        this.selectedBoardCardPosition = pos;
+    }
+
+    public getSelectedBoardCardPosition(): { row: number; col: number } | null {
+        return this.selectedBoardCardPosition;
+    }
+
     // Clear all selections
     public clearAllSelections(): void {
         this.selectedCard = null;
         this.selectedHex = null;
         this.hoveredCard = null;
         this.hoveredHex = null;
+        this.selectedBoardCardPosition = null;
     }
 
     // Deck builder

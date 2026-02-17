@@ -6,7 +6,8 @@ import { UIManager } from "../core/state/UIManager";
 import { GameAction } from "../core/actions/GameAction";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
 import { EndTurnAction } from "../core/actions/EndTurnAction";
-import { GameEventEmitter, GameEventType, StateChangedEvent, ActionExecutedEvent, ActionRejectedEvent, CardPlacedEvent, TurnEndedEvent } from "../core/events/GameEvents";
+import { MoveCardAction } from "../core/actions/MoveCardAction";
+import { GameEventEmitter, GameEventType, StateChangedEvent, ActionExecutedEvent, ActionRejectedEvent, CardPlacedEvent, CardMovedEvent, CardAttackedEvent, TurnEndedEvent } from "../core/events/GameEvents";
 
 /**
  * Refactored GameStateManager
@@ -103,6 +104,40 @@ export class GameStateManager {
                 playerId: action.playerId
             };
             GameEventEmitter.emit(GameEventType.CARD_PLACED, event);
+        } else if (action instanceof MoveCardAction) {
+            // Always emit CARD_MOVED
+            const movedEvent: CardMovedEvent = {
+                cardId: action.attackerCardId,
+                fromRow: action.fromRow,
+                fromCol: action.fromCol,
+                toRow: action.toRow,
+                toCol: action.toCol,
+                playerId: action.playerId
+            };
+            GameEventEmitter.emit(GameEventType.CARD_MOVED, movedEvent);
+
+            // If it was an attack, also emit CARD_ATTACKED
+            if (action.isAttack) {
+                const attackedEvent: CardAttackedEvent = {
+                    attackerCardId: action.attackerCardId,
+                    defenderCardId: action.defenderCardId,
+                    damage: action.damageDealt,
+                    defenderKilled: action.defenderKilled,
+                    fromRow: action.fromRow,
+                    fromCol: action.fromCol,
+                    toRow: action.toRow,
+                    toCol: action.toCol
+                };
+                GameEventEmitter.emit(GameEventType.CARD_ATTACKED, attackedEvent);
+
+                if (action.defenderKilled) {
+                    GameEventEmitter.emit(GameEventType.CARD_DESTROYED, {
+                        cardId: action.defenderCardId,
+                        row: action.toRow,
+                        col: action.toCol
+                    });
+                }
+            }
         } else if (action instanceof EndTurnAction) {
             const previousPlayerId = previousState.currentPlayerId;
             const newPlayerId = this.gameState!.currentPlayerId;

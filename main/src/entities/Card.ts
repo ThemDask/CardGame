@@ -14,6 +14,7 @@ export class Card {
     isFaceUp: boolean = false; // Track if the card is face up or face down
     isTapped: boolean = false; // Track if the card is tapped or untapped
     currentHP: number; // Current HP (can be reduced by damage)
+    remainingActions: number; // Actions remaining this turn (reset to `actions` each turn)
     visualSprite: Phaser.GameObjects.Image | null = null; // Reference to visual representation
 
     constructor(id: string, type: string, name: string, movement: number, damage: number, ranged_damage: number, range: number, hp: number,
@@ -33,6 +34,7 @@ export class Card {
       this.isFaceUp = false;
       this.isTapped = false;
       this.currentHP = hp; // Initialize current HP to max HP
+      this.remainingActions = actions; // Initialize remaining actions to max
     }
   
   

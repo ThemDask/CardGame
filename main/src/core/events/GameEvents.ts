@@ -46,6 +46,26 @@ export interface TurnEndedEvent {
     turnCounter: number;
 }
 
+export interface CardMovedEvent {
+    cardId: string;
+    fromRow: number;
+    fromCol: number;
+    toRow: number;
+    toCol: number;
+    playerId: string;
+}
+
+export interface CardAttackedEvent {
+    attackerCardId: string;
+    defenderCardId: string;
+    damage: number;
+    defenderKilled: boolean;
+    fromRow: number;
+    fromCol: number;
+    toRow: number;
+    toCol: number;
+}
+
 export interface ActionExecutedEvent {
     action: GameAction;
     success: boolean;

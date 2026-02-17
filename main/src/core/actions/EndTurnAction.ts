@@ -47,7 +47,11 @@ export class EndTurnAction extends BaseGameAction {
                     }
                     return {
                         ...hex,
-                        occupiedBy: { ...hex.occupiedBy, isTapped: false }
+                        occupiedBy: {
+                            ...hex.occupiedBy,
+                            isTapped: false,
+                            remainingActions: hex.occupiedBy.actions ?? 0
+                        }
                     };
                 })
             )

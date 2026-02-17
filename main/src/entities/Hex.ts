@@ -3,6 +3,8 @@ import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "./Card";
 import { DeploymentScene } from "../scenes/DeploymentScene";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
+import { MoveCardAction } from "../core/actions/MoveCardAction";
+import { UIManager } from "../core/state/UIManager";
 
 export type HighlightType = 'none' | 'movement' | 'attack';
 
@@ -157,50 +159,73 @@ export class Hex {
         
         if (!gameState) return;
 
-        // If card is selected from deck, place it
-        if (selectedCard && !this.occupied) {
-            const currentPlayerId = gameState.currentPlayerId;
-            
-            // Check if this is a valid deployment hex during deployment phase
-            const isDeploymentPhase = gameState.gamePhase === 'deployment';
-            if (isDeploymentPhase) {
-                // Only allow deployment on deploy-type hexes (land or water)
-                if (this.type !== 'landDeploy' && this.type !== 'water') {
-                    console.warn("Can only deploy on deployment zones");
-                    return;
-                }
+        // Priority 1: If this hex is highlighted for movement/attack, handle that first.
+        // This takes precedence because highlighted hexes mean a board card is already
+        // selected for movement - the user is clicking a target, not trying to deploy.
+        if (this.highlightType !== 'none') {
+            const boardCardPos = UIManager.getInstance().getSelectedBoardCardPosition();
+            if (boardCardPos) {
+                const action = new MoveCardAction(
+                    gameState.currentPlayerId,
+                    boardCardPos.row,
+                    boardCardPos.col,
+                    this.row,
+                    this.col
+                );
                 
-                // Check marine unit restrictions - must deploy on water
-                if (selectedCard.keywords && selectedCard.keywords.some((kw: string) => kw.includes('Marine'))) {
-                    if (this.type !== 'water') {
-                        console.warn("Marine units can only be deployed on water");
-                        return;
-                    }
+                const success = gameStateManager.executeAction(action);
+                if (!success) {
+                    console.warn("Failed to execute move/attack action");
                 }
-            }
-            
-            const action = new PlaceCardAction(
-                currentPlayerId,
-                selectedCard.id,
-                this.row,
-                this.col
-            );
-
-            const success = gameStateManager.executeAction(action);
-            
-            if (success) {
-                gameStateManager.setSelectedCard(null);
-                this.redraw("click");
-                
-                // Notify DeploymentScene to update deck display
-                const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
-                if (deploymentScene) {
-                    deploymentScene.onCardPlaced(selectedCard);
-                }
-            } else {
-                console.warn("Failed to place card:", selectedCard.name);
+                return;
             }
         }
-        // If hex is clicked without card selected from deck, do nothing (movement/attack removed)
+
+        // Priority 2: If a deck card is selected, try to place it (deployment)
+        if (selectedCard) {
+            if (!this.occupied) {
+                const currentPlayerId = gameState.currentPlayerId;
+                
+                // Check if this is a valid deployment hex during deployment phase
+                const isDeploymentPhase = gameState.gamePhase === 'deployment';
+                if (isDeploymentPhase) {
+                    // Only allow deployment on deploy-type hexes (land or water)
+                    if (this.type !== 'landDeploy' && this.type !== 'water') {
+                        console.warn("Can only deploy on deployment zones");
+                        return;
+                    }
+                    
+                    // Check marine unit restrictions - must deploy on water
+                    if (selectedCard.keywords && selectedCard.keywords.some((kw: string) => kw.includes('Marine'))) {
+                        if (this.type !== 'water') {
+                            console.warn("Marine units can only be deployed on water");
+                            return;
+                        }
+                    }
+                }
+                
+                const action = new PlaceCardAction(
+                    currentPlayerId,
+                    selectedCard.id,
+                    this.row,
+                    this.col
+                );
+
+                const success = gameStateManager.executeAction(action);
+                
+                if (success) {
+                    gameStateManager.setSelectedCard(null);
+                    this.redraw("click");
+                    
+                    // Notify DeploymentScene to update deck display
+                    const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
+                    if (deploymentScene) {
+                        deploymentScene.onCardPlaced(selectedCard);
+                    }
+                } else {
+                    console.warn("Failed to place card:", selectedCard.name);
+                }
+            }
+        }
     }
 }

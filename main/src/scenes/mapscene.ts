@@ -8,6 +8,9 @@ import { configureBackground } from '../utils/helpers/configureBackground';
 import cardData from '../../../public/cardData.json';
 import { GameEventEmitter, GameEventType } from '../core/events/GameEvents';
 import { EnemyAI } from '../utils/helpers/EnemyAI';
+import { GameRules } from '../core/rules/GameRules';
+import { MoveCardAction } from '../core/actions/MoveCardAction';
+import { UIManager } from '../core/state/UIManager';
 
 // Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
@@ -23,6 +26,7 @@ export class MapScene extends Phaser.Scene {
     private hexMapConfig: Array<Array<HexType>>;
     private cardSprites: Map<string, Phaser.GameObjects.Image> = new Map(); // Track card visuals
     private selectedCardHex: {row: number, col: number} | null = null; // For click highlight feedback
+    private highlightedHexes: Set<string> = new Set(); // Track highlighted hexes for efficient clearing
 
 
     constructor() {
@@ -154,6 +158,18 @@ export class MapScene extends Phaser.Scene {
         GameEventEmitter.on(GameEventType.CARD_PLACED, (event: any) => {
             this.handleCardPlaced(event);
         }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_MOVED, (event: any) => {
+            this.handleCardMoved(event);
+        }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_ATTACKED, (event: any) => {
+            this.handleCardAttacked(event);
+        }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_DESTROYED, (event: any) => {
+            this.handleCardDestroyed(event);
+        }, this);
     }
     
     
@@ -243,7 +259,7 @@ export class MapScene extends Phaser.Scene {
     }
     
     /**
-     * Handle card click (for selection highlight feedback)
+     * Handle card click - selection for movement/attack, or attacking an enemy
      */
     private handleCardClick(row: number, col: number) {
         const gameStateManager = GameStateManager.getInstance();
@@ -261,26 +277,220 @@ export class MapScene extends Phaser.Scene {
         
         const currentPlayerId = gameState.currentPlayerId;
         
-        // If clicking own card, show click highlight feedback
+        // Case 1: Clicking own card
         if (hex.occupied && hex.occupiedByPlayerId === currentPlayerId) {
-            // Clear previous hex highlight if selecting a different card
-            if (this.selectedCardHex && 
-                (this.selectedCardHex.row !== row || this.selectedCardHex.col !== col)) {
-                const prevHex = this.hexMap[this.selectedCardHex.row]?.[this.selectedCardHex.col];
-                if (prevHex) prevHex.redraw('default');
+            // If clicking the same card again, deselect
+            if (this.selectedCardHex &&
+                this.selectedCardHex.row === row && this.selectedCardHex.col === col) {
+                this.deselectCard();
+                return;
             }
             
+            // Clear previous selection and highlights
+            this.deselectCard();
+            
+            // Clear any deck card selection - user is switching to movement mode
+            gameStateManager.setSelectedCard(null);
+            
+            // Select this card
             this.selectedCardHex = { row, col };
+            UIManager.getInstance().setSelectedBoardCardPosition({ row, col });
+            
             if (this.hexMap[row] && this.hexMap[row][col]) {
                 this.hexMap[row][col].redraw('click');
             }
+            
+            // Highlight reachable hexes for movement/attack
+            this.highlightReachableHexes(row, col);
+            return;
         }
-        // If clicking elsewhere, clear selection highlight
-        else if (this.selectedCardHex) {
+        
+        // Case 2: Clicking enemy card while own card is selected (attack)
+        if (hex.occupied && hex.occupiedByPlayerId !== currentPlayerId && this.selectedCardHex) {
+            const visualHex = this.hexMap[row]?.[col];
+            if (visualHex && visualHex.highlightType === 'attack') {
+                this.executeMoveAction(this.selectedCardHex.row, this.selectedCardHex.col, row, col);
+                return;
+            }
+        }
+        
+        // Case 3: Clicking elsewhere - deselect
+        if (this.selectedCardHex) {
+            this.deselectCard();
+        }
+    }
+
+    /**
+     * Deselect the currently selected board card and clear all highlights
+     */
+    private deselectCard() {
+        if (this.selectedCardHex) {
             const prevHex = this.hexMap[this.selectedCardHex.row]?.[this.selectedCardHex.col];
             if (prevHex) prevHex.redraw('default');
-            this.selectedCardHex = null;
         }
+        this.selectedCardHex = null;
+        UIManager.getInstance().setSelectedBoardCardPosition(null);
+        this.clearAllHighlights();
+    }
+
+    /**
+     * Highlight all hexes reachable by the selected card for movement or attack
+     */
+    private highlightReachableHexes(row: number, col: number) {
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        const hex = gameState.hexMap[row]?.[col];
+        if (!hex || !hex.occupiedBy) return;
+        
+        const card = hex.occupiedBy;
+        const currentPlayerId = gameState.currentPlayerId;
+        
+        // Check if card has remaining actions
+        if ((card.remainingActions ?? card.actions) <= 0) return;
+        
+        const reachable = GameRules.getReachableHexes(gameState, row, col, card.movement, currentPlayerId);
+        
+        for (const target of reachable) {
+            const visualHex = this.hexMap[target.row]?.[target.col];
+            if (visualHex) {
+                visualHex.setHighlight(target.type);
+                this.highlightedHexes.add(`${target.row}-${target.col}`);
+            }
+        }
+    }
+
+    /**
+     * Clear all movement/attack highlights from hexes
+     */
+    private clearAllHighlights() {
+        for (const key of this.highlightedHexes) {
+            const [row, col] = key.split('-').map(Number);
+            const hex = this.hexMap[row]?.[col];
+            if (hex) {
+                hex.clearHighlight();
+            }
+        }
+        this.highlightedHexes.clear();
+    }
+
+    /**
+     * Execute a move/attack action from source to target hex.
+     * Post-action selection is handled by handleCardMoved event listener.
+     */
+    private executeMoveAction(fromRow: number, fromCol: number, toRow: number, toCol: number) {
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        const action = new MoveCardAction(
+            gameState.currentPlayerId,
+            fromRow,
+            fromCol,
+            toRow,
+            toCol
+        );
+        
+        const success = GameStateManager.getInstance().executeAction(action);
+        
+        if (!success) {
+            console.warn("Failed to execute move action");
+        }
+    }
+
+    /**
+     * Helper to destroy a card sprite and its associated text at a given key
+     */
+    private destroySpriteAt(key: string) {
+        if (this.cardSprites.has(key)) {
+            const sprite = this.cardSprites.get(key);
+            if (sprite && sprite.active) {
+                const actionsText = (sprite as any).actionsText;
+                if (actionsText && actionsText.active) actionsText.destroy(true);
+                sprite.destroy(true);
+            }
+            this.cardSprites.delete(key);
+        }
+    }
+
+    /**
+     * Handle card moved event - update card sprite positions and manage selection.
+     * This fires for all moves (from Hex click or card sprite click), so it handles
+     * highlight clearing and re-selection universally.
+     */
+    private handleCardMoved(event: any) {
+        const { fromRow, fromCol, toRow, toCol, playerId } = event;
+        const sourceKey = `${fromRow}-${fromCol}`;
+        const targetKey = `${toRow}-${toCol}`;
+        
+        // Remove old sprites at both source and target
+        this.destroySpriteAt(sourceKey);
+        this.destroySpriteAt(targetKey);
+        
+        // Read updated game state and recreate visuals where needed
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        // Recreate sprite at source if card is still there (attack where defender survived)
+        const sourceHex = gameState.hexMap[fromRow]?.[fromCol];
+        if (sourceHex && sourceHex.occupied && sourceHex.occupiedBy) {
+            this.createCardVisual(sourceHex.occupiedBy, fromRow, fromCol);
+        }
+        
+        // Recreate sprite at target (card moved there, or defender survived there)
+        const targetHex = gameState.hexMap[toRow]?.[toCol];
+        if (targetHex && targetHex.occupied && targetHex.occupiedBy) {
+            this.createCardVisual(targetHex.occupiedBy, toRow, toCol);
+        }
+        
+        // Post-move selection management (only for current player's moves)
+        if (playerId === gameState.currentPlayerId) {
+            this.clearAllHighlights();
+            
+            // Determine where the card ended up
+            const cardStayedAtSource = sourceHex && sourceHex.occupied &&
+                sourceHex.occupiedByPlayerId === playerId;
+            const cardMovedToTarget = targetHex && targetHex.occupied &&
+                targetHex.occupiedByPlayerId === playerId;
+            
+            const actualRow = cardStayedAtSource ? fromRow : (cardMovedToTarget ? toRow : -1);
+            const actualCol = cardStayedAtSource ? fromCol : (cardMovedToTarget ? toCol : -1);
+            
+            if (actualRow >= 0) {
+                const cardHex = gameState.hexMap[actualRow]?.[actualCol];
+                if (cardHex && cardHex.occupiedBy &&
+                    (cardHex.occupiedBy.remainingActions ?? 0) > 0) {
+                    // Card has remaining actions - re-select it
+                    this.selectedCardHex = { row: actualRow, col: actualCol };
+                    UIManager.getInstance().setSelectedBoardCardPosition({ row: actualRow, col: actualCol });
+                    if (this.hexMap[actualRow]?.[actualCol]) {
+                        this.hexMap[actualRow][actualCol].redraw('click');
+                    }
+                    this.highlightReachableHexes(actualRow, actualCol);
+                    return;
+                }
+            }
+            
+            // No more actions - fully deselect
+            this.selectedCardHex = null;
+            UIManager.getInstance().setSelectedBoardCardPosition(null);
+        }
+    }
+
+    /**
+     * Handle card attacked event - could add visual effects like damage numbers later
+     */
+    private handleCardAttacked(_event: any) {
+        // Visual feedback for attacks (e.g., damage numbers, flash effects)
+        // can be added here in the future. The actual sprite updates are
+        // handled by handleCardMoved which fires alongside this event.
+    }
+
+    /**
+     * Handle card destroyed event
+     */
+    private handleCardDestroyed(event: any) {
+        const { row, col } = event;
+        this.destroySpriteAt(`${row}-${col}`);
     }
     
     /**
@@ -475,6 +685,11 @@ export class MapScene extends Phaser.Scene {
             }
         });
         this.cardSprites.clear(); // Clear card sprite references
+        
+        // Clear selection and highlights since hex objects are being recreated
+        this.highlightedHexes.clear();
+        this.selectedCardHex = null;
+        UIManager.getInstance().setSelectedBoardCardPosition(null);
         
         // Clear any previous hexes from the container
         this.mapContainer.removeAll(true); // This ensures all existing hexes are removed before drawing new ones
