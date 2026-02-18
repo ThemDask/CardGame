@@ -126,7 +126,9 @@ export class DeckBuilderScene extends Phaser.Scene {
             // Add card image if within deck limit
             if (i < cards.length) {
                 const card = cards[i];
-                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, card.imagePath).setDisplaySize(slotWidth, slotHeight);
+                // Use placeholder if image not loaded (same as DeploymentScene/mapscene)
+                const imageKey = (card.imagePath && this.textures.exists(card.imagePath)) ? card.imagePath : 'archer';
+                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, imageKey).setDisplaySize(slotWidth, slotHeight);
                 container.add(cardImage);
     
                 // Enable card interaction

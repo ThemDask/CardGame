@@ -133,8 +133,12 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     updatePanel(card: Card | null) {
         if (card) {
             this.cardNameText.setText(`${card.name}`);
-            this.actionsText.setText(`A: ${card.actions}`);
-            this.cardImage.setTexture(card.imagePath);
+            this.actionsText.setText(`A: ${card.remainingActions ?? card.actions}`);
+            // Use placeholder when card image doesn't exist (same as DeckBuilderScene/DeploymentScene)
+            const imageKey = (card.imagePath && this.scene.textures.exists(card.imagePath))
+                ? card.imagePath
+                : 'archer';
+            this.cardImage.setTexture(imageKey);
 
             const boundingBox = new Phaser.Geom.Rectangle(
                 this.imageRect.x,

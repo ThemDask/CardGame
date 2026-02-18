@@ -159,8 +159,9 @@ export class UIScene extends Phaser.Scene {
         const gameState = GameStateManager.getInstance().getGameState();
         if (!gameState) return;
         
-        const player1 = gameState.players[Object.keys(gameState.players)[0]];
-        const player2 = gameState.players[Object.keys(gameState.players)[1]];
+        // Use getPlayer1/getPlayer2 to get proper Player instances (gameState.players may contain plain objects)
+        const player1 = GameStateManager.getInstance().getPlayer1();
+        const player2 = GameStateManager.getInstance().getPlayer2();
         
         if (player1 && this.player1Timer) {
             this.player1Timer.setText(player1.getPlayerRemainingTime().toString());
@@ -180,8 +181,9 @@ export class UIScene extends Phaser.Scene {
         // In a fully event-driven system, we'd emit timer events, but for now this is fine
         const gameState = GameStateManager.getInstance().getGameState();
         if (gameState) {
-            const player1 = gameState.players[Object.keys(gameState.players)[0]];
-            const player2 = gameState.players[Object.keys(gameState.players)[1]];
+            // Use getPlayer1/getPlayer2 to get proper Player instances (gameState.players may contain plain objects)
+            const player1 = GameStateManager.getInstance().getPlayer1();
+            const player2 = GameStateManager.getInstance().getPlayer2();
             
             if (player1 && this.player1Timer) {
                 this.player1Timer.setText(player1.getPlayerRemainingTime().toString());

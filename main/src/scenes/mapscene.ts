@@ -238,7 +238,7 @@ export class MapScene extends Phaser.Scene {
             cardImage.setDepth(10); // Above hexes
 
             // Show actions stat on the card (map scene only)
-            const actionsText = this.add.text(hexWorldX + cardSize / 2 - 4, hexWorldY + cardSize / 2 - 4, `A:${card.actions}`, {
+            const actionsText = this.add.text(hexWorldX + cardSize / 2 - 4, hexWorldY + cardSize / 2 - 4, `A:${card.remainingActions ?? card.actions}`, {
                 font: `${Math.max(10, Math.floor(12 * scaleFactor))}px Arial`,
                 color: '#ffffff'
             }).setOrigin(1, 1).setDepth(11);
@@ -249,16 +249,42 @@ export class MapScene extends Phaser.Scene {
             (cardImage as any).actionsText = actionsText;
             card.visualSprite = cardImage;
             
-            // Make card interactive for selection
+            // Make card interactive for selection and hover
             cardImage.setInteractive();
             cardImage.on('pointerdown', () => {
                 this.handleCardClick(row, col);
+            });
+            cardImage.on('pointerover', () => {
+                this.showCardDetailsOnHover(card);
+            });
+            cardImage.on('pointerout', () => {
+                this.hideCardDetailsOnHover();
             });
         } catch (error) {
             console.error(`Failed to create card visual for ${card.name}:`, error);
         }
     }
     
+    /**
+     * Show card details in CardDetailsPanel when hovering over a map card (same as DeckBuilderScene/DeploymentScene)
+     */
+    private showCardDetailsOnHover(card: Card) {
+        const deploymentScene = this.scene.get('DeploymentScene');
+        if (deploymentScene && deploymentScene.scene.isActive()) {
+            deploymentScene.events.emit('cardHover', card);
+        }
+    }
+
+    /**
+     * Hide card details when pointer leaves a map card
+     */
+    private hideCardDetailsOnHover() {
+        const deploymentScene = this.scene.get('DeploymentScene');
+        if (deploymentScene && deploymentScene.scene.isActive()) {
+            deploymentScene.events.emit('cardHover', null);
+        }
+    }
+
     /**
      * Handle card click - selection for movement/attack, or attacking an enemy
      */
@@ -536,7 +562,7 @@ export class MapScene extends Phaser.Scene {
                             // Card was placed but visual doesn't exist, create it
                             this.createCardVisual(stateHex.occupiedBy, row, col);
                         } else {
-                            // Card exists, update its position and size for current zoom
+                            // Card exists, update its position, size, and remaining actions for current zoom
                             const sprite = this.cardSprites.get(key);
                             if (sprite && hex) {
                                 const hexWorldX = this.mapContainer.x + hex.hex.x;
@@ -550,6 +576,12 @@ export class MapScene extends Phaser.Scene {
                                 const scaleFactor = currentHexRadius / baseHexRadius;
                                 const cardSize = 80 * scaleFactor;
                                 sprite.setDisplaySize(cardSize, cardSize);
+                                
+                                // Update remaining actions display
+                                const actionsText = (sprite as any).actionsText;
+                                if (actionsText && actionsText.active && stateHex.occupiedBy) {
+                                    actionsText.setText(`A:${stateHex.occupiedBy.remainingActions ?? stateHex.occupiedBy.actions}`);
+                                }
                             }
                         }
                     } else if (!stateHex.occupied) {

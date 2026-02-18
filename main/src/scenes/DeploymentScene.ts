@@ -27,7 +27,12 @@ export class DeploymentScene extends Phaser.Scene {
 
         this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 450, 600); 
         this.add.existing(this.cardDetailsPanel);
-        this.cardDetailsPanel.updatePanel(null)
+        this.cardDetailsPanel.updatePanel(null);
+
+        // Listen for card hover from MapScene (shows placeholder when card has no image)
+        this.events.on('cardHover', (card: Card | null) => {
+            this.cardDetailsPanel.updatePanel(card);
+        });
 
         this.input.keyboard?.on('keydown-ESC', () => {
             sceneManager.openEscapeMenu(this);
