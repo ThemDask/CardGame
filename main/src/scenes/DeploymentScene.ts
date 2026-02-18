@@ -1,17 +1,17 @@
 import { DeckDisplayModal } from "../utils/DeckDisplayModal";
 import { Player } from "../entities/Player";
 import { createBackButton } from "../utils/helpers/backButton";
+import { sceneManager } from "../core/sceneManager";
 import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "../entities/Card";
 import { createPlayerContainer } from "../utils/helpers/playerContainer";
 import { CardDetailsPanel } from "../utils/CardDetailsPanel";
 import cardData from '../../../public/cardData.json';
+import { GameEventEmitter, GameEventType, StateChangedEvent } from "../core/events/GameEvents";
 
 export class DeploymentScene extends Phaser.Scene {
     private player1Timer: Phaser.GameObjects.Text;
     private player2Timer: Phaser.GameObjects.Text;
-    private player1GoldText: Phaser.GameObjects.Text;
-    private player2GoldText: Phaser.GameObjects.Text;
     private cardDetailsPanel: CardDetailsPanel;
     private deckContainer: Phaser.GameObjects.Container;
     private scrollMask: Phaser.GameObjects.Graphics;
@@ -27,12 +27,15 @@ export class DeploymentScene extends Phaser.Scene {
 
         this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 450, 600); 
         this.add.existing(this.cardDetailsPanel);
-        this.cardDetailsPanel.updatePanel(null)
+        this.cardDetailsPanel.updatePanel(null);
+
+        // Listen for card hover from MapScene (shows placeholder when card has no image)
+        this.events.on('cardHover', (card: Card | null) => {
+            this.cardDetailsPanel.updatePanel(card);
+        });
 
         this.input.keyboard?.on('keydown-ESC', () => {
-            if (!this.scene.isActive('EscapeMenu')) {
-                this.scene.launch('EscapeMenu');
-            }
+            sceneManager.openEscapeMenu(this);
         });
 
         const player1 = GameStateManager.getInstance().getPlayer1();
@@ -50,19 +53,51 @@ export class DeploymentScene extends Phaser.Scene {
 
         // Create deck display area
         // TODO: maybe use already existing DeckDisplayModal class
-        // this.createDeckDisplay();
-        // this.displayDeck(playerDeck);
+        this.createDeckDisplay();
+        this.displayDeck(playerDeck);
 
-        this.deckDisplay = new DeckDisplayModal(this, 5, 720, 500, 800, false); 
-        this.add.existing(this.deckDisplay.container);
-        this.deckDisplay.displayDeck(playerDeck, "playerDeck"); 
-        this.deckDisplay.container.setDepth(100); 
+        // this.deckDisplay = new DeckDisplayModal(this, 5, 720, 500, 800, false); 
+        // this.add.existing(this.deckDisplay.container);
+        // this.deckDisplay.displayDeck(playerDeck, "playerDeck"); 
+        // this.deckDisplay.container.setDepth(100); 
         // Handle scroll input for deck
-        // this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
-        //     if (this.isPointerInsideDeck(pointer)) {
-        //         this.handleScroll(dy);
-        //     }
-        // });
+        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+            if (this.isPointerInsideDeck(pointer)) {
+                this.handleScroll(dy);
+            }
+        });
+        
+        // Set up event listeners for state changes
+        this.setupEventListeners();
+    }
+    
+    private setupEventListeners() {
+        // Listen for state changes to update deck display
+        GameEventEmitter.on(GameEventType.STATE_CHANGED, (event: StateChangedEvent) => {
+            const gameState = GameStateManager.getInstance().getGameState();
+            if (gameState) {
+                const currentPlayer = gameState.players[gameState.currentPlayerId];
+                if (currentPlayer) {
+                    // Reconstruct player to get proper instance with methods
+                    const player = GameStateManager.getInstance().getPlayer1();
+                    if (player && currentPlayer.name === player.name) {
+                        this.refreshDeckDisplay(player.getDeck());
+                    }
+                }
+            }
+        }, this);
+        
+        // Listen for card placed events to immediately update display
+        GameEventEmitter.on(GameEventType.CARD_PLACED, (event: any) => {
+            const gameState = GameStateManager.getInstance().getGameState();
+            if (gameState) {
+                const player = GameStateManager.getInstance().getPlayer1();
+                if (player) {
+                    // Immediately refresh deck display when card is placed
+                    this.refreshDeckDisplay(player.getDeck());
+                }
+            }
+        }, this);
     }
 
     private createDeckDisplay() {
@@ -90,13 +125,25 @@ export class DeploymentScene extends Phaser.Scene {
     }
     
     private displayDeck(deck: Card[]) {
+        // Clear existing cards
+        this.cards.forEach(card => card.destroy());
+        this.cards = [];
+        this.slots = [];
+        this.deckContainer.removeAll(true);
+        
         const slotWidth = 90; // Slightly reduced for 500px width
         const slotHeight = 110;
         const marginX = 8;
         const marginY = 15;
         const slotsPerRow = 5;
     
-        for (let i = 0; i < 50; i++) { // Reduced number of slots for smaller height
+        // Draw deck background again
+        const deckBackground = this.add.rectangle(0, 0, 500, 500)
+            .setStrokeStyle(5, 0xffffff)
+            .setOrigin(0);
+        this.deckContainer.add(deckBackground);
+    
+        for (let i = 0; i < Math.max(50, deck.length); i++) { // Reduced number of slots for smaller height
             const row = Math.floor(i / slotsPerRow);
             const col = i % slotsPerRow;
     
@@ -110,36 +157,17 @@ export class DeploymentScene extends Phaser.Scene {
             this.deckContainer.add(slotBackground);
             this.slots.push(slotBackground);
     
-            // Get the card ID from the deck array and use it to look up the card data
+            // Display card if it exists in deck
             if (i < deck.length) {
-                const cardId = deck[i]; // The deck has just card IDs (like "1", "2", "3", etc.)
-    
-                // Find the card data using the card ID
-                const fullCardData = this.getCardDataById(cardId.toString());
-    
-                // Handle the case where fullCardData might be undefined
-                if (!fullCardData) {
-                    console.warn(`Card with ID ${cardId} not found in card data.`);
-                    continue; // Skip this iteration and go to the next card
+                const card = deck[i]; // Deck now contains Card objects
+                
+                // Use placeholder if image not loaded
+                let imageKey = 'archer'; // Default placeholder
+                if (card.imagePath && this.textures.exists(card.imagePath)) {
+                    imageKey = card.imagePath;
                 }
     
-                // Create the card object using the full card data
-                const cardDetails = new Card(
-                    fullCardData.id,
-                    fullCardData.type,
-                    fullCardData.name,
-                    fullCardData.movement ?? 0,
-                    fullCardData.damage ?? 0,
-                    fullCardData.ranged_damage ?? 0,
-                    fullCardData.range ?? 0,
-                    fullCardData.hp ?? 0,
-                    fullCardData.cost ?? 0,
-                    fullCardData.description ?? "",
-                    fullCardData.imagePath,
-                    fullCardData.keywords || []
-                );
-    
-                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, fullCardData.imagePath)
+                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, imageKey)
                     .setDisplaySize(slotWidth, slotHeight)
                     .setInteractive();
     
@@ -148,7 +176,7 @@ export class DeploymentScene extends Phaser.Scene {
     
                 // Card interactions
                 cardImage.on('pointerover', () => {
-                    this.cardDetailsPanel.updatePanel(cardDetails);  // Pass the full card details
+                    this.cardDetailsPanel.updatePanel(card);
                     slotBackground.setStrokeStyle(5, 0x00cc00);
                 });
 
@@ -158,17 +186,28 @@ export class DeploymentScene extends Phaser.Scene {
                 });
 
                 cardImage.on('pointerdown', () => {
-                    GameStateManager.getInstance().setSelectedCard(cardDetails);
-                    console.log(`Selected card: ${cardDetails.name}`);
+                    GameStateManager.getInstance().setSelectedCard(card);
+                    console.log(`Selected card: ${card.name}`);
                 });
             }
         }
     }
     
-    // Helper function to map card ID to the full card data (using the imported JSON)
-    private getCardDataById(id: string) {
-        return cardData.find((card: any) => card.id === id);
+    /**
+     * Refresh deck display (called when deck changes)
+     */
+    private refreshDeckDisplay(deck: Card[]) {
+        this.displayDeck(deck);
     }
+    
+    /**
+     * Called when a card is placed (for immediate visual feedback)
+     */
+    public onCardPlaced(card: Card) {
+        // Deck display will be refreshed via STATE_CHANGED event
+        // This method is kept for compatibility with Hex.handleClick
+    }
+    
     
     
     private isPointerInsideDeck(pointer: Phaser.Input.Pointer): boolean {
@@ -190,31 +229,6 @@ export class DeploymentScene extends Phaser.Scene {
         }
     }
 
-    // TODO not used
-    removeCardFromDeck(card: Card) {
-    // Find the card in the deck array
-    const player = GameStateManager.getInstance().getPlayer1();
-    if (!player) return;
-
-    const deck = player.getDeck();
-    const index = deck.findIndex((c) => c.id === card.id);
-
-    if (index !== -1) {
-        // Remove from player's deck
-        deck.splice(index, 1);
-
-        // Remove from the display
-        const cardImage = this.cards[index];
-        if (cardImage) {
-            cardImage.destroy();
-            this.cards.splice(index, 1);
-        }
-
-        // Refresh display (optional)
-        this.deckContainer.removeAll(true);
-        this.displayDeck(deck);
-    }
-}
 
     update(): void {
         const player1 = GameStateManager.getInstance().getPlayer1();

@@ -3,28 +3,31 @@ import { Hex } from '../entities/Hex';
 import { Player } from '../entities/Player';
 import { HexType, hexTypes } from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
-import { DeckDisplayModal } from '../utils/DeckDisplayModal';
 import { Card } from '../entities/Card';
 import { configureBackground } from '../utils/helpers/configureBackground';
+import cardData from '../../../public/cardData.json';
+import { GameEventEmitter, GameEventType } from '../core/events/GameEvents';
+import { EnemyAI } from '../utils/helpers/EnemyAI';
+import { GameRules } from '../core/rules/GameRules';
+import { MoveCardAction } from '../core/actions/MoveCardAction';
+import { UIManager } from '../core/state/UIManager';
+import { sceneManager } from '../core/sceneManager';
 
 // Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
     private hexRadius: number;
     private zoomScale: number;
-    private maxZoom: number;
-    private minZoom: number;
     private zoomLevels: number[];
     private hexMap: Hex[][];
     private mapContainer: Phaser.GameObjects.Container;
-    private containerX: number;
     private containerWidth: number;
     private containerHeight: number;
     private player1: Player;
     private player2: Player;
     private hexMapConfig: Array<Array<HexType>>;
-    private deckDisplay: DeckDisplayModal;
-    private modalOverlay: Phaser.GameObjects.Rectangle;
-    private modalButton: Phaser.GameObjects.Text;
+    private cardSprites: Map<string, Phaser.GameObjects.Image> = new Map(); // Track card visuals
+    private selectedCardHex: {row: number, col: number} | null = null; // For click highlight feedback
+    private highlightedHexes: Set<string> = new Set(); // Track highlighted hexes for efficient clearing
 
 
     constructor() {
@@ -32,83 +35,569 @@ export class MapScene extends Phaser.Scene {
         this.hexRadius = 55;  
 
         this.zoomScale = 1; // Initial zoom scale
-        this.zoomLevels = [0.5, 0.75, 1, 1.25, 1.5]; // 4 zoom stages (plus initial)
-        this.minZoom = this.zoomLevels[0]; // Minimum zoom
-        this.maxZoom = this.zoomLevels[this.zoomLevels.length - 1]; // Maximum zoom
+        this.zoomLevels = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4, 1.45, 1.5, 1.55, 1.6, 1.65, 1.7, 1.75, 1.8, 1.85, 1.9, 1.95, 2]; // 4 zoom stages (plus initial)
         this.hexMap = [];
 
         this.hexMapConfig = [
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'], 
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'], 
-            ['land', 'landDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'landDeploy', 'land'], 
-            ['land', 'land', 'water', 'water', 'water', 'water', 'water', 'land', 'land'],
-            ['land', 'land', 'water', 'water', 'land', 'land', 'water', 'water', 'land', 'land'],
-            ['mine', 'land', 'water', 'water', 'land', 'objective', 'land', 'water', 'water', 'land', 'mine'],
-            ['land', 'land', 'water', 'water', 'land', 'land', 'water', 'water', 'land', 'land'],
-            ['land', 'land', 'water', 'water', 'water', 'water', 'water', 'land', 'land'],
-            ['land', 'landDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'waterDeploy', 'landDeploy', 'land'],
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'],
-            ['landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy'],
+            ['pinkTP', 'landDeploy', 'landDeploy', 'landDeploy', 'pinkTP'], 
+            ['orangeTP', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'orangeTP', ], 
+            ['purpleTP', 'land', 'land', 'land', 'land', 'land', 'purpleTP'], 
+            ['whiteTP', 'water', 'water', 'water', 'water', 'water', 'water', 'whiteTP'],
+            ['yellowTP', 'land', 'land', 'land', 'land', 'land', 'yellowTP'],
+            ['AzureTP', 'landDeploy', 'landDeploy', 'landDeploy', 'landDeploy', 'AzureTP'],
+            ['redTP', 'landDeploy', 'landDeploy', 'landDeploy', 'redTP'],
         ];
     }
 
-    init(data: { playerDeck: Card[] }) {
+    init(data: { playerDeck: string[] | Card[] }) {
         console.log("data transferred: ", data.playerDeck);
-        const initialDeck = data.playerDeck || [];
+        const deckIds = data.playerDeck || [];
+        
+        // Convert deck IDs to Card objects if needed
+        let initialDeck: Card[];
+        if (deckIds.length > 0 && typeof deckIds[0] === 'string') {
+            // Deck is array of IDs, convert to Card objects
+            initialDeck = (deckIds as string[]).map(id => {
+                const cardDataItem = (cardData as any[]).find(c => c.id === id);
+                if (!cardDataItem) {
+                    throw new Error(`Card with ID ${id} not found`);
+                }
+                return new Card(
+                    cardDataItem.id,
+                    cardDataItem.type,
+                    cardDataItem.name,
+                    cardDataItem.movement ?? 0,
+                    cardDataItem.damage ?? 0,
+                    cardDataItem.ranged_damage ?? 0,
+                    cardDataItem.range ?? 0,
+                    cardDataItem.hp ?? 0,
+                    cardDataItem.actions ?? (cardDataItem as any).cost ?? 0,
+                    cardDataItem.description ?? "",
+                    cardDataItem.imagePath,
+                    cardDataItem.keywords || []
+                );
+            });
+        } else {
+            initialDeck = deckIds as Card[];
+        }
     
         this.player1 = new Player("Player 1", initialDeck, 300);
-        GameStateManager.getInstance().setPlayer1(this.player1);
-
         this.player2 = new Player("Player 2", [], 300);
-        GameStateManager.getInstance().setPlayer2(this.player2);
+        
+        // Note: Game state will be initialized in create() after hex map is generated
     }
 
     preload() {
-        this.load.image('archer', '/assets/archer.png'); 
-        this.load.image('damage', '/assets/damage.png'); 
-        this.load.image('health', '/assets/hp.png'); 
-        this.load.image('movement', '/assets/movement.png'); 
-        this.load.image('range', '/assets/range.png'); 
-        this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
-
-        this.load.image('bg', '/assets/bg1.png')
+        try {
+            this.load.image('archer', '/assets/archer.png'); 
+            this.load.image('damage', '/assets/damage.png'); 
+            this.load.image('health', '/assets/hp.png'); 
+            this.load.image('movement', '/assets/movement.png'); 
+            this.load.image('range', '/assets/range.png'); 
+            this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
+            this.load.image('bg', '/assets/bg1.png');
+        } catch (error) {
+            console.error("Error loading assets:", error);
+        }
     }
 
-    create() {        
-
+    create() {
         configureBackground(this);
         
-        // TODO set this to start after deployment
-        setInterval(() => this.player1.countSeconds(true), 1000/*ms*/)
-
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
         this.mapContainer = this.add.container(300, 40);  
         this.mapContainer.setSize(this.containerWidth, this.containerHeight);
 
-
+        // Generate hex map first
         this.generateHexMap(containerWidth, containerHeight);
+        
+        // Initialize game state with players and hex map
+        const gameStateManager = GameStateManager.getInstance();
+        gameStateManager.initializeGame(this.player1, this.player2, this.hexMap);
+        
+        // Deploy enemy cards and create their visuals
+        const deployedEnemyCards = EnemyAI.deployEnemyCards(this.hexMapConfig);
+        deployedEnemyCards.forEach(({ card, row, col }) => {
+            this.createCardVisual(card, row, col);
+        });
+        
+        // Set up enemy AI auto-turn
+        EnemyAI.setupAutoTurn();
+        
+        // Set up event listeners for state changes
+        this.setupEventListeners();
 
         // EXAMPLE OF GETTING HEX
         // this.hexMap[1][2].drawHex(hexColors.land);
 
         // Listen for mouse wheel events to zoom
-        this.input.on('wheel', (pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
+        this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _currentlyOver: Phaser.GameObjects.GameObject[], _dx: number, dy: number) => {
             if (dy > 0) this.zoomOut();
             else if (dy < 0) this.zoomIn();
         });
 
-        // this.input.on('pointerdown', this.handleHexClick, this);
+        this.input.keyboard?.on('keydown-ESC', () => {
+            sceneManager.openEscapeMenu(this);
+        });
 
-        // IMPORTANT! toogle here
-        this.scene.launch('DeploymentScene')
-        // this.scene.launch('UIScene');
-
+        this.scene.launch('DeploymentScene');
+        this.scene.launch('UIScene');
     }
 
 
     update() {
+    }
+    
+    private setupEventListeners() {
+        // Listen for state changes to update visuals
+        GameEventEmitter.on(GameEventType.STATE_CHANGED, (_event: any) => {
+            this.updateHexMapVisuals();
+        }, this);
+        
+        GameEventEmitter.on(GameEventType.CARD_PLACED, (event: any) => {
+            this.handleCardPlaced(event);
+        }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_MOVED, (event: any) => {
+            this.handleCardMoved(event);
+        }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_ATTACKED, (event: any) => {
+            this.handleCardAttacked(event);
+        }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_DESTROYED, (event: any) => {
+            this.handleCardDestroyed(event);
+        }, this);
+    }
+    
+    
+    /**
+     * Create visual representation of card on hex
+     */
+    private createCardVisual(card: Card, row: number, col: number) {
+        const hex = this.hexMap[row]?.[col];
+        if (!hex) {
+            console.warn(`Cannot create card visual: Hex at row ${row}, col ${col} not found`);
+            return;
+        }
+        
+        const key = `${row}-${col}`;
+        
+        // Remove old visual if exists at this position
+        if (this.cardSprites.has(key)) {
+            const oldSprite = this.cardSprites.get(key);
+            if (oldSprite && oldSprite.active) {
+                const actionsText = (oldSprite as any).actionsText;
+                if (actionsText && actionsText.active) actionsText.destroy(true);
+                oldSprite.destroy(true);
+            }
+            this.cardSprites.delete(key);
+        }
+        
+        // Clear visualSprite reference if it points to a destroyed sprite
+        if (card.visualSprite && !card.visualSprite.active) {
+            card.visualSprite = null;
+        }
+        
+        // Use placeholder if image not loaded, otherwise use card image path
+        // Check if the image path exists, if not use archer placeholder
+        let imageKey = 'archer'; // Default placeholder
+        if (card.imagePath && this.textures.exists(card.imagePath)) {
+            imageKey = card.imagePath;
+        } else if (card.imagePath) {
+            // Try to load the image if it's not loaded yet
+            // For now, just use placeholder
+            console.log(`Card image not loaded: ${card.imagePath}, using placeholder`);
+        }
+        
+        try {
+            // Get hex center position in world coordinates
+            // hex.hex is a Graphics object added to mapContainer
+            // We need to get the world position accounting for container transform
+            const hexLocalX = hex.hex.x;
+            const hexLocalY = hex.hex.y;
+            
+            // Convert container-local coordinates to world coordinates
+            const hexWorldX = this.mapContainer.x + hexLocalX;
+            const hexWorldY = this.mapContainer.y + hexLocalY;
+            
+            // Calculate card size based on current zoom level and hex radius
+            // Base size is 80px, scale proportionally with hex radius
+            const baseHexRadius = 55; // Original hex radius
+            const currentHexRadius = hex.hexRadius;
+            const scaleFactor = currentHexRadius / baseHexRadius;
+            const cardSize = 80 * scaleFactor;
+            
+            // Create card image centered on hex (in world coordinates)
+            const cardImage = this.add.image(hexWorldX, hexWorldY, imageKey);
+            cardImage.setDisplaySize(cardSize, cardSize);
+            cardImage.setOrigin(0.5, 0.5); // Center origin
+            cardImage.setDepth(10); // Above hexes
+
+            // Show actions stat on the card (map scene only)
+            const actionsText = this.add.text(hexWorldX + cardSize / 2 - 4, hexWorldY + cardSize / 2 - 4, `A:${card.remainingActions ?? card.actions}`, {
+                font: `${Math.max(10, Math.floor(12 * scaleFactor))}px Arial`,
+                color: '#ffffff'
+            }).setOrigin(1, 1).setDepth(11);
+            actionsText.setStroke('#000000', 2);
+
+            // Store both so we can destroy the text when card is removed
+            this.cardSprites.set(key, cardImage);
+            (cardImage as any).actionsText = actionsText;
+            card.visualSprite = cardImage;
+            
+            // Make card interactive for selection and hover
+            cardImage.setInteractive();
+            cardImage.on('pointerdown', () => {
+                this.handleCardClick(row, col);
+            });
+            cardImage.on('pointerover', () => {
+                this.showCardDetailsOnHover(card);
+            });
+            cardImage.on('pointerout', () => {
+                this.hideCardDetailsOnHover();
+            });
+        } catch (error) {
+            console.error(`Failed to create card visual for ${card.name}:`, error);
+        }
+    }
+    
+    /**
+     * Show card details in CardDetailsPanel when hovering over a map card (same as DeckBuilderScene/DeploymentScene)
+     */
+    private showCardDetailsOnHover(card: Card) {
+        const deploymentScene = this.scene.get('DeploymentScene');
+        if (deploymentScene && deploymentScene.scene.isActive()) {
+            deploymentScene.events.emit('cardHover', card);
+        }
+    }
+
+    /**
+     * Hide card details when pointer leaves a map card
+     */
+    private hideCardDetailsOnHover() {
+        const deploymentScene = this.scene.get('DeploymentScene');
+        if (deploymentScene && deploymentScene.scene.isActive()) {
+            deploymentScene.events.emit('cardHover', null);
+        }
+    }
+
+    /**
+     * Handle card click - selection for movement/attack, or attacking an enemy
+     */
+    private handleCardClick(row: number, col: number) {
+        const gameStateManager = GameStateManager.getInstance();
+        const gameState = gameStateManager.getGameState();
+        if (!gameState) {
+            console.warn("Game state not available");
+            return;
+        }
+        
+        const hex = gameState.hexMap[row]?.[col];
+        if (!hex) {
+            console.warn(`Hex at row ${row}, col ${col} not found in game state`);
+            return;
+        }
+        
+        const currentPlayerId = gameState.currentPlayerId;
+        
+        // Case 1: Clicking own card
+        if (hex.occupied && hex.occupiedByPlayerId === currentPlayerId) {
+            // If clicking the same card again, deselect
+            if (this.selectedCardHex &&
+                this.selectedCardHex.row === row && this.selectedCardHex.col === col) {
+                this.deselectCard();
+                return;
+            }
+            
+            // Clear previous selection and highlights
+            this.deselectCard();
+            
+            // Clear any deck card selection - user is switching to movement mode
+            gameStateManager.setSelectedCard(null);
+            
+            // Select this card
+            this.selectedCardHex = { row, col };
+            UIManager.getInstance().setSelectedBoardCardPosition({ row, col });
+            
+            if (this.hexMap[row] && this.hexMap[row][col]) {
+                this.hexMap[row][col].redraw('click');
+            }
+            
+            // Highlight reachable hexes for movement/attack
+            this.highlightReachableHexes(row, col);
+            return;
+        }
+        
+        // Case 2: Clicking enemy card while own card is selected (attack)
+        if (hex.occupied && hex.occupiedByPlayerId !== currentPlayerId && this.selectedCardHex) {
+            const visualHex = this.hexMap[row]?.[col];
+            if (visualHex && visualHex.highlightType === 'attack') {
+                this.executeMoveAction(this.selectedCardHex.row, this.selectedCardHex.col, row, col);
+                return;
+            }
+        }
+        
+        // Case 3: Clicking elsewhere - deselect
+        if (this.selectedCardHex) {
+            this.deselectCard();
+        }
+    }
+
+    /**
+     * Deselect the currently selected board card and clear all highlights
+     */
+    private deselectCard() {
+        if (this.selectedCardHex) {
+            const prevHex = this.hexMap[this.selectedCardHex.row]?.[this.selectedCardHex.col];
+            if (prevHex) prevHex.redraw('default');
+        }
+        this.selectedCardHex = null;
+        UIManager.getInstance().setSelectedBoardCardPosition(null);
+        this.clearAllHighlights();
+    }
+
+    /**
+     * Highlight all hexes reachable by the selected card for movement or attack
+     */
+    private highlightReachableHexes(row: number, col: number) {
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        const hex = gameState.hexMap[row]?.[col];
+        if (!hex || !hex.occupiedBy) return;
+        
+        const card = hex.occupiedBy;
+        const currentPlayerId = gameState.currentPlayerId;
+        
+        // Check if card has remaining actions
+        if ((card.remainingActions ?? card.actions) <= 0) return;
+        
+        const reachable = GameRules.getReachableHexes(gameState, row, col, card.movement, currentPlayerId);
+        
+        for (const target of reachable) {
+            const visualHex = this.hexMap[target.row]?.[target.col];
+            if (visualHex) {
+                visualHex.setHighlight(target.type);
+                this.highlightedHexes.add(`${target.row}-${target.col}`);
+            }
+        }
+    }
+
+    /**
+     * Clear all movement/attack highlights from hexes
+     */
+    private clearAllHighlights() {
+        for (const key of this.highlightedHexes) {
+            const [row, col] = key.split('-').map(Number);
+            const hex = this.hexMap[row]?.[col];
+            if (hex) {
+                hex.clearHighlight();
+            }
+        }
+        this.highlightedHexes.clear();
+    }
+
+    /**
+     * Execute a move/attack action from source to target hex.
+     * Post-action selection is handled by handleCardMoved event listener.
+     */
+    private executeMoveAction(fromRow: number, fromCol: number, toRow: number, toCol: number) {
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        const action = new MoveCardAction(
+            gameState.currentPlayerId,
+            fromRow,
+            fromCol,
+            toRow,
+            toCol
+        );
+        
+        const success = GameStateManager.getInstance().executeAction(action);
+        
+        if (!success) {
+            console.warn("Failed to execute move action");
+        }
+    }
+
+    /**
+     * Helper to destroy a card sprite and its associated text at a given key
+     */
+    private destroySpriteAt(key: string) {
+        if (this.cardSprites.has(key)) {
+            const sprite = this.cardSprites.get(key);
+            if (sprite && sprite.active) {
+                const actionsText = (sprite as any).actionsText;
+                if (actionsText && actionsText.active) actionsText.destroy(true);
+                sprite.destroy(true);
+            }
+            this.cardSprites.delete(key);
+        }
+    }
+
+    /**
+     * Handle card moved event - update card sprite positions and manage selection.
+     * This fires for all moves (from Hex click or card sprite click), so it handles
+     * highlight clearing and re-selection universally.
+     */
+    private handleCardMoved(event: any) {
+        const { fromRow, fromCol, toRow, toCol, playerId } = event;
+        const sourceKey = `${fromRow}-${fromCol}`;
+        const targetKey = `${toRow}-${toCol}`;
+        
+        // Remove old sprites at both source and target
+        this.destroySpriteAt(sourceKey);
+        this.destroySpriteAt(targetKey);
+        
+        // Read updated game state and recreate visuals where needed
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        // Recreate sprite at source if card is still there (attack where defender survived)
+        const sourceHex = gameState.hexMap[fromRow]?.[fromCol];
+        if (sourceHex && sourceHex.occupied && sourceHex.occupiedBy) {
+            this.createCardVisual(sourceHex.occupiedBy, fromRow, fromCol);
+        }
+        
+        // Recreate sprite at target (card moved there, or defender survived there)
+        const targetHex = gameState.hexMap[toRow]?.[toCol];
+        if (targetHex && targetHex.occupied && targetHex.occupiedBy) {
+            this.createCardVisual(targetHex.occupiedBy, toRow, toCol);
+        }
+        
+        // Post-move selection management (only for current player's moves)
+        if (playerId === gameState.currentPlayerId) {
+            this.clearAllHighlights();
+            
+            // Determine where the card ended up
+            const cardStayedAtSource = sourceHex && sourceHex.occupied &&
+                sourceHex.occupiedByPlayerId === playerId;
+            const cardMovedToTarget = targetHex && targetHex.occupied &&
+                targetHex.occupiedByPlayerId === playerId;
+            
+            const actualRow = cardStayedAtSource ? fromRow : (cardMovedToTarget ? toRow : -1);
+            const actualCol = cardStayedAtSource ? fromCol : (cardMovedToTarget ? toCol : -1);
+            
+            if (actualRow >= 0) {
+                const cardHex = gameState.hexMap[actualRow]?.[actualCol];
+                if (cardHex && cardHex.occupiedBy &&
+                    (cardHex.occupiedBy.remainingActions ?? 0) > 0) {
+                    // Card has remaining actions - re-select it
+                    this.selectedCardHex = { row: actualRow, col: actualCol };
+                    UIManager.getInstance().setSelectedBoardCardPosition({ row: actualRow, col: actualCol });
+                    if (this.hexMap[actualRow]?.[actualCol]) {
+                        this.hexMap[actualRow][actualCol].redraw('click');
+                    }
+                    this.highlightReachableHexes(actualRow, actualCol);
+                    return;
+                }
+            }
+            
+            // No more actions - fully deselect
+            this.selectedCardHex = null;
+            UIManager.getInstance().setSelectedBoardCardPosition(null);
+        }
+    }
+
+    /**
+     * Handle card attacked event - could add visual effects like damage numbers later
+     */
+    private handleCardAttacked(_event: any) {
+        // Visual feedback for attacks (e.g., damage numbers, flash effects)
+        // can be added here in the future. The actual sprite updates are
+        // handled by handleCardMoved which fires alongside this event.
+    }
+
+    /**
+     * Handle card destroyed event
+     */
+    private handleCardDestroyed(event: any) {
+        const { row, col } = event;
+        this.destroySpriteAt(`${row}-${col}`);
+    }
+    
+    /**
+     * Handle card placement event
+     */
+    private handleCardPlaced(event: any) {
+        const { hexRow, hexCol } = event;
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        const hex = gameState.hexMap[hexRow]?.[hexCol];
+        if (hex && hex.occupiedBy) {
+            // Get the visual hex to create card at correct position
+            const visualHex = this.hexMap[hexRow]?.[hexCol];
+            if (visualHex) {
+                this.createCardVisual(hex.occupiedBy, hexRow, hexCol);
+            }
+        }
+    }
+    
+    
+    private updateHexMapVisuals() {
+        const gameState = GameStateManager.getInstance().getGameState();
+        if (!gameState) return;
+        
+        // Update hex visuals based on game state
+        for (let row = 0; row < this.hexMap.length; row++) {
+            for (let col = 0; col < this.hexMap[row].length; col++) {
+                const hex = this.hexMap[row][col];
+                const stateHex = gameState.hexMap[row]?.[col];
+                
+                if (stateHex) {
+                    // Update hex data
+                    hex.occupied = stateHex.occupied;
+                    hex.occupiedBy = stateHex.occupiedBy;
+                    hex.occupiedByPlayerId = stateHex.occupiedByPlayerId;
+                    
+                    // Update card visual if needed
+                    if (stateHex.occupied && stateHex.occupiedBy) {
+                        const key = `${row}-${col}`;
+                        if (!this.cardSprites.has(key)) {
+                            // Card was placed but visual doesn't exist, create it
+                            this.createCardVisual(stateHex.occupiedBy, row, col);
+                        } else {
+                            // Card exists, update its position, size, and remaining actions for current zoom
+                            const sprite = this.cardSprites.get(key);
+                            if (sprite && hex) {
+                                const hexWorldX = this.mapContainer.x + hex.hex.x;
+                                const hexWorldY = this.mapContainer.y + hex.hex.y;
+                                sprite.x = hexWorldX;
+                                sprite.y = hexWorldY;
+                                
+                                // Update size based on zoom
+                                const baseHexRadius = 55;
+                                const currentHexRadius = hex.hexRadius;
+                                const scaleFactor = currentHexRadius / baseHexRadius;
+                                const cardSize = 80 * scaleFactor;
+                                sprite.setDisplaySize(cardSize, cardSize);
+                                
+                                // Update remaining actions display
+                                const actionsText = (sprite as any).actionsText;
+                                if (actionsText && actionsText.active && stateHex.occupiedBy) {
+                                    actionsText.setText(`A:${stateHex.occupiedBy.remainingActions ?? stateHex.occupiedBy.actions}`);
+                                }
+                            }
+                        }
+                    } else if (!stateHex.occupied) {
+                        // Card was removed, destroy visual
+                        const key = `${row}-${col}`;
+                        if (this.cardSprites.has(key)) {
+                            const sprite = this.cardSprites.get(key);
+                            if (sprite && sprite.active) {
+                                sprite.destroy(true); // Destroy and remove from scene
+                            }
+                            this.cardSprites.delete(key);
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
@@ -116,7 +605,7 @@ export class MapScene extends Phaser.Scene {
         const rows = this.hexMapConfig.length; // Total rows (based on map config)
         const hexHeight = Math.sqrt(3) * this.hexRadius; // Height of a hexagon
         const hexWidth = 2 * this.hexRadius; // Width of a hexagon
-        const xOffset = hexWidth * 0.85; // Horizontal offset
+        const xOffset = hexWidth * 0.85; // Horizontal offset (flat-top hexes side by side)
         const yOffset = hexHeight * 0.85; // Vertical offset
     
         // Centering the entire map
@@ -138,13 +627,13 @@ export class MapScene extends Phaser.Scene {
                 const xPos = centerX + col * xOffset; // Adjust horizontal position for centering
     
                 const hexType = this.hexMapConfig[row][col] as HexType;
-                const tile = new Hex(this, xPos, yPos, this.hexRadius, hexType);
+                const tile = new Hex(this, xPos, yPos, this.hexRadius, hexType, false, null, row, col);
                 tile.drawHex(hexTypes[hexType].default);
 
                 this.hexMap[row].push(tile);
     
                 this.mapContainer.add(tile.hex); 
-
+    
                 // Store row/col position inside hex for reference
                 tile.hex.setData({ row, col });
             }
@@ -159,7 +648,7 @@ export class MapScene extends Phaser.Scene {
             const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
             if (currentIndex < this.zoomLevels.length - 1) {
                 this.zoomScale = this.zoomLevels[currentIndex + 1];
-                this.redrawMap();
+                this.redrawMap(); // This will recreate hexes and cards at new zoom level
             }
         }
     }
@@ -172,7 +661,7 @@ export class MapScene extends Phaser.Scene {
             const currentIndex = this.zoomLevels.indexOf(this.zoomScale);
             if (currentIndex > 0) {
                 this.zoomScale = this.zoomLevels[currentIndex - 1];
-                this.redrawMap();
+                this.redrawMap(); // This will recreate hexes and cards at new zoom level
             }
         }
     }
@@ -182,15 +671,59 @@ export class MapScene extends Phaser.Scene {
         const containerHeight = this.game.config.height as number;
     
         const rows = this.hexMapConfig.length; // Total rows (based on map config)
-        const hexHeight = Math.sqrt(3) * this.hexRadius * this.zoomScale; // Height of a hexagon, scaled
-        const hexWidth = 2 * this.hexRadius * this.zoomScale; // Width of a hexagon, scaled
-        const xOffset = hexWidth * 0.85; // Horizontal offset
+        const scaledRadius = this.hexRadius * this.zoomScale;
+        const hexHeight = Math.sqrt(3) * scaledRadius; // Height of a hexagon, scaled
+        const hexWidth = 2 * scaledRadius; // Width of a hexagon, scaled
+        const xOffset = hexWidth * 0.85; // Horizontal offset (matching generateHexMap)
         const yOffset = hexHeight * 0.85; // Vertical offset
     
         // Centering the entire map
         const totalMapHeight = rows * yOffset; 
         const centerY = (containerHeight - totalMapHeight) / 2; 
     
+        // Store existing card visuals before clearing (get from gameState, not visual hexMap)
+        const gameState = GameStateManager.getInstance().getGameState();
+        const cardVisualsToRestore: Array<{card: Card, row: number, col: number}> = [];
+        
+        if (gameState) {
+            // Get card data from gameState before clearing hexMap
+            for (let row = 0; row < gameState.hexMap.length; row++) {
+                for (let col = 0; col < gameState.hexMap[row].length; col++) {
+                    const stateHex = gameState.hexMap[row][col];
+                    if (stateHex && stateHex.occupied && stateHex.occupiedBy) {
+                        cardVisualsToRestore.push({ card: stateHex.occupiedBy, row, col });
+                    }
+                }
+            }
+        }
+
+        // Destroy all existing card sprites before clearing (they're added to scene, not container)
+        // This prevents duplicate card images when zooming
+        this.cardSprites.forEach((sprite, key) => {
+            if (sprite) {
+                // Clear visualSprite reference on card if it exists
+                const [row, col] = key.split('-').map(Number);
+                const gameState = GameStateManager.getInstance().getGameState();
+                if (gameState) {
+                    const stateHex = gameState.hexMap[row]?.[col];
+                    if (stateHex && stateHex.occupiedBy && stateHex.occupiedBy.visualSprite === sprite) {
+                        stateHex.occupiedBy.visualSprite = null;
+                    }
+                }
+                const actionsText = (sprite as any).actionsText;
+                if (actionsText && actionsText.active) actionsText.destroy(true);
+                if (sprite.active) {
+                    sprite.destroy(true);
+                }
+            }
+        });
+        this.cardSprites.clear(); // Clear card sprite references
+        
+        // Clear selection and highlights since hex objects are being recreated
+        this.highlightedHexes.clear();
+        this.selectedCardHex = null;
+        UIManager.getInstance().setSelectedBoardCardPosition(null);
+        
         // Clear any previous hexes from the container
         this.mapContainer.removeAll(true); // This ensures all existing hexes are removed before drawing new ones
     
@@ -210,7 +743,7 @@ export class MapScene extends Phaser.Scene {
                 const xPos = centerX + col * xOffset; // Adjust horizontal position for centering
     
                 const hexType = this.hexMapConfig[row][col] as HexType;
-                const tile = new Hex(this, xPos, yPos, this.hexRadius * this.zoomScale, hexType); // Use the scaled radius
+                const tile = new Hex(this, xPos, yPos, scaledRadius, hexType, false, null, row, col);
                 tile.drawHex(hexTypes[hexType].default);
     
                 this.hexMap[row].push(tile); // Add the tile to the hex map array
@@ -218,6 +751,11 @@ export class MapScene extends Phaser.Scene {
                 this.mapContainer.add(tile.hex); // Add the tile to the map container
             }
         }
+        
+        // Restore card visuals at new positions (after hex map is redrawn)
+        cardVisualsToRestore.forEach(({ card, row, col }) => {
+            this.createCardVisual(card, row, col);
+        });
     }
 
 

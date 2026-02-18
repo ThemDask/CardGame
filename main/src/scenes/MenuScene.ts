@@ -3,6 +3,7 @@ import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
          buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
 import { configureBackground } from '../utils/helpers/configureBackground';
+import { sceneManager } from '../core/sceneManager';
 
 export class MenuScene extends Phaser.Scene {
     private playButton!: Phaser.GameObjects.Text;
@@ -34,7 +35,7 @@ export class MenuScene extends Phaser.Scene {
         // Add all buttons to the container
         menuContainer.add([this.playButton, this.deckBuilderButton, this.profileButton]);
 
-        this.deckBuilderButton.on('pointerdown', () => this.scene.start('DeckBuilderScene'));
+        this.deckBuilderButton.on('pointerdown', () => sceneManager.goToDeckBuilder(this));
          // Add the file input element
          this.createFileInput();
 
@@ -110,8 +111,7 @@ export class MenuScene extends Phaser.Scene {
         // Validate the loaded deck data structure
         if (Array.isArray(deckData)) {
             console.log('Loaded deck:', deckData);
-            // Proceed to the game scene with the loaded deck
-            this.scene.start('MapScene', { playerDeck: deckData });
+            sceneManager.startGame(this, deckData);
         } else {
             alert('Invalid Deck. Please construct one in Deck Builder, save it and load it here.');
         }
@@ -125,14 +125,14 @@ export class MenuScene extends Phaser.Scene {
     }
 
     startMapScene() {
-        const gameState = GameStateManager.getInstance();
+        const gameStateManager = GameStateManager.getInstance();
+        const selectedDeck = gameStateManager.getSelectedDeck();
     
-        if (!gameState.selectedDeck) {
+        if (!selectedDeck) {
             // Show a prompt to select a deck in DeckBuilderScene.
             this.add.text(400, 300, 'Please select a deck in Deck Builder!', { font: '24px Arial', color: '#ff0000' }).setOrigin(0.5);
         } else {
-            // Start the MapScene with the selected deck.
-            this.scene.start('MapScene', { playerDeck: gameState.selectedDeck });
+            sceneManager.startGame(this, selectedDeck);
         }
     }
 

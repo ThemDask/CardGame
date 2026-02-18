@@ -6,23 +6,30 @@
 export const hexColors = {
     land: 0x7fffb2,
     landDeploy: 0x5bc485,
-    landHover: 0xbbf2d0,
-
     water: 0x5494ff,
-    waterDeploy: 0x3e72c8,
+    yellowTP: 0xf5c900,
+    AzureTP: 0x007bff,
+    redTP: 0xff0000,
+    whiteTP: 0xffffff,
+    purpleTP: 0x9900ff,
+    orangeTP: 0xffa500,
+    pinkTP: 0xffc0cb,
+
+    landHover: 0xbbf2d0,
+    yellowTPHover: 0xc2a500,
+    AzureTPHover: 0x0060c8,
+    redTPHover: 0xc80000,
+    whiteTPHover: 0xffffff,
+    purpleTPHover: 0x8000c8,
+    orangeTPHover: 0xc88500,
+    pinkTPHover: 0xc895b6,
     waterHover: 0x8ab6ff,
-
-    objective: 0xff3e3e,
-    objectiveHover: 0xfa8c8c,
-
-    mine: 0xffe154,
-    mineHover: 0xffefa6,
 
     click: 0xffffff,
 };
 
 // Define a union type for the valid hex types
-export type HexType = 'land' | 'water' | 'landDeploy' | 'waterDeploy' | 'objective' | 'mine';
+export type HexType = 'land' | 'water' | 'landDeploy' | 'yellowTP' | 'AzureTP' | 'redTP' | 'whiteTP' | 'purpleTP' | 'orangeTP' | 'pinkTP';
 
 export const hexTypes: Record<HexType, { default: number; hover: number; click: number }> = {
     land: {
@@ -40,19 +47,39 @@ export const hexTypes: Record<HexType, { default: number; hover: number; click: 
         hover: hexColors.landHover,
         click: hexColors.click,
     },
-    waterDeploy: {
-        default: hexColors.waterDeploy,
-        hover: hexColors.waterHover,
+    yellowTP: {
+        default: hexColors.yellowTP,
+        hover: hexColors.yellowTPHover,
         click: hexColors.click,
     },
-    objective: {
-        default: hexColors.objective,
-        hover: hexColors.objectiveHover,
+    AzureTP: {
+        default: hexColors.AzureTP,
+        hover: hexColors.AzureTPHover,
         click: hexColors.click,
     },
-    mine: {
-        default: hexColors.mine,
-        hover: hexColors.mineHover,
+    redTP: {
+        default: hexColors.redTP,
+        hover: hexColors.redTPHover,
+        click: hexColors.click,
+    },
+    whiteTP: {
+        default: hexColors.whiteTP,
+        hover: hexColors.whiteTPHover,
+        click: hexColors.click,
+    },
+    purpleTP: {
+        default: hexColors.purpleTP,
+        hover: hexColors.purpleTPHover,
+        click: hexColors.click,
+    },
+    orangeTP: {
+        default: hexColors.orangeTP,
+        hover: hexColors.orangeTPHover,
+        click: hexColors.click,
+    },
+    pinkTP: {
+        default: hexColors.pinkTP,
+        hover: hexColors.pinkTPHover,
         click: hexColors.click,
     }
 };

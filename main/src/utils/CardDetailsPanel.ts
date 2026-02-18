@@ -9,7 +9,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     private imageRect: Phaser.GameObjects.Rectangle;
     private cardImage: Phaser.GameObjects.Image;
     private cardNameText: Phaser.GameObjects.Text;
-    private costText: Phaser.GameObjects.Text;
+    private actionsText: Phaser.GameObjects.Text;
     private movementText: Phaser.GameObjects.Text;
     private movementIcon: Phaser.GameObjects.Image;
     private damageText: Phaser.GameObjects.Text;
@@ -49,9 +49,9 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
             .setOrigin(0.5, 0.5);
         this.add(this.cardImage);
 
-        // Card name and cost
+        // Card name and actions stat
         this.cardNameText = scene.add.text(x + 7, y + 7, '', { font: textFont.font, color: '#000' }).setOrigin(0, 0);
-        this.costText = scene.add.text(x + width - 7, y + 7, '', { font: numberFont.font, color: '#000' }).setOrigin(1, 0);
+        this.actionsText = scene.add.text(x + width - 7, y + 7, '', { font: numberFont.font, color: '#000' }).setOrigin(1, 0);
 
         // Row position for icons and texts
         const ROW_Y = y + imageRectHeight; // Adjust as needed based on layout
@@ -125,7 +125,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         this.setupKeywordsInteraction();
 
         // Add all elements to the container
-        this.add([this.cardNameText, this.costText, this.movementIcon, this.movementText, this.damageIcon, this.damageText, this.hpIcon, this.hpText, this.rangedDamageIcon, this.rangedDamageText, this.rangeIcon, this.rangeText, this.descriptionText, this.keywordsText]);
+        this.add([this.cardNameText, this.actionsText, this.movementIcon, this.movementText, this.damageIcon, this.damageText, this.hpIcon, this.hpText, this.rangedDamageIcon, this.rangedDamageText, this.rangeIcon, this.rangeText, this.descriptionText, this.keywordsText]);
 
         scene.add.existing(this);
     }
@@ -133,8 +133,12 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
     updatePanel(card: Card | null) {
         if (card) {
             this.cardNameText.setText(`${card.name}`);
-            this.costText.setText(` ${card.cost}`);
-            this.cardImage.setTexture(card.imagePath);
+            this.actionsText.setText(`A: ${card.remainingActions ?? card.actions}`);
+            // Use placeholder when card image doesn't exist (same as DeckBuilderScene/DeploymentScene)
+            const imageKey = (card.imagePath && this.scene.textures.exists(card.imagePath))
+                ? card.imagePath
+                : 'archer';
+            this.cardImage.setTexture(imageKey);
 
             const boundingBox = new Phaser.Geom.Rectangle(
                 this.imageRect.x,
@@ -155,7 +159,7 @@ export class CardDetailsPanel extends Phaser.GameObjects.Container {
         } else {
             // Reset fields to placeholders if no card is selected
             this.cardNameText.setText('Name: -');
-            this.costText.setText('Cost: 0');
+            this.actionsText.setText('A: 0');
             this.cardImage.setTexture('placeholder');
 
             resizeAndCenterImage(this.cardImage, new Phaser.Geom.Rectangle(
