@@ -1,6 +1,7 @@
 import { DeckDisplayModal } from "../utils/DeckDisplayModal";
 import { Player } from "../entities/Player";
 import { createBackButton } from "../utils/helpers/backButton";
+import { sceneManager } from "../core/sceneManager";
 import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "../entities/Card";
 import { createPlayerContainer } from "../utils/helpers/playerContainer";
@@ -29,9 +30,7 @@ export class DeploymentScene extends Phaser.Scene {
         this.cardDetailsPanel.updatePanel(null)
 
         this.input.keyboard?.on('keydown-ESC', () => {
-            if (!this.scene.isActive('EscapeMenu')) {
-                this.scene.launch('EscapeMenu');
-            }
+            sceneManager.openEscapeMenu(this);
         });
 
         const player1 = GameStateManager.getInstance().getPlayer1();

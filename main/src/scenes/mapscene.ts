@@ -11,6 +11,7 @@ import { EnemyAI } from '../utils/helpers/EnemyAI';
 import { GameRules } from '../core/rules/GameRules';
 import { MoveCardAction } from '../core/actions/MoveCardAction';
 import { UIManager } from '../core/state/UIManager';
+import { sceneManager } from '../core/sceneManager';
 
 // Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
@@ -100,7 +101,7 @@ export class MapScene extends Phaser.Scene {
         }
     }
 
-    create() {        
+    create() {
         configureBackground(this);
         
         const containerWidth = this.game.config.width as number;  
@@ -137,12 +138,12 @@ export class MapScene extends Phaser.Scene {
             else if (dy < 0) this.zoomIn();
         });
 
-        // this.input.on('pointerdown', this.handleHexClick, this);
+        this.input.keyboard?.on('keydown-ESC', () => {
+            sceneManager.openEscapeMenu(this);
+        });
 
-        // IMPORTANT! toogle here
-        this.scene.launch('DeploymentScene')
+        this.scene.launch('DeploymentScene');
         this.scene.launch('UIScene');
-
     }
 
 

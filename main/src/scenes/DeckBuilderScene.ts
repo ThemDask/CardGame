@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Card } from '../entities/Card';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
+import { sceneManager } from '../core/sceneManager';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
 import { createBackButton } from '../utils/helpers/backButton';
@@ -47,9 +48,7 @@ export class DeckBuilderScene extends Phaser.Scene {
         configureBackground(this);
 
         this.input.keyboard?.on('keydown-ESC', () => {
-            if (!this.scene.isActive('EscapeMenu')) {
-                this.scene.launch('EscapeMenu');
-            }
+            sceneManager.openEscapeMenu(this);
         });
         
         this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 500, 700); 
