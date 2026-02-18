@@ -4,16 +4,16 @@
 
 //------------------------BOARD HEXES------------------------//
 export const hexColors = {
-    land: 0x7fffb2,
+    land: 0x5bc485,
     landDeploy: 0x5bc485,
-    water: 0x5494ff,
-    yellowTP: 0xf5c900,
-    AzureTP: 0x007bff,
-    redTP: 0xff0000,
+    water: 0x0000ff,
+    yellowTP: 0xfff176,
+    AzureTP: 0x5ca9e7,
+    redTP: 0xc83c3c,
     whiteTP: 0xffffff,
-    purpleTP: 0x9900ff,
-    orangeTP: 0xffa500,
-    pinkTP: 0xffc0cb,
+    purpleTP: 0xb64bc8,
+    orangeTP: 0xe99e2e,
+    pinkTP: 0xed7ea4,
 
     landHover: 0xbbf2d0,
     yellowTPHover: 0xc2a500,

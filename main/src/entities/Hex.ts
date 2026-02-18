@@ -4,9 +4,10 @@ import { Card } from "./Card";
 import { DeploymentScene } from "../scenes/DeploymentScene";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
 import { MoveCardAction } from "../core/actions/MoveCardAction";
+import { ShootCardAction } from "../core/actions/ShootCardAction";
 import { UIManager } from "../core/state/UIManager";
 
-export type HighlightType = 'none' | 'movement' | 'attack';
+export type HighlightType = 'none' | 'movement' | 'attack' | 'shoot';
 
 export class Hex {
     occupied: boolean;
@@ -117,18 +118,20 @@ export class Hex {
     redraw(invocation: string) {
         const hexColor = hexTypes[this.type]; // Access the hex type colors based on the current type
         
-        // If hex has a highlight (movement/attack), preserve it
+        // If hex has a highlight (movement/attack/shoot), preserve it
         if (this.highlightType === 'movement') {
             this.drawHex(hexColor.default, 0xffffff, 4); // White border for movement
         } else if (this.highlightType === 'attack') {
             this.drawHex(hexColor.default, 0xff0000, 4); // Red border for attack
+        } else if (this.highlightType === 'shoot') {
+            this.drawHex(hexColor.default, 0x87CEEB, 4); // Light blue border for shoot
         } else if (invocation === 'hover') {
             // Only apply hover if not highlighted
             this.drawHex(hexColor.hover); // Use hover color
         } else if (invocation === 'click') {
             this.drawHex(hexColor.click); // Use click color
         } else if (invocation === 'highlight') {
-            // Redraw with current highlight state (movement/attack already handled above)
+            // Redraw with current highlight state (movement/attack/shoot already handled above)
             this.drawHex(hexColor.default);
         } else {
             // Default redraw
@@ -159,23 +162,32 @@ export class Hex {
         
         if (!gameState) return;
 
-        // Priority 1: If this hex is highlighted for movement/attack, handle that first.
+        // Priority 1: If this hex is highlighted for movement/attack/shoot, handle that first.
         // This takes precedence because highlighted hexes mean a board card is already
-        // selected for movement - the user is clicking a target, not trying to deploy.
+        // selected - the user is clicking a target, not trying to deploy.
         if (this.highlightType !== 'none') {
             const boardCardPos = UIManager.getInstance().getSelectedBoardCardPosition();
             if (boardCardPos) {
-                const action = new MoveCardAction(
-                    gameState.currentPlayerId,
-                    boardCardPos.row,
-                    boardCardPos.col,
-                    this.row,
-                    this.col
-                );
+                const action = this.highlightType === 'shoot'
+                    ? new ShootCardAction(
+                        gameState.currentPlayerId,
+                        boardCardPos.row,
+                        boardCardPos.col,
+                        this.row,
+                        this.col
+                    )
+                    : new MoveCardAction(
+                        gameState.currentPlayerId,
+                        boardCardPos.row,
+                        boardCardPos.col,
+                        this.row,
+                        this.col
+                    )
+                ;
                 
                 const success = gameStateManager.executeAction(action);
                 if (!success) {
-                    console.warn("Failed to execute move/attack action");
+                    console.warn("Failed to execute action");
                 }
                 return;
             }

@@ -7,6 +7,7 @@ import { GameAction } from "../core/actions/GameAction";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
 import { EndTurnAction } from "../core/actions/EndTurnAction";
 import { MoveCardAction } from "../core/actions/MoveCardAction";
+import { ShootCardAction } from "../core/actions/ShootCardAction";
 import { GameEventEmitter, GameEventType, StateChangedEvent, ActionExecutedEvent, ActionRejectedEvent, CardPlacedEvent, CardMovedEvent, CardAttackedEvent, TurnEndedEvent } from "../core/events/GameEvents";
 
 /**
@@ -137,6 +138,26 @@ export class GameStateManager {
                         col: action.toCol
                     });
                 }
+            }
+        } else if (action instanceof ShootCardAction) {
+            const attackedEvent: CardAttackedEvent = {
+                attackerCardId: action.attackerCardId,
+                defenderCardId: action.defenderCardId,
+                damage: action.damageDealt,
+                defenderKilled: action.defenderKilled,
+                fromRow: action.fromRow,
+                fromCol: action.fromCol,
+                toRow: action.toRow,
+                toCol: action.toCol
+            };
+            GameEventEmitter.emit(GameEventType.CARD_ATTACKED, attackedEvent);
+
+            if (action.defenderKilled) {
+                GameEventEmitter.emit(GameEventType.CARD_DESTROYED, {
+                    cardId: action.defenderCardId,
+                    row: action.toRow,
+                    col: action.toCol
+                });
             }
         } else if (action instanceof EndTurnAction) {
             const previousPlayerId = previousState.currentPlayerId;
