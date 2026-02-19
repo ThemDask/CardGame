@@ -27,10 +27,11 @@ export class MapScene extends Phaser.Scene {
     private player1: Player;
     private player2: Player;
     private hexMapConfig: Array<Array<HexType>>;
-    private cardSprites: Map<string, Phaser.GameObjects.Image> = new Map(); // Track card visuals
-    private selectedCardHex: {row: number, col: number} | null = null; // For click highlight feedback
-    private highlightedHexes: Set<string> = new Set(); // Track highlighted hexes for efficient clearing
+    private cardSprites: Map<string, Phaser.GameObjects.Image> = new Map();
+    private selectedCardHex: {row: number, col: number} | null = null;
+    private highlightedHexes: Set<string> = new Set();
     private cardContextMenu: CardContextMenu;
+    private enemyDeck: Card[] | undefined;
 
 
     constructor() {
@@ -52,14 +53,12 @@ export class MapScene extends Phaser.Scene {
         ];
     }
 
-    init(data: { playerDeck: string[] | Card[] }) {
+    init(data: { playerDeck: string[] | Card[], enemyDeck?: Card[] }) {
         console.log("data transferred: ", data.playerDeck);
         const deckIds = data.playerDeck || [];
         
-        // Convert deck IDs to Card objects if needed
         let initialDeck: Card[];
         if (deckIds.length > 0 && typeof deckIds[0] === 'string') {
-            // Deck is array of IDs, convert to Card objects
             initialDeck = (deckIds as string[]).map(id => {
                 const cardDataItem = (cardData as any[]).find(c => c.id === id);
                 if (!cardDataItem) {
@@ -86,8 +85,7 @@ export class MapScene extends Phaser.Scene {
     
         this.player1 = new Player("Player 1", initialDeck, 300);
         this.player2 = new Player("Player 2", [], 300);
-        
-        // Note: Game state will be initialized in create() after hex map is generated
+        this.enemyDeck = data.enemyDeck;
     }
 
     preload() {
@@ -120,8 +118,7 @@ export class MapScene extends Phaser.Scene {
         const gameStateManager = GameStateManager.getInstance();
         gameStateManager.initializeGame(this.player1, this.player2, this.hexMap);
         
-        // Deploy enemy cards and create their visuals
-        const deployedEnemyCards = EnemyAI.deployEnemyCards(this.hexMapConfig);
+        const deployedEnemyCards = EnemyAI.deployEnemyCards(this.hexMapConfig, this.enemyDeck);
         deployedEnemyCards.forEach(({ card, row, col }) => {
             this.createCardVisual(card, row, col);
         });
