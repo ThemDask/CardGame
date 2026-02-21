@@ -29,7 +29,7 @@ export class UIScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('demoGraveyard', '/assets/demoGraveyard.png');
+        this.load.image('demoGraveyard', 'assets/demoGraveyard.png');
     }
 
     create() {

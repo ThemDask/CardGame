@@ -42,13 +42,13 @@ export class DraftScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('archer', '/assets/archer.png');
-        this.load.image('damage', '/assets/damage.png');
-        this.load.image('health', '/assets/hp.png');
-        this.load.image('movement', '/assets/movement.png');
-        this.load.image('range', '/assets/range.png');
-        this.load.image('ranged_dmg', '/assets/ranged_dmg.png');
-        this.load.image('bg', '/assets/bg1.png');
+        this.load.image('archer', 'assets/archer.png');
+        this.load.image('damage', 'assets/damage.png');
+        this.load.image('health', 'assets/hp.png');
+        this.load.image('movement', 'assets/movement.png');
+        this.load.image('range', 'assets/range.png');
+        this.load.image('ranged_dmg', 'assets/ranged_dmg.png');
+        this.load.image('bg', 'assets/bg1.png');
     }
 
     create() {
