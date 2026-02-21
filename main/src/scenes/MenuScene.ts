@@ -3,6 +3,7 @@ import { buttonOverStroke, buttonOverStyle, buttonOutStroke, buttonOutStyle,
          buttonDownStroke, buttonDownStyle, buttonUpStroke, buttonUpStyle} from '../utils/styles';
 import { GameStateManager } from '../state/GameStateManager';
 import { configureBackground } from '../utils/helpers/configureBackground';
+import { sceneManager } from '../core/sceneManager';
 
 export class MenuScene extends Phaser.Scene {
     private playButton!: Phaser.GameObjects.Text;
@@ -16,7 +17,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('bg', '/assets/bg1.png')
+        this.load.image('bg', 'assets/bg1.png')
 
     }
 
@@ -27,20 +28,20 @@ export class MenuScene extends Phaser.Scene {
         const menuContainer = this.add.container(width / 2, height / 2);
 
         this.playButton = this.createButton(0, -100, 'Play');
-        this.deckBuilderButton = this.createButton(0, 0, 'Deck Builder');
-        this.profileButton = this.createButton(0, 100, 'Profile');
+        this.deckBuilderButton = this.createButton(0, 0, 'Deck Builder (LEGACY)');
+        // this.deckBuilderButton = this.createButton(0, 100, 'Deck Builder (LEGACY)');
+        this.profileButton = this.createButton(0, 200, 'Profile');
 
         
         // Add all buttons to the container
         menuContainer.add([this.playButton, this.deckBuilderButton, this.profileButton]);
 
-        this.deckBuilderButton.on('pointerdown', () => this.scene.start('DeckBuilderScene'));
+        this.deckBuilderButton.on('pointerdown', () => sceneManager.goToDeckBuilder(this));
          // Add the file input element
          this.createFileInput();
 
-         // Add event listener for the play button to show the modal
          this.playButton.on('pointerdown', () => {
-             this.startMapScene();
+             sceneManager.goToDraft(this);
          });
     }
 
@@ -110,8 +111,7 @@ export class MenuScene extends Phaser.Scene {
         // Validate the loaded deck data structure
         if (Array.isArray(deckData)) {
             console.log('Loaded deck:', deckData);
-            // Proceed to the game scene with the loaded deck
-            this.scene.start('MapScene', { playerDeck: deckData });
+            sceneManager.startGame(this, deckData);
         } else {
             alert('Invalid Deck. Please construct one in Deck Builder, save it and load it here.');
         }
@@ -125,14 +125,14 @@ export class MenuScene extends Phaser.Scene {
     }
 
     startMapScene() {
-        const gameState = GameStateManager.getInstance();
+        const gameStateManager = GameStateManager.getInstance();
+        const selectedDeck = gameStateManager.getSelectedDeck();
     
-        if (!gameState.selectedDeck) {
+        if (!selectedDeck) {
             // Show a prompt to select a deck in DeckBuilderScene.
             this.add.text(400, 300, 'Please select a deck in Deck Builder!', { font: '24px Arial', color: '#ff0000' }).setOrigin(0.5);
         } else {
-            // Start the MapScene with the selected deck.
-            this.scene.start('MapScene', { playerDeck: gameState.selectedDeck });
+            sceneManager.startGame(this, selectedDeck);
         }
     }
 

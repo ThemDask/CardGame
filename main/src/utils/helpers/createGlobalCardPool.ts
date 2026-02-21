@@ -11,7 +11,8 @@ interface CardData {
     ranged_damage: number;
     range: number;
     hp: number;
-    cost: number;
+    actions?: number;
+    cost?: number;
     description: string;
     imagePath: string;
     keywords: string[];
@@ -19,7 +20,6 @@ interface CardData {
 
 
 export function createGlobalCardPool(replaceWithPlaceholder: boolean): Card[] {
-  // Map each JSON object to a new Card instance
   const cards: Card[] = (cardData as CardData[]).map(data => new Card(
     data.id,
     data.type,
@@ -29,7 +29,7 @@ export function createGlobalCardPool(replaceWithPlaceholder: boolean): Card[] {
     data.ranged_damage,
     data.range,
     data.hp,
-    data.cost,
+    data.actions ?? data.cost ?? 0,
     data.description,
     data.imagePath,
     data.keywords

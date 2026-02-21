@@ -1,0 +1,38 @@
+[
+    {
+        "id": "1",
+        "type": "item",
+        "name": "item name",
+        "description": "flavour text",
+        "ability": "",
+        "abilityDescription": "text tou ability",
+        "imagePath": "public/assets/Animated_Bodyguard.png"
+    },
+    {    
+        "id": "2",
+        "type": "item",
+        "name": "item name",
+        "description": "flavour text",
+        "ability": "",
+        "abilityDescription": "text tou ability",
+        "imagePath": "public/assets/Animated_Bodyguard.png"
+    },
+    {
+        "id": "3",
+        "type": "item",
+        "name": "item name",
+        "description": "flavour text",
+        "ability": "",
+        "abilityDescription": "text tou ability",
+        "imagePath": "public/assets/Animated_Bodyguard.png"
+    },  
+    {
+        "id": "4",
+        "type": "item",
+        "name": "item name",
+        "description": "flavour text",
+        "ability": "",
+        "abilityDescription": "text tou ability",
+        "imagePath": "public/assets/Animated_Bodyguard.png"
+    }
+]

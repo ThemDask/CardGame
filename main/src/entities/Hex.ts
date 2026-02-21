@@ -1,16 +1,25 @@
 import { HexType, hexTypes } from "../utils/styles";
 import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "./Card";
-import { DeploymentScene } from "../scenes/DeploymentScene";
+import { PlaceCardAction } from "../core/actions/PlaceCardAction";
+import { MoveCardAction } from "../core/actions/MoveCardAction";
+import { ShootCardAction } from "../core/actions/ShootCardAction";
+import { UIManager } from "../core/state/UIManager";
+
+export type HighlightType = 'none' | 'movement' | 'attack' | 'shoot';
 
 export class Hex {
     occupied: boolean;
     occupiedBy: Card | null;
+    occupiedByPlayerId: string | null = null; // Track which player owns the card
     type: HexType;
     hex: Phaser.GameObjects.Graphics;
     hexRadius: number;
     defaultFillColor: number = 0x419627; // Default hex fill color
     selected: boolean = false; // Track selection state
+    highlightType: HighlightType = 'none'; // Track highlight state for movement/attack
+    row: number = -1; // Row position in hex map
+    col: number = -1; // Column position in hex map
 
     constructor(
         scene: Phaser.Scene,
@@ -19,13 +28,17 @@ export class Hex {
         hexRadius: number,
         type: HexType,
         occupied: boolean = false,
-        occupiedBy: Card | null = null
+        occupiedBy: Card | null = null,
+        row: number = -1,
+        col: number = -1
         
     ) {
         this.type = type;
         this.occupied = occupied;
         this.occupiedBy = occupiedBy;
         this.hexRadius = hexRadius;
+        this.row = row;
+        this.col = col;
 
         // Create the visual hex
         this.hex = scene.add.graphics({ x: x, y: y });
@@ -38,13 +51,19 @@ export class Hex {
 
         // Add event listeners for pointer events
         this.hex.on('pointerover', () => {
-            // console.log(`Hovering over hex`);
-            this.redraw('hover');
+            // Only apply hover if hex is not highlighted for movement/attack
+            if (this.highlightType === 'none') {
+                this.redraw('hover');
+            }
         });
 
         this.hex.on('pointerout', () => {
-            // console.log(`Pointer out of hex`);
-            this.redraw('default');
+            // Restore highlight state if exists, otherwise default
+            if (this.highlightType === 'none') {
+                this.redraw('default');
+            } else {
+                this.redraw('highlight');
+            }
         });
 
         this.hex.on('pointerdown', () => {
@@ -67,15 +86,23 @@ export class Hex {
         return points;
     }
 
-    drawHex(fillColor: number) {
+    drawHex(fillColor: number, borderColor?: number, borderWidth?: number) {
         const angle = Phaser.Math.DegToRad(60);
         this.hex.clear(); // Clear previous drawings
-        this.hex.lineStyle(2, 0x000000, 1); // Set the line color again (optional)
+        
+        // Use provided border color/width or default
+        const strokeColor = borderColor !== undefined ? borderColor : 0x000000;
+        const strokeWidth = borderWidth !== undefined ? borderWidth : 2;
+        
+        this.hex.lineStyle(strokeWidth, strokeColor, 1);
         this.hex.fillStyle(fillColor); // Apply the fill color
 
-        // Draw the hexagon shape
+        // Draw flat-top hexagon (flat edges on top/bottom)
+        // The hex is drawn centered at (0, 0) relative to graphics object
         this.hex.beginPath();
+        // Start from top-left vertex
         this.hex.moveTo(this.hexRadius * Math.cos(-Math.PI / 6), this.hexRadius * Math.sin(-Math.PI / 6));
+        // Draw all 6 vertices
         for (let i = 1; i <= 6; i++) {
             const x = this.hexRadius * Math.cos(i * angle - Math.PI / 6);
             const y = this.hexRadius * Math.sin(i * angle - Math.PI / 6);
@@ -89,41 +116,120 @@ export class Hex {
 
     redraw(invocation: string) {
         const hexColor = hexTypes[this.type]; // Access the hex type colors based on the current type
-        if (invocation === 'hover') {
-            // console.log('Hovering redraw');
+        
+        // If hex has a highlight (movement/attack/shoot), preserve it
+        if (this.highlightType === 'movement') {
+            this.drawHex(hexColor.default, 0xffffff, 4); // White border for movement
+        } else if (this.highlightType === 'attack') {
+            this.drawHex(hexColor.default, 0xff0000, 4); // Red border for attack
+        } else if (this.highlightType === 'shoot') {
+            this.drawHex(hexColor.default, 0x87CEEB, 4); // Light blue border for shoot
+        } else if (invocation === 'hover') {
+            // Only apply hover if not highlighted
             this.drawHex(hexColor.hover); // Use hover color
         } else if (invocation === 'click') {
-            // console.log('Click redraw');
             this.drawHex(hexColor.click); // Use click color
+        } else if (invocation === 'highlight') {
+            // Redraw with current highlight state (movement/attack/shoot already handled above)
+            this.drawHex(hexColor.default);
         } else {
-            // console.log('Default redraw');
+            // Default redraw
             this.drawHex(hexColor.default); // Use default color
         }
     }
+    
+    /**
+     * Set highlight state for movement/attack
+     */
+    setHighlight(type: HighlightType) {
+        this.highlightType = type;
+        this.redraw('highlight');
+    }
+    
+    /**
+     * Clear highlight state
+     */
+    clearHighlight() {
+        this.highlightType = 'none';
+        this.redraw('default');
+    }
 
-    handleClick(scene: Phaser.Scene) {
-        const selectedCard = GameStateManager.getInstance().getSelectedCard();
-        if (!selectedCard || this.occupied) return;
+    handleClick(_scene: Phaser.Scene) {
+        const gameStateManager = GameStateManager.getInstance();
+        const selectedCard = gameStateManager.getSelectedCard();
+        const gameState = gameStateManager.getGameState();
+        
+        if (!gameState) return;
 
-        this.occupied = true;
-        this.occupiedBy = selectedCard;
-
-        // Create the card image on the hex
-        const cardImage = scene.add.image(this.hex.x+300, this.hex.y+40, selectedCard.imagePath);
-        cardImage.setDisplaySize(50, 50);
-
-        // Ensure the image is properly positioned inside the hex
-        this.hex.scene.add.existing(cardImage);
-
-        // Remove the card from DeploymentScene's deck
-        const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
-        if (deploymentScene) {
-            deploymentScene.removeCardFromDeck(selectedCard);
+        // Priority 1: If this hex is highlighted for movement/attack/shoot, handle that first.
+        if (this.highlightType !== 'none') {
+            if (gameState.gamePhase === 'deployment') return;
+            const boardCardPos = UIManager.getInstance().getSelectedBoardCardPosition();
+            if (boardCardPos) {
+                const action = this.highlightType === 'shoot'
+                    ? new ShootCardAction(
+                        gameState.currentPlayerId,
+                        boardCardPos.row,
+                        boardCardPos.col,
+                        this.row,
+                        this.col
+                    )
+                    : new MoveCardAction(
+                        gameState.currentPlayerId,
+                        boardCardPos.row,
+                        boardCardPos.col,
+                        this.row,
+                        this.col
+                    )
+                ;
+                
+                const success = gameStateManager.executeAction(action);
+                if (!success) {
+                    console.warn("Failed to execute action");
+                }
+                return;
+            }
         }
 
-        // Clear selected card after placing it
-        GameStateManager.getInstance().setSelectedCard(null);
+        // Priority 2: If a deck card is selected, try to place it (deployment)
+        if (selectedCard) {
+            if (!this.occupied) {
+                const currentPlayerId = gameState.currentPlayerId;
+                
+                // Check if this is a valid deployment hex during deployment phase
+                const isDeploymentPhase = gameState.gamePhase === 'deployment';
+                if (isDeploymentPhase) {
+                    const deployHexTypes = ['landDeploy', 'water', 'waterDeploy', 'redTP', 'AzureTP', 'pinkTP', 'orangeTP'];
+                    if (!deployHexTypes.includes(this.type)) {
+                        console.warn("Can only deploy on deployment zones");
+                        return;
+                    }
+                    
+                    // Check marine unit restrictions - must deploy on water
+                    if (selectedCard.keywords && selectedCard.keywords.some((kw: string) => kw.includes('Marine'))) {
+                        if (this.type !== 'water') {
+                            console.warn("Marine units can only be deployed on water");
+                            return;
+                        }
+                    }
+                }
+                
+                const action = new PlaceCardAction(
+                    currentPlayerId,
+                    selectedCard.id,
+                    this.row,
+                    this.col
+                );
 
-        this.redraw("click"); // Update hex appearance
+                const success = gameStateManager.executeAction(action);
+                
+                if (success) {
+                    gameStateManager.setSelectedCard(null);
+                    this.redraw("click");
+                } else {
+                    console.warn("Failed to place card:", selectedCard.name);
+                }
+            }
+        }
     }
 }

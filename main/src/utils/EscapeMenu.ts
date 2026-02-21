@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { textFont, buttonOverStroke, buttonOutStroke, buttonDownStroke } from './styles'
+import { textFont, buttonOverStroke, buttonOutStroke, buttonDownStroke } from './styles';
+import { sceneManager } from '../core/sceneManager';
 
 export class EscapeMenu extends Phaser.Scene {
     private menuContainer!: Phaser.GameObjects.Container;
@@ -27,7 +28,7 @@ export class EscapeMenu extends Phaser.Scene {
 
         // **Exit Button**
         const exitButton = this.createButton(centerX, centerY - 50, 'Exit', () => {
-            this.exitToMenu();
+            sceneManager.exitToMenu(this);
         });
 
         // **Mute Button (Placeholder)**
@@ -40,7 +41,7 @@ export class EscapeMenu extends Phaser.Scene {
 
         // **Close Menu on Escape Press**
         this.input.keyboard?.on('keydown-ESC', () => {
-            this.scene.stop();
+            sceneManager.closeEscapeMenu(this);
         });
     }
 
@@ -79,18 +80,4 @@ export class EscapeMenu extends Phaser.Scene {
         return this.add.container(0, 0, [buttonRect, buttonText]);
     }
 
-    private exitToMenu() {
-        // Get a reference to the Scene Manager
-        const sceneManager = this.scene.manager;
-
-        // Stop all scenes except MenuScene
-        sceneManager.getScenes(true).forEach(scene => {
-            if (scene.scene.key !== 'MenuScene') {
-                scene.scene.stop();
-            }
-        });
-
-        // Start the MenuScene
-        sceneManager.start('MenuScene');
-    }
 }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Card } from '../entities/Card';
 import { CardDetailsPanel } from '../utils/CardDetailsPanel';
+import { sceneManager } from '../core/sceneManager';
 import { createGlobalCardPool } from '../utils/helpers/createGlobalCardPool';
 import cardData from '../../../public/cardData.json';
 import { createBackButton } from '../utils/helpers/backButton';
@@ -10,7 +11,6 @@ import { extractKeywordBase } from '../utils/helpers/extractKeywordBase';
 import { configureBackground } from '../utils/helpers/configureBackground';
 
 export class DeckBuilderScene extends Phaser.Scene {
-    private gold: number;
     private myDeck: Card[];
     public globalPool: Card[];
     private myDeckContainer: Phaser.GameObjects.Container;
@@ -25,40 +25,36 @@ export class DeckBuilderScene extends Phaser.Scene {
     private exportDeckButtonText: Phaser.GameObjects.Text;
     private useDeckButtonText: Phaser.GameObjects.Text;
     private filteredCards: Card[] = [];
+    private deckSelectedText: Phaser.GameObjects.Text | null = null;
 
     constructor() {
         super({ key: 'DeckBuilderScene' });
-        this.gold = 100; 
-        this.myDeck = []; 
-        this.globalPool = createGlobalCardPool(true); 
+        this.myDeck = [];
+        this.globalPool = createGlobalCardPool(true);
     }
 
     preload() {
-        this.load.image('archer', '/assets/archer.png'); 
-        this.load.image('damage', '/assets/damage.png'); 
-        this.load.image('health', '/assets/hp.png'); 
-        this.load.image('movement', '/assets/movement.png'); 
-        this.load.image('range', '/assets/range.png'); 
-        this.load.image('ranged_dmg', '/assets/ranged_dmg.png'); 
+        this.load.image('archer', 'assets/archer.png'); 
+        this.load.image('damage', 'assets/damage.png'); 
+        this.load.image('health', 'assets/hp.png'); 
+        this.load.image('movement', 'assets/movement.png'); 
+        this.load.image('range', 'assets/range.png'); 
+        this.load.image('ranged_dmg', 'assets/ranged_dmg.png'); 
 
-        this.load.image('bg', '/assets/bg1.png')
+        this.load.image('bg', 'assets/bg1.png')
     }
 
     create() {
         configureBackground(this);
 
         this.input.keyboard?.on('keydown-ESC', () => {
-            if (!this.scene.isActive('EscapeMenu')) {
-                this.scene.launch('EscapeMenu');
-            }
+            sceneManager.openEscapeMenu(this);
         });
         
         this.cardDetailsPanel = new CardDetailsPanel(this, 5, 5, 500, 700); 
         this.cardDetailsPanel.updatePanel(null);
 
         this.createDeckRectangles();
-
-        this.add.text(1200, 50, `🪙: ${this.gold}`, { font: '32px Arial', color: '#ffffff' });
 
         const searchBox = new SearchBox(this, 50, 770);
 
@@ -130,7 +126,9 @@ export class DeckBuilderScene extends Phaser.Scene {
             // Add card image if within deck limit
             if (i < cards.length) {
                 const card = cards[i];
-                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, card.imagePath).setDisplaySize(slotWidth, slotHeight);
+                // Use placeholder if image not loaded (same as DeploymentScene/mapscene)
+                const imageKey = (card.imagePath && this.textures.exists(card.imagePath)) ? card.imagePath : 'archer';
+                const cardImage = this.add.image(slotX + slotWidth / 2, slotY + slotHeight / 2, imageKey).setDisplaySize(slotWidth, slotHeight);
                 container.add(cardImage);
     
                 // Enable card interaction
@@ -138,10 +136,6 @@ export class DeckBuilderScene extends Phaser.Scene {
                 cardImage.on('pointerdown', () => {
                     this.handleCardClick(card, container === this.myDeckContainer);
                 });
-    
-                // Display card gold value
-                const goldText = this.add.text(slotX + 10, slotY + 10, `${card.cost}`, { font: '18px Arial', color: '#000' });
-                container.add(goldText); 
     
                 cardImage.on('pointerover', () => {
                     this.cardDetailsPanel.updatePanel(card);
@@ -259,10 +253,8 @@ export class DeckBuilderScene extends Phaser.Scene {
     
                 try {
                     const loadedIds: string[] = JSON.parse(contents);
-                    // reset gold and deck
                     this.myDeck = [];
-                    this.gold = 100; 
-    
+
                     loadedIds.forEach(id => {
                         const originalCard = cardData.find((card: any) => card.id === id);
                         if (originalCard) {
@@ -270,18 +262,17 @@ export class DeckBuilderScene extends Phaser.Scene {
                                 originalCard.id,
                                 originalCard.type,
                                 originalCard.name,
-                                originalCard.movement ?? 0,  
-                                originalCard.damage ?? 0,     
-                                originalCard.ranged_damage ?? 0, 
-                                originalCard.range ?? 0,       
-                                originalCard.hp ?? 0,          
-                                originalCard.cost ?? 0,        
+                                originalCard.movement ?? 0,
+                                originalCard.damage ?? 0,
+                                originalCard.ranged_damage ?? 0,
+                                originalCard.range ?? 0,
+                                originalCard.hp ?? 0,
+                                (originalCard as any).actions ?? (originalCard as any).cost ?? 0,
                                 originalCard.description ?? "",
                                 originalCard.imagePath,
                                 originalCard.keywords || []
                             );
                             this.myDeck.push(card);
-                            this.gold -= card.cost; 
                         } else {
                             console.warn(`Card with ID ${id} not found in card data.`);
                         }
@@ -297,31 +288,45 @@ export class DeckBuilderScene extends Phaser.Scene {
     }
 
     private useDeck(): void {
+        // Validate deck is not empty
+        if (this.myDeck.length === 0) {
+            // Show error message
+            if (this.deckSelectedText) {
+                this.deckSelectedText.destroy();
+            }
+            this.deckSelectedText = this.add.text(1250, 975, "Deck is empty!", { font: "20px Arial", color: "#ff0000" }).setOrigin(0.5);
+            return;
+        }
+
         const deckIds = this.myDeck.map(card => card.id);
         GameStateManager.getInstance().setSelectedDeck(deckIds);
     
-        this.add.text(1250, 975, "Deck Selected!", { font: "20px Arial", color: "#00ff00" }).setOrigin(0.5);
+        // Remove old confirmation text if it exists
+        if (this.deckSelectedText) {
+            this.deckSelectedText.destroy();
+        }
+        
+        // Show confirmation message
+        this.deckSelectedText = this.add.text(1250, 975, "Deck Selected!", { font: "20px Arial", color: "#00ff00" }).setOrigin(0.5);
+        
+        // Log for debugging
+        console.log("Deck selected with", deckIds.length, "cards:", deckIds);
     }    
     
     handleCardClick(card: Card, isMyDeck: boolean) {
         if (isMyDeck) {
-            // Remove card from 'My Deck'
             const index = this.myDeck.indexOf(card);
             if (index > -1) {
                 this.myDeck.splice(index, 1);
-                this.globalPool.push(card); 
-                this.gold += card.cost; 
+                this.globalPool.push(card);
             }
-        } else { 
-            // Add card to 'My Deck' if there's enough gold and space
-            if (this.gold >= card.cost && this.myDeck.length < 40) {
-                this.gold -= card.cost;
+        } else {
+            if (this.myDeck.length < 40) {
                 this.myDeck.push(card);
                 const index = this.globalPool.indexOf(card);
-                this.globalPool.splice(index, 1); // Remove card from global pool
+                this.globalPool.splice(index, 1);
             }
         }
-        // Redraw the scene
         this.scene.restart();
     }
 
