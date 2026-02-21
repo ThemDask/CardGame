@@ -1,7 +1,6 @@
 import { HexType, hexTypes } from "../utils/styles";
 import { GameStateManager } from "../state/GameStateManager";
 import { Card } from "./Card";
-import { DeploymentScene } from "../scenes/DeploymentScene";
 import { PlaceCardAction } from "../core/actions/PlaceCardAction";
 import { MoveCardAction } from "../core/actions/MoveCardAction";
 import { ShootCardAction } from "../core/actions/ShootCardAction";
@@ -155,7 +154,7 @@ export class Hex {
         this.redraw('default');
     }
 
-    handleClick(scene: Phaser.Scene) {
+    handleClick(_scene: Phaser.Scene) {
         const gameStateManager = GameStateManager.getInstance();
         const selectedCard = gameStateManager.getSelectedCard();
         const gameState = gameStateManager.getGameState();
@@ -227,12 +226,6 @@ export class Hex {
                 if (success) {
                     gameStateManager.setSelectedCard(null);
                     this.redraw("click");
-                    
-                    // Notify DeploymentScene to update deck display
-                    const deploymentScene = scene.scene.get('DeploymentScene') as DeploymentScene;
-                    if (deploymentScene) {
-                        deploymentScene.onCardPlaced(selectedCard);
-                    }
                 } else {
                     console.warn("Failed to place card:", selectedCard.name);
                 }

@@ -14,6 +14,7 @@ import { ShootCardAction } from '../core/actions/ShootCardAction';
 import { UIManager } from '../core/state/UIManager';
 import { sceneManager } from '../core/sceneManager';
 import { CardContextMenu } from '../utils/CardContextMenu';
+import { CardDetailsPanel } from '../utils/CardDetailsPanel';
 
 // Map scene - has impl of the hexmap and calls card details panel
 export class MapScene extends Phaser.Scene {
@@ -32,6 +33,7 @@ export class MapScene extends Phaser.Scene {
     private highlightedHexes: Set<string> = new Set();
     private cardContextMenu: CardContextMenu;
     private enemyDeck: Card[] | undefined;
+    private cardDetailsPanel: CardDetailsPanel;
 
 
     constructor() {
@@ -104,6 +106,11 @@ export class MapScene extends Phaser.Scene {
 
     create() {
         configureBackground(this);
+
+        this.cardDetailsPanel = new CardDetailsPanel(this, 0, 0, 450, 600);
+        this.add.existing(this.cardDetailsPanel);
+        this.cardDetailsPanel.updatePanel(null);
+
         this.scene.launch('PhaseBannerScene', { phase: 'deployment' });
         this.scene.bringToTop('PhaseBannerScene');
 
@@ -154,7 +161,6 @@ export class MapScene extends Phaser.Scene {
         this.add.existing(this.cardContextMenu);
 
         this.scene.launch('DeploymentScene');
-        this.scene.launch('UIScene');
     }
 
 
@@ -168,9 +174,15 @@ export class MapScene extends Phaser.Scene {
 
         GameEventEmitter.on(GameEventType.PHASE_CHANGED, (data: { phase: string }) => {
             if (data?.phase === 'combat') {
+                this.scene.stop('DeploymentScene');
+                this.scene.launch('UIScene');
                 this.scene.launch('PhaseBannerScene', { phase: 'combat' });
                 this.scene.bringToTop('PhaseBannerScene');
             }
+        }, this);
+
+        GameEventEmitter.on(GameEventType.CARD_HOVER, (card: Card | null) => {
+            this.cardDetailsPanel.updatePanel(card);
         }, this);
         
         GameEventEmitter.on(GameEventType.CARD_PLACED, (event: any) => {
@@ -246,7 +258,7 @@ export class MapScene extends Phaser.Scene {
             const baseHexRadius = 55; // Original hex radius
             const currentHexRadius = hex.hexRadius;
             const scaleFactor = currentHexRadius / baseHexRadius;
-            const cardSize = 80 * scaleFactor;
+            const cardSize = 70 * scaleFactor;
             
             // Create card image centered on hex (in world coordinates)
             const cardImage = this.add.image(hexWorldX, hexWorldY, imageKey);
@@ -282,24 +294,12 @@ export class MapScene extends Phaser.Scene {
         }
     }
     
-    /**
-     * Show card details in CardDetailsPanel when hovering over a map card (same as DeckBuilderScene/DeploymentScene)
-     */
     private showCardDetailsOnHover(card: Card) {
-        const deploymentScene = this.scene.get('DeploymentScene');
-        if (deploymentScene && deploymentScene.scene.isActive()) {
-            deploymentScene.events.emit('cardHover', card);
-        }
+        this.cardDetailsPanel.updatePanel(card);
     }
 
-    /**
-     * Hide card details when pointer leaves a map card
-     */
     private hideCardDetailsOnHover() {
-        const deploymentScene = this.scene.get('DeploymentScene');
-        if (deploymentScene && deploymentScene.scene.isActive()) {
-            deploymentScene.events.emit('cardHover', null);
-        }
+        this.cardDetailsPanel.updatePanel(null);
     }
 
     /**
@@ -705,7 +705,7 @@ export class MapScene extends Phaser.Scene {
                                 const baseHexRadius = 55;
                                 const currentHexRadius = hex.hexRadius;
                                 const scaleFactor = currentHexRadius / baseHexRadius;
-                                const cardSize = 80 * scaleFactor;
+                                const cardSize = 70 * scaleFactor;
                                 sprite.setDisplaySize(cardSize, cardSize);
                                 
                                 // Update remaining actions display
