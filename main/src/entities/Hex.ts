@@ -163,9 +163,8 @@ export class Hex {
         if (!gameState) return;
 
         // Priority 1: If this hex is highlighted for movement/attack/shoot, handle that first.
-        // This takes precedence because highlighted hexes mean a board card is already
-        // selected - the user is clicking a target, not trying to deploy.
         if (this.highlightType !== 'none') {
+            if (gameState.gamePhase === 'deployment') return;
             const boardCardPos = UIManager.getInstance().getSelectedBoardCardPosition();
             if (boardCardPos) {
                 const action = this.highlightType === 'shoot'
@@ -201,8 +200,8 @@ export class Hex {
                 // Check if this is a valid deployment hex during deployment phase
                 const isDeploymentPhase = gameState.gamePhase === 'deployment';
                 if (isDeploymentPhase) {
-                    // Only allow deployment on deploy-type hexes (land or water)
-                    if (this.type !== 'landDeploy' && this.type !== 'water') {
+                    const deployHexTypes = ['landDeploy', 'water', 'waterDeploy', 'redTP', 'AzureTP', 'pinkTP', 'orangeTP'];
+                    if (!deployHexTypes.includes(this.type)) {
                         console.warn("Can only deploy on deployment zones");
                         return;
                     }

@@ -15,7 +15,7 @@ export const sceneManager = {
      */
     exitToMenu(scene: Phaser.Scene): void {
         const plugin = scene.scene;
-        const gameFlowScenes = ['MapScene', 'UIScene', 'DeploymentScene', 'EscapeMenu', 'DeckBuilderScene', 'DraftScene'];
+        const gameFlowScenes = ['MapScene', 'UIScene', 'DeploymentScene', 'EscapeMenu', 'DeckBuilderScene', 'DraftScene', 'PhaseBannerScene'];
         gameFlowScenes.forEach((k) => plugin.stop(k));
         plugin.start('MenuScene');
     },

@@ -53,6 +53,8 @@ export class DraftScene extends Phaser.Scene {
 
     create() {
         configureBackground(this);
+        this.scene.launch('PhaseBannerScene', { phase: 'draft' });
+        this.scene.bringToTop('PhaseBannerScene');
 
         this.input.keyboard?.on('keydown-ESC', () => {
             sceneManager.openEscapeMenu(this);

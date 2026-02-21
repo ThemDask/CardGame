@@ -104,7 +104,9 @@ export class MapScene extends Phaser.Scene {
 
     create() {
         configureBackground(this);
-        
+        this.scene.launch('PhaseBannerScene', { phase: 'deployment' });
+        this.scene.bringToTop('PhaseBannerScene');
+
         const containerWidth = this.game.config.width as number;  
         const containerHeight = this.game.config.height as number;
 
@@ -160,9 +162,15 @@ export class MapScene extends Phaser.Scene {
     }
     
     private setupEventListeners() {
-        // Listen for state changes to update visuals
         GameEventEmitter.on(GameEventType.STATE_CHANGED, (_event: any) => {
             this.updateHexMapVisuals();
+        }, this);
+
+        GameEventEmitter.on(GameEventType.PHASE_CHANGED, (data: { phase: string }) => {
+            if (data?.phase === 'combat') {
+                this.scene.launch('PhaseBannerScene', { phase: 'combat' });
+                this.scene.bringToTop('PhaseBannerScene');
+            }
         }, this);
         
         GameEventEmitter.on(GameEventType.CARD_PLACED, (event: any) => {
@@ -315,6 +323,9 @@ export class MapScene extends Phaser.Scene {
         
         // Case 1: Clicking own card - show context menu (before any move/attack logic)
         if (hex.occupied && hex.occupiedByPlayerId === currentPlayerId && hex.occupiedBy) {
+            if (gameState.gamePhase === 'deployment') {
+                return;
+            }
             // If context menu is open for this card, close it (toggle)
             if (this.cardContextMenu.isOpenFor(row, col)) {
                 this.cardContextMenu.close();

@@ -161,7 +161,9 @@ export class GameRules {
         toRow: number,
         toCol: number
     ): { valid: boolean; reason?: string } {
-        // Check it's the player's turn
+        if (state.gamePhase === 'deployment') {
+            return { valid: false, reason: "Deployment phase - cannot move or attack" };
+        }
         if (state.currentPlayerId !== playerId) {
             return { valid: false, reason: "Not your turn" };
         }
@@ -243,6 +245,9 @@ export class GameRules {
         toRow: number,
         toCol: number
     ): { valid: boolean; reason?: string } {
+        if (state.gamePhase === 'deployment') {
+            return { valid: false, reason: "Deployment phase - cannot move or attack" };
+        }
         if (state.currentPlayerId !== playerId) {
             return { valid: false, reason: "Not your turn" };
         }
@@ -324,8 +329,8 @@ export class GameRules {
         const isDeploymentPhase = state.gamePhase === 'deployment';
         
         if (isDeploymentPhase) {
-            // During deployment, only allow placement on deploy hexes (land or water)
-            if (hex.type !== 'landDeploy' && hex.type !== 'water') {
+            const deployHexTypes = ['landDeploy', 'water', 'waterDeploy', 'redTP', 'AzureTP', 'pinkTP', 'orangeTP'];
+            if (!deployHexTypes.includes(hex.type)) {
                 return { valid: false, reason: "Can only deploy on deployment zones" };
             }
             

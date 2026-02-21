@@ -105,6 +105,16 @@ export class GameStateManager {
                 playerId: action.playerId
             };
             GameEventEmitter.emit(GameEventType.CARD_PLACED, event);
+
+            if (this.gameState?.gamePhase === GamePhase.DEPLOYMENT) {
+                const player1 = this.gameState.players['Player 1'];
+                const player1DeckEmpty = !player1?.deck || player1.deck.length === 0;
+                if (player1DeckEmpty) {
+                    this.gameState = { ...this.gameState, gamePhase: GamePhase.COMBAT };
+                    this.gameState.lastUpdated = Date.now();
+                    GameEventEmitter.emit(GameEventType.PHASE_CHANGED, { phase: GamePhase.COMBAT });
+                }
+            }
         } else if (action instanceof MoveCardAction) {
             // Always emit CARD_MOVED
             const movedEvent: CardMovedEvent = {
