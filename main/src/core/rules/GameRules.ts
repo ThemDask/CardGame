@@ -161,7 +161,9 @@ export class GameRules {
         toRow: number,
         toCol: number
     ): { valid: boolean; reason?: string } {
-        // Check it's the player's turn
+        if (state.gamePhase === 'deployment') {
+            return { valid: false, reason: "Deployment phase - cannot move or attack" };
+        }
         if (state.currentPlayerId !== playerId) {
             return { valid: false, reason: "Not your turn" };
         }
@@ -198,6 +200,88 @@ export class GameRules {
         const isReachable = reachable.some(h => h.row === toRow && h.col === toCol);
         if (!isReachable) {
             return { valid: false, reason: "Target hex is out of movement range" };
+        }
+
+        return { valid: true };
+    }
+
+    /**
+     * Get all hexes that can be shot at from a given position within range.
+     * Only hexes with enemy cards within range (using getHexDistance) are eligible.
+     */
+    static getShootableHexes(
+        state: GameState,
+        fromRow: number,
+        fromCol: number,
+        range: number,
+        playerId: string
+    ): { row: number; col: number }[] {
+        const result: { row: number; col: number }[] = [];
+        if (range <= 0) return result;
+
+        for (let r = 0; r < state.hexMap.length; r++) {
+            for (let c = 0; c < state.hexMap[r].length; c++) {
+                const hex = state.hexMap[r]?.[c];
+                if (!hex || !hex.occupied || !hex.occupiedByPlayerId || hex.occupiedByPlayerId === playerId) {
+                    continue;
+                }
+                const distance = this.getHexDistance(state.hexMap, fromRow, fromCol, r, c);
+                if (distance >= 1 && distance <= range) {
+                    result.push({ row: r, col: c });
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Check if a card can shoot at a target hex
+     */
+    static canShootCard(
+        state: GameState,
+        playerId: string,
+        fromRow: number,
+        fromCol: number,
+        toRow: number,
+        toCol: number
+    ): { valid: boolean; reason?: string } {
+        if (state.gamePhase === 'deployment') {
+            return { valid: false, reason: "Deployment phase - cannot move or attack" };
+        }
+        if (state.currentPlayerId !== playerId) {
+            return { valid: false, reason: "Not your turn" };
+        }
+
+        const sourceHex = state.hexMap[fromRow]?.[fromCol];
+        if (!sourceHex || !sourceHex.occupied || !sourceHex.occupiedBy) {
+            return { valid: false, reason: "No card at source position" };
+        }
+        if (sourceHex.occupiedByPlayerId !== playerId) {
+            return { valid: false, reason: "Card does not belong to you" };
+        }
+
+        const card = sourceHex.occupiedBy;
+        if ((card.remainingActions ?? card.actions) <= 0) {
+            return { valid: false, reason: "Card has no actions remaining" };
+        }
+        if ((card.range ?? 0) <= 0) {
+            return { valid: false, reason: "Card has no range" };
+        }
+        if ((card.ranged_damage ?? 0) <= 0) {
+            return { valid: false, reason: "Card has no ranged damage" };
+        }
+
+        const targetHex = state.hexMap[toRow]?.[toCol];
+        if (!targetHex) {
+            return { valid: false, reason: "Target hex does not exist" };
+        }
+        if (!targetHex.occupied || !targetHex.occupiedByPlayerId || targetHex.occupiedByPlayerId === playerId) {
+            return { valid: false, reason: "Target must be an enemy card" };
+        }
+
+        const distance = this.getHexDistance(state.hexMap, fromRow, fromCol, toRow, toCol);
+        if (distance < 1 || distance > card.range) {
+            return { valid: false, reason: "Target is out of range" };
         }
 
         return { valid: true };
@@ -245,8 +329,8 @@ export class GameRules {
         const isDeploymentPhase = state.gamePhase === 'deployment';
         
         if (isDeploymentPhase) {
-            // During deployment, only allow placement on deploy hexes (land or water)
-            if (hex.type !== 'landDeploy' && hex.type !== 'water') {
+            const deployHexTypes = ['landDeploy', 'water', 'waterDeploy', 'redTP', 'AzureTP', 'pinkTP', 'orangeTP'];
+            if (!deployHexTypes.includes(hex.type)) {
                 return { valid: false, reason: "Can only deploy on deployment zones" };
             }
             

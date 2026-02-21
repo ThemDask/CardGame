@@ -22,6 +22,10 @@ export enum GameEventType {
     // Game flow
     GAME_STARTED = 'game_started',
     GAME_ENDED = 'game_ended',
+    PHASE_CHANGED = 'phase_changed',
+
+    // UI
+    CARD_HOVER = 'card_hover',
 }
 
 /**

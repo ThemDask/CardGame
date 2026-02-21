@@ -14,13 +14,17 @@ export class EnemyAI {
     /**
      * Deploy enemy cards onto the board at game start.
      * Must be called after GameStateManager.initializeGame().
-     * Returns the positions that were deployed to (so MapScene can create visuals).
+     * If draftedDeck is provided (from DraftScene), those cards are used;
+     * otherwise falls back to the hardcoded starter deck.
      */
     static deployEnemyCards(
-        hexMapConfig: Array<Array<HexType>>
+        hexMapConfig: Array<Array<HexType>>,
+        draftedDeck?: Card[]
     ): Array<{ card: Card; row: number; col: number }> {
         const gameStateManager = GameStateManager.getInstance();
-        const enemyDeck = EnemyDeployment.createEnemyDeck();
+        const enemyDeck = draftedDeck && draftedDeck.length > 0
+            ? draftedDeck
+            : EnemyDeployment.createEnemyDeck();
         const deploymentPositions = EnemyDeployment.getEnemyDeploymentPositions(hexMapConfig);
 
         if (deploymentPositions.length === 0) {

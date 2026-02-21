@@ -17,7 +17,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('bg', '/assets/bg1.png')
+        this.load.image('bg', 'assets/bg1.png')
 
     }
 
@@ -28,8 +28,9 @@ export class MenuScene extends Phaser.Scene {
         const menuContainer = this.add.container(width / 2, height / 2);
 
         this.playButton = this.createButton(0, -100, 'Play');
-        this.deckBuilderButton = this.createButton(0, 0, 'Deck Builder');
-        this.profileButton = this.createButton(0, 100, 'Profile');
+        this.deckBuilderButton = this.createButton(0, 0, 'Deck Builder (LEGACY)');
+        // this.deckBuilderButton = this.createButton(0, 100, 'Deck Builder (LEGACY)');
+        this.profileButton = this.createButton(0, 200, 'Profile');
 
         
         // Add all buttons to the container
@@ -39,9 +40,8 @@ export class MenuScene extends Phaser.Scene {
          // Add the file input element
          this.createFileInput();
 
-         // Add event listener for the play button to show the modal
          this.playButton.on('pointerdown', () => {
-             this.startMapScene();
+             sceneManager.goToDraft(this);
          });
     }
 

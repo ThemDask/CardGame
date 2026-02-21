@@ -8,7 +8,6 @@ import { Card } from '../entities/Card';
 export const sceneManager = {
     /**
      * Stop all running scenes and start MenuScene.
-     * Use when exiting the game (e.g. Escape menu Exit).
      * Must use ScenePlugin (scene.scene), not game.scene - Phaser 3.50+ does not
      * handle game.scene reliably; operations must go through the plugin queue.
      * Note: isActive() returns false for launched scenes like UIScene (they run but
@@ -16,7 +15,7 @@ export const sceneManager = {
      */
     exitToMenu(scene: Phaser.Scene): void {
         const plugin = scene.scene;
-        const gameFlowScenes = ['MapScene', 'UIScene', 'DeploymentScene', 'EscapeMenu', 'DeckBuilderScene'];
+        const gameFlowScenes = ['MapScene', 'UIScene', 'DeploymentScene', 'EscapeMenu', 'DeckBuilderScene', 'DraftScene', 'PhaseBannerScene'];
         gameFlowScenes.forEach((k) => plugin.stop(k));
         plugin.start('MenuScene');
     },
@@ -31,10 +30,19 @@ export const sceneManager = {
     },
 
     /**
-     * Start the game flow (MapScene). MapScene will launch UIScene and DeploymentScene.
+     * Start the Draft phase scene.
      */
-    startGame(scene: Phaser.Scene, playerDeck: string[] | Card[]): void {
-        scene.scene.start('MapScene', { playerDeck });
+    goToDraft(scene: Phaser.Scene): void {
+        scene.scene.start('DraftScene');
+    },
+
+    /**
+     * Start the game flow (MapScene). MapScene will launch UIScene and DeploymentScene.
+     * enemyDeck is optional; when provided (e.g. from DraftScene) it is forwarded
+     * to MapScene so the AI uses the drafted cards instead of a hardcoded deck.
+     */
+    startGame(scene: Phaser.Scene, playerDeck: string[] | Card[], enemyDeck?: Card[]): void {
+        scene.scene.start('MapScene', { playerDeck, enemyDeck });
     },
 
     /**
